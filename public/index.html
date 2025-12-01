@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel NF - WhatsApp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+</head>
+<body class="bg-light">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <span class="navbar-brand">NF Dashboard</span>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <div id="login-section" class="row justify-content-center">
+      <div class="col-md-4">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Login</h5>
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" id="email" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Senha</label>
+              <input type="password" id="password" class="form-control" />
+            </div>
+            <button class="btn btn-primary w-100" onclick="login()">Entrar</button>
+            <div id="login-error" class="text-danger mt-2 small"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="app-section" class="d-none">
+      <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+          <button class="nav-link active" onclick="showTab('customers')">Usuários</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" onclick="showTab('companies')">Empresas</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" onclick="showTab('reports')">Relatórios</button>
+        </li>
+      </ul>
+
+      <div id="tab-customers">
+        <h5>Usuários (Clientes WhatsApp)</h5>
+        <button class="btn btn-sm btn-success mb-2" onclick="loadCustomers()">Atualizar lista</button>
+        <pre id="customers-output" class="bg-white p-2 border small"></pre>
+      </div>
+
+      <div id="tab-companies" class="d-none">
+        <h5>Empresas Emissoras</h5>
+        <button class="btn btn-sm btn-success mb-2" onclick="loadCompanies()">Atualizar lista</button>
+        <pre id="companies-output" class="bg-white p-2 border small"></pre>
+      </div>
+
+      <div id="tab-reports" class="d-none">
+        <h5>Relatórios</h5>
+        <button class="btn btn-sm btn-success mb-2" onclick="loadSummary()">Carregar resumo</button>
+        <pre id="reports-output" class="bg-white p-2 border small"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api';
+
+    function setToken(token) {
+      localStorage.setItem('token', token);
+    }
+
+    function getToken() {
+      return localStorage.getItem('token');
+    }
+
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorEl = document.getElementById('login-error');
+      errorEl.textContent = '';
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          errorEl.textContent = data.error || 'Erro no login';
+          return;
+        }
+
+        setToken(data.token);
+        document.getElementById('login-section').classList.add('d-none');
+        document.getElementById('app-section').classList.remove('d-none');
+      } catch (err) {
+        errorEl.textContent = 'Erro de rede';
+      }
+    }
+
+    function showTab(tab) {
+      document.getElementById('tab-customers').classList.add('d-none');
+      document.getElementById('tab-companies').classList.add('d-none');
+      document.getElementById('tab-reports').classList.add('d-none');
+
+      document.getElementById(`tab-${tab}`).classList.remove('d-none');
+    }
+
+    async function loadCustomers() {
+      const res = await fetch(`${API_BASE}/customers`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const data = await res.json();
+      document.getElementById('customers-output').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function loadCompanies() {
+      const res = await fetch(`${API_BASE}/companies`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const data = await res.json();
+      document.getElementById('companies-output').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function loadSummary() {
+      const res = await fetch(`${API_BASE}/reports/summary`, {
+        headers: { Authorization: `Bearer ${getToken()}` }
+      });
+      const data = await res.json();
+      document.getElementById('reports-output').textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
