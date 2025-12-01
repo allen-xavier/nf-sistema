@@ -11,7 +11,7 @@
     rel="stylesheet"
   />
 
-  <!-- Ícones (Bootstrap Icons) -->
+  <!-- Icons -->
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
@@ -37,6 +37,7 @@
         sans-serif;
     }
 
+    /* LOGIN */
     .login-bg {
       min-height: 100vh;
       background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
@@ -64,10 +65,9 @@
       font-size: 0.8rem;
     }
 
-    .brand-pill i {
-      color: var(--accent);
-    }
+    .brand-pill i { color: var(--accent); }
 
+    /* SIDEBAR */
     .sidebar {
       position: fixed;
       top: 0;
@@ -103,31 +103,11 @@
       box-shadow: 0 0 25px rgba(34, 197, 94, 0.7);
     }
 
-    .sidebar-brand-text {
-      line-height: 1.2;
-    }
-
     .sidebar-brand-text small {
       color: var(--text-muted);
       font-size: 0.7rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-    }
-
-    .sidebar-brand-text span {
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-
-    .sidebar-nav {
-      list-style: none;
-      padding-left: 0;
-      margin: 0;
-      flex: 1;
-    }
-
-    .sidebar-nav li {
-      margin-bottom: 0.35rem;
     }
 
     .sidebar-link {
@@ -142,10 +122,6 @@
       transition: all 0.15s ease;
     }
 
-    .sidebar-link i {
-      font-size: 1.05rem;
-    }
-
     .sidebar-link:hover {
       background-color: rgba(55, 65, 81, 0.55);
       color: #f9fafb;
@@ -156,18 +132,50 @@
       color: var(--accent);
     }
 
-    .sidebar-footer {
-      margin-top: 1rem;
-      font-size: 0.78rem;
-      color: var(--text-muted);
+    /* MOBILE SIDEBAR */
+    @media (max-width: 992px) {
+      .sidebar {
+        display: none;
+      }
     }
 
+    .sidebar.mobile-open {
+      display: block !important;
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      width: var(--sidebar-width);
+      background: #020617;
+      z-index: 1001;
+      box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+    }
+
+    #mobile-sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.45);
+      z-index: 900;
+    }
+
+    #mobile-sidebar-overlay.visible { display: block; }
+
+    /* MAIN LAYOUT */
     .layout-main {
       margin-left: var(--sidebar-width);
       min-height: 100vh;
       background: radial-gradient(circle at top, #0f172a 0, #020617 55%);
     }
 
+    @media (max-width: 992px) {
+      .layout-main { margin-left: 0; }
+    }
+
+    /* TOPBAR */
     .topbar {
       display: flex;
       align-items: center;
@@ -181,45 +189,21 @@
       z-index: 900;
     }
 
-    .topbar-title {
-      font-size: 0.95rem;
-      color: var(--text-muted);
+    .btn-mobile-menu {
+      display: none;
     }
 
-    .topbar-title span {
-      color: #e5e7eb;
-      font-weight: 500;
-    }
-
-    .badge-env {
-      font-size: 0.7rem;
-      border-radius: 999px;
-      padding: 0.15rem 0.5rem;
-      background: rgba(34, 197, 94, 0.1);
-      color: var(--accent);
-      border: 1px solid rgba(34, 197, 94, 0.45);
-    }
-
-    .user-pill {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.3rem 0.6rem;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.7);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-muted);
-      font-size: 0.8rem;
-    }
-
-    .user-pill i {
-      color: var(--accent);
+    @media (max-width: 992px) {
+      .btn-mobile-menu {
+        display: inline-block;
+      }
     }
 
     .content-wrapper {
       padding: 1.3rem 1.5rem 2.5rem;
     }
 
+    /* CARDS */
     .card-elevated {
       background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.08) 0, #020617 45%);
       border-radius: 18px;
@@ -236,99 +220,11 @@
       margin-bottom: 1.1rem;
     }
 
-    .card-section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.7rem;
-    }
-
-    .card-section-header h5 {
-      font-size: 1rem;
-      margin: 0;
-    }
-
-    .card-section-header small {
-      color: var(--text-muted);
-    }
-
-    .btn-accent {
-      background: linear-gradient(to right, #22c55e, #16a34a);
-      border: none;
-      color: #ecfdf5;
-    }
-
-    .btn-accent:hover {
-      background: linear-gradient(to right, #16a34a, #15803d);
-      color: #ecfdf5;
-    }
-
-    .form-control,
-    .form-select {
-      background-color: #020617;
-      border-color: #1f2937;
-      color: #e5e7eb;
-      font-size: 0.86rem;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-      background-color: #020617;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.45);
-      color: #e5e7eb;
-    }
-
-    .form-label {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
+    /* TABLES */
     .table-dark {
       --bs-table-bg: #020617;
-      --bs-table-striped-bg: #020617;
       --bs-table-hover-bg: #030712;
       --bs-table-border-color: #111827;
-    }
-
-    .table thead th {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--text-muted);
-      border-bottom-width: 1px;
-      border-color: #111827;
-    }
-
-    .table td {
-      font-size: 0.82rem;
-      vertical-align: middle;
-      border-color: #111827;
-    }
-
-    .badge-status {
-      font-size: 0.7rem;
-      border-radius: 999px;
-      padding: 0.1rem 0.55rem;
-    }
-
-    .badge-status.active {
-      background: rgba(34, 197, 94, 0.15);
-      color: #4ade80;
-    }
-
-    .badge-status.inactive {
-      background: rgba(239, 68, 68, 0.12);
-      color: #fca5a5;
-    }
-
-    .pill-sm {
-      font-size: 0.72rem;
-      border-radius: 999px;
-      padding: 0.05rem 0.5rem;
-      background: rgba(31, 41, 55, 0.9);
-      color: var(--text-muted);
-      border: 1px solid #1f2937;
     }
 
     pre.json-output {
@@ -340,1030 +236,1033 @@
       font-size: 0.78rem;
       color: #9ca3af;
     }
-
-    .link-muted {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 0.8rem;
-    }
-    .link-muted:hover {
-      color: #e5e7eb;
-      text-decoration: underline;
-    }
-
-    .nav-tab-btn {
-      border-radius: 999px !important;
-      font-size: 0.82rem;
-      padding-inline: 1rem;
-    }
-
-    .nav-tab-btn.active {
-      background: var(--accent-soft) !important;
-      color: var(--accent) !important;
-      border-color: rgba(34, 197, 94, 0.6) !important;
-    }
-
-    @media (max-width: 991.98px) {
-      .sidebar {
-        display: none;
-      }
-      .layout-main {
-        margin-left: 0;
-      }
-    }
   </style>
 </head>
+
 <body>
-  <!-- ================= LOGIN ================= -->
-  <div id="login-page" class="login-bg">
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-md-5 col-lg-4">
-          <div class="login-card p-4">
-            <div class="mb-3">
-              <span class="brand-pill">
-                <i class="bi bi-shield-check"></i> Painel NF · Admin
-              </span>
-            </div>
-            <h2 class="h4 mb-1">Bem-vindo(a)</h2>
-            <p class="text-muted mb-4" style="font-size: 0.9rem;">
-              Acesse o painel de gestão de notas fiscais e clientes WhatsApp.
-            </p>
 
-            <div class="mb-3">
-              <label class="form-label">E-mail</label>
-              <input type="email" id="email" class="form-control" placeholder="seuemail@exemplo.com" />
-            </div>
-
-            <div class="mb-1">
-              <label class="form-label">Senha</label>
-              <input type="password" id="password" class="form-control" placeholder="••••••••" />
-            </div>
-            <div class="d-flex justify-content-between mb-3">
-              <small class="text-muted">Use o usuário admin configurado na stack.</small>
-            </div>
-
-            <button class="btn btn-accent w-100 mb-2" onclick="login()">
-              <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
-            </button>
-
-            <div id="login-error" class="text-danger small mb-2"></div>
-
-            <p class="text-muted small mb-0">
-              Dica: mantenha este painel aberto apenas em dispositivos confiáveis.
-            </p>
+<!-- =============== LOGIN =============== -->
+<div id="login-page" class="login-bg">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-5 col-lg-4">
+        <div class="login-card p-4">
+          <div class="mb-3">
+            <span class="brand-pill">
+              <i class="bi bi-shield-check"></i> Painel NF · Admin
+            </span>
           </div>
+          <h2 class="h4 mb-1">Bem-vindo(a)</h2>
+          <p class="text-muted mb-4" style="font-size: 0.9rem;">
+            Acesse o painel de gestão de notas fiscais e clientes via WhatsApp.
+          </p>
+
+          <div class="mb-3">
+            <label class="form-label">E-mail</label>
+            <input type="email" id="email" class="form-control" placeholder="seuemail@exemplo.com" />
+          </div>
+
+          <div class="mb-1">
+            <label class="form-label">Senha</label>
+            <input type="password" id="password" class="form-control" placeholder="••••••••" />
+          </div>
+
+          <button class="btn btn-accent w-100 mt-3" onclick="login()">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
+          </button>
+
+          <div id="login-error" class="text-danger small mt-2"></div>
+
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- ================= LAYOUT PRINCIPAL ================= -->
-  <div id="app-layout" class="d-none">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <div class="sidebar-brand-circle">M</div>
-        <div class="sidebar-brand-text">
-          <small>NFs · Automação</small><br />
-          <span>Michele Deiansa</span>
-        </div>
+<!-- ================= LAYOUT PRINCIPAL ================= -->
+<div id="app-layout" class="d-none">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-circle">M</div>
+      <div class="sidebar-brand-text">
+        <small>NFs · Automação</small><br />
+        <span>Michele Deiansa</span>
+      </div>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li>
+        <a href="#" class="sidebar-link active" data-section="dashboard"
+           onclick="switchSection('dashboard', this)">
+          <i class="bi bi-grid-1x2-fill"></i> <span>Visão geral</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="#" class="sidebar-link" data-section="customers"
+           onclick="switchSection('customers', this)">
+          <i class="bi bi-people-fill"></i> <span>Clientes WhatsApp</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="#" class="sidebar-link" data-section="companies"
+           onclick="switchSection('companies', this)">
+          <i class="bi bi-building"></i> <span>Empresas emissoras</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="#" class="sidebar-link" data-section="invoices"
+           onclick="switchSection('invoices', this)">
+          <i class="bi bi-receipt"></i> <span>Notas fiscais</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="#" class="sidebar-link" data-section="reports"
+           onclick="switchSection('reports', this)">
+          <i class="bi bi-graph-up"></i> <span>Relatórios</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer mt-3 text-muted small">
+      <span class="pill-sm"><i class="bi bi-whatsapp me-1"></i> Integração WhatsApp</span>
+      <div class="mt-1">v1.0 • NF Sistema</div>
+    </div>
+  </aside>
+
+  <!-- Mobile overlay -->
+  <div id="mobile-sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+  <!-- Main content -->
+  <main class="layout-main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="btn btn-dark btn-mobile-menu me-2" onclick="toggleMobileMenu()">
+        <i class="bi bi-list" style="font-size: 1.4rem;"></i>
+      </button>
+
+      <div class="topbar-title">
+        Painel <span id="topbar-section-label">· Visão geral</span>
+        <span class="badge-env ms-2">Produção</span>
       </div>
 
-      <ul class="sidebar-nav">
-        <li>
-          <a href="#" class="sidebar-link active" data-section="dashboard" onclick="switchSection('dashboard', this)">
-            <i class="bi bi-grid-1x2-fill"></i> <span>Visão geral</span>
-          </a>
-        </li>
-        <li>
-          <a href="#" class="sidebar-link" data-section="customers" onclick="switchSection('customers', this)">
-            <i class="bi bi-people-fill"></i> <span>Clientes WhatsApp</span>
-          </a>
-        </li>
-        <li>
-          <a href="#" class="sidebar-link" data-section="companies" onclick="switchSection('companies', this)">
-            <i class="bi bi-building"></i> <span>Empresas emissoras</span>
-          </a>
-        </li>
-        <li>
-          <a href="#" class="sidebar-link" data-section="invoices" onclick="switchSection('invoices', this)">
-            <i class="bi bi-receipt-cutoff"></i> <span>Notas fiscais</span>
-          </a>
-        </li>
-        <li>
-          <a href="#" class="sidebar-link" data-section="reports" onclick="switchSection('reports', this)">
-            <i class="bi bi-graph-up"></i> <span>Relatórios</span>
-          </a>
-        </li>
-      </ul>
+      <div class="d-flex align-items-center gap-2">
+        <span class="user-pill" id="current-user-pill">
+          <i class="bi bi-person-badge"></i>
+          <span id="current-user-email">admin</span>
+        </span>
 
-      <div class="sidebar-footer">
-        <div class="mb-1">
-          <span class="pill-sm">
-            <i class="bi bi-whatsapp me-1"></i> Integração WhatsApp
-          </span>
-        </div>
-        <div class="text-muted">
-          <small>v1.0 · NF Sistema</small>
-        </div>
+        <button class="btn btn-sm btn-outline-light border-0" onclick="logout()">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
       </div>
-    </aside>
+    </header>
 
-    <!-- Main -->
-    <main class="layout-main">
-      <!-- Topbar -->
-      <header class="topbar">
-        <div class="topbar-title">
-          Painel <span id="topbar-section-label">· Visão geral</span>
-          <span class="badge-env ms-2">Produção</span>
+    <div class="content-wrapper">
+
+      <!-- ========== DASHBOARD ========== -->
+      <section id="section-dashboard">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="card-elevated h-100">
+              <small class="text-muted">Notas (últimos 30 dias)</small>
+              <h4 id="dash-total-notas" class="mt-1 mb-2">–</h4>
+
+              <div class="text-muted small">
+                Valor total: <span id="dash-soma-valor">–</span><br />
+                Taxas: <span id="dash-soma-taxas">–</span>
+              </div>
+
+              <button class="btn btn-sm btn-outline-light mt-3"
+                      onclick="loadDashboardSummary()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Atualizar visão
+              </button>
+            </div>
+          </div>
+
+          <div class="col-md-8">
+            <div class="card-section h-100">
+              <div class="card-section-header">
+                <h5 class="mb-1">Atalhos rápidos</h5>
+                <small>Ações comuns:</small>
+              </div>
+
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <button class="btn btn-dark w-100" onclick="openCustomerFormModal()">
+                    <i class="bi bi-person-plus me-1"></i> Novo cliente
+                  </button>
+                </div>
+
+                <div class="col-md-4">
+                  <button class="btn btn-dark w-100" onclick="openCompanyFormModal()">
+                    <i class="bi bi-building-add me-1"></i> Nova empresa
+                  </button>
+                </div>
+
+                <div class="col-md-4">
+                  <button class="btn btn-dark w-100"
+                          onclick="switchSection('reports', document.querySelector('[data-section=reports]'))">
+                    <i class="bi bi-graph-up-arrow me-1"></i> Ver relatórios
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
-        <div class="d-flex align-items-center gap-2">
-          <span class="user-pill" id="current-user-pill">
-            <i class="bi bi-person-badge"></i>
-            <span id="current-user-email">admin</span>
-          </span>
-          <button class="btn btn-sm btn-outline-light border-0" onclick="logout()">
-            <i class="bi bi-box-arrow-right"></i>
-          </button>
-        </div>
-      </header>
+      </section>
 
-      <div class="content-wrapper">
-        <!-- ===== Dashboard (visão geral rápida) ===== -->
-        <section id="section-dashboard">
-          <div class="row g-3">
-            <div class="col-md-4">
-              <div class="card-elevated h-100">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div>
-                    <small class="text-muted">Notas fiscais (período atual)</small>
-                    <h4 class="mt-1 mb-0" id="dash-total-notas">–</h4>
-                  </div>
-                  <div class="pill-sm">
-                    <i class="bi bi-calendar-range me-1"></i>
-                    <span id="dash-period-label">Últimos 30 dias</span>
-                  </div>
-                </div>
-                <div class="text-muted small">
-                  Valor total: <span id="dash-soma-valor">–</span><br />
-                  Taxas arrecadadas: <span id="dash-soma-taxas">–</span>
-                </div>
-                <button
-                  class="btn btn-sm btn-outline-light mt-3"
-                  onclick="loadDashboardSummary()"
-                >
-                  <i class="bi bi-arrow-clockwise me-1"></i> Atualizar visão
-                </button>
-              </div>
+      <!-- ========== CLIENTES ========== -->
+      <section id="section-customers" class="d-none">
+        <div class="card-section">
+
+          <div class="card-section-header">
+            <div>
+              <h5>Clientes</h5>
+              <small>Usuários identificados pelo WhatsApp</small>
             </div>
 
-            <div class="col-md-8">
-              <div class="card-section h-100">
-                <div class="card-section-header">
-                  <div>
-                    <h5 class="mb-1">Atividade rápida</h5>
-                    <small>Use estes atalhos para ações frequentes.</small>
-                  </div>
-                </div>
-                <div class="row g-2">
-                  <div class="col-md-4">
-                    <button
-                      class="btn btn-dark w-100"
-                      onclick="openCustomerFormModal()"
-                    >
-                      <i class="bi bi-person-plus me-1"></i> Novo cliente
-                    </button>
-                  </div>
-                  <div class="col-md-4">
-                    <button
-                      class="btn btn-dark w-100"
-                      onclick="openCompanyFormModal()"
-                    >
-                      <i class="bi bi-building-add me-1"></i> Nova empresa
-                    </button>
-                  </div>
-                  <div class="col-md-4">
-                    <button
-                      class="btn btn-dark w-100"
-                      onclick="switchSection('reports', document.querySelector('[data-section=reports]'))"
-                    >
-                      <i class="bi bi-graph-up-arrow me-1"></i> Ver relatórios
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- ===== Clientes ===== -->
-        <section id="section-customers" class="d-none">
-          <div class="card-section">
-            <div class="card-section-header">
-              <div>
-                <h5>Clientes (Usuários WhatsApp)</h5>
-                <small>Cadastre clientes que usarão a automação via WhatsApp.</small>
-              </div>
-              <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-dark" onclick="loadCustomers()">
-                  <i class="bi bi-arrow-clockwise me-1"></i> Atualizar
-                </button>
-                <button class="btn btn-sm btn-accent" onclick="openCustomerFormModal()">
-                  <i class="bi bi-person-plus me-1"></i> Novo cliente
-                </button>
-              </div>
-            </div>
-
-            <div class="table-responsive mt-2">
-              <table class="table table-dark table-hover align-middle mb-0">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Nome</th>
-                    <th>WhatsApp</th>
-                    <th>Taxa (%)</th>
-                    <th>Status</th>
-                    <th style="width: 120px;">Ações</th>
-                  </tr>
-                </thead>
-                <tbody id="customers-tbody">
-                  <tr>
-                    <td colspan="6" class="text-center text-muted small">
-                      Nenhum cliente carregado ainda. Clique em “Atualizar”.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ===== Empresas ===== -->
-        <section id="section-companies" class="d-none">
-          <div class="card-section">
-            <div class="card-section-header">
-              <div>
-                <h5>Empresas emissoras</h5>
-                <small>Gerencie as empresas usadas na emissão de notas fiscais.</small>
-              </div>
-              <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-dark" onclick="loadCompanies()">
-                  <i class="bi bi-arrow-clockwise me-1"></i> Atualizar
-                </button>
-                <button class="btn btn-sm btn-accent" onclick="openCompanyFormModal()">
-                  <i class="bi bi-building-add me-1"></i> Nova empresa
-                </button>
-              </div>
-            </div>
-
-            <div class="table-responsive mt-2">
-              <table class="table table-dark table-hover align-middle mb-0">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>CNPJ</th>
-                    <th>Nome</th>
-                    <th>Chave de acesso</th>
-                    <th>Status</th>
-                    <th style="width: 120px;">Ações</th>
-                  </tr>
-                </thead>
-                <tbody id="companies-tbody">
-                  <tr>
-                    <td colspan="6" class="text-center text-muted small">
-                      Nenhuma empresa carregada ainda. Clique em “Atualizar”.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- ===== Notas ===== -->
-        <section id="section-invoices" class="d-none">
-          <div class="card-section mb-3">
-            <div class="card-section-header">
-              <div>
-                <h5>Notas fiscais</h5>
-                <small>Histórico das notas emitidas para todos os clientes.</small>
-              </div>
-              <button class="btn btn-sm btn-dark" onclick="loadInvoices()">
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-dark" onclick="loadCustomers()">
                 <i class="bi bi-arrow-clockwise me-1"></i> Atualizar
               </button>
-            </div>
-
-            <div class="table-responsive mt-2">
-              <table class="table table-dark table-hover align-middle mb-0">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Cliente</th>
-                    <th>Empresa</th>
-                    <th>Emitida em</th>
-                    <th>Valor total</th>
-                    <th>Valor pago</th>
-                    <th>Taxa</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody id="invoices-tbody">
-                  <tr>
-                    <td colspan="8" class="text-center text-muted small">
-                      Nenhuma nota carregada ainda. Clique em “Atualizar”.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="card-section">
-            <div class="card-section-header">
-              <div>
-                <h5>JSON cru (debug)</h5>
-                <small>Visualize o retorno bruto da API de notas (útil para testar integrações).</small>
-              </div>
-            </div>
-            <pre class="json-output" id="invoices-json-output">[]</pre>
-          </div>
-        </section>
-
-        <!-- ===== Relatórios ===== -->
-        <section id="section-reports" class="d-none">
-          <div class="card-section mb-3">
-            <div class="card-section-header">
-              <div>
-                <h5>Relatórios financeiros</h5>
-                <small>Filtre valores recebidos, totais de notas e taxas por período.</small>
-              </div>
-              <button class="btn btn-sm btn-accent" onclick="loadSummary()">
-                <i class="bi bi-play-circle me-1"></i> Gerar relatório
+              <button class="btn btn-sm btn-accent" onclick="openCustomerFormModal()">
+                <i class="bi bi-person-plus me-1"></i> Novo cliente
               </button>
             </div>
+          </div>
 
-            <form class="row g-3 mb-2" id="report-filters-form" onsubmit="event.preventDefault(); loadSummary();">
-              <div class="col-md-3">
-                <label class="form-label">Data inicial</label>
-                <input type="date" class="form-control" id="report-start" />
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">Data final</label>
-                <input type="date" class="form-control" id="report-end" />
-              </div>
-              <div class="col-md-3">
-                <label class="form-label">ID cliente (opcional)</label>
-                <input
-                  type="number"
-                  min="1"
-                  class="form-control"
-                  id="report-customer-id"
-                  placeholder="ex: 1"
-                />
-              </div>
-              <div class="col-md-3 d-flex align-items-end">
-                <button class="btn btn-dark w-100" type="submit">
-                  <i class="bi bi-arrow-repeat me-1"></i> Atualizar dados
-                </button>
-              </div>
-            </form>
+          <!-- Filtros -->
+          <div class="row g-2 mb-3">
+            <div class="col-md-3">
+              <input type="text" id="filter-customer-name" class="form-control"
+                     placeholder="Nome" oninput="loadCustomers()">
+            </div>
 
-            <div class="row g-3">
-              <div class="col-md-4">
-                <div class="card-elevated">
-                  <small class="text-muted">Total de notas</small>
-                  <h4 id="rep-total-notas" class="mt-1 mb-0">–</h4>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="card-elevated">
-                  <small class="text-muted">Soma valor total</small>
-                  <h4 id="rep-soma-valor" class="mt-1 mb-0">R$ 0,00</h4>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="card-elevated">
-                  <small class="text-muted">Taxas arrecadadas</small>
-                  <h4 id="rep-soma-taxas" class="mt-1 mb-0">R$ 0,00</h4>
-                </div>
-              </div>
+            <div class="col-md-3">
+              <input type="text" id="filter-customer-whatsapp" class="form-control"
+                     placeholder="WhatsApp" oninput="loadCustomers()">
+            </div>
+
+            <div class="col-md-3">
+              <select id="filter-customer-active" class="form-select"
+                      onchange="loadCustomers()">
+                <option value="">Status: Todos</option>
+                <option value="true">Ativos</option>
+                <option value="false">Inativos</option>
+              </select>
+            </div>
+
+            <div class="col-md-3">
+              <input type="number" step="0.01" id="filter-customer-fee" class="form-control"
+                     placeholder="Taxa (%)" oninput="loadCustomers()">
             </div>
           </div>
 
-          <div class="card-section">
-            <div class="card-section-header">
-              <div>
-                <h5>Detalhe por cliente</h5>
-                <small>Resumo agregado por cliente no período filtrado.</small>
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Nome</th>
+                  <th>WhatsApp</th>
+                  <th>Taxa (%)</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+
+              <tbody id="customers-tbody">
+                <tr>
+                  <td colspan="6" class="text-center text-muted small">
+                    Nenhum cliente carregado.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========== EMPRESAS ========== -->
+      <section id="section-companies" class="d-none">
+        <div class="card-section">
+
+          <div class="card-section-header">
+            <div>
+              <h5>Empresas emissoras</h5>
+              <small>Utilizadas para emissão de notas fiscais</small>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-dark" onclick="loadCompanies()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Atualizar
+              </button>
+              <button class="btn btn-sm btn-accent" onclick="openCompanyFormModal()">
+                <i class="bi bi-building-add me-1"></i> Nova empresa
+              </button>
+            </div>
+          </div>
+
+          <!-- Filtros -->
+          <div class="row g-2 mb-3">
+            <div class="col-md-4">
+              <input type="text" id="filter-company-name" class="form-control"
+                     placeholder="Nome da empresa" oninput="loadCompanies()">
+            </div>
+
+            <div class="col-md-4">
+              <input type="text" id="filter-company-cnpj" class="form-control"
+                     placeholder="CNPJ" oninput="loadCompanies()">
+            </div>
+
+            <div class="col-md-4">
+              <select id="filter-company-active" class="form-select"
+                      onchange="loadCompanies()">
+                <option value="">Status: Todas</option>
+                <option value="true">Ativas</option>
+                <option value="false">Inativas</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>CNPJ</th>
+                  <th>Nome</th>
+                  <th>Chave acesso</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+
+              <tbody id="companies-tbody">
+                <tr>
+                  <td colspan="6" class="text-center text-muted small">
+                    Nenhuma empresa carregada.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========== NOTAS (INÍCIO) ========== -->
+      <section id="section-invoices" class="d-none">
+        <div class="card-section mb-3">
+
+          <div class="card-section-header">
+            <div>
+              <h5>Notas fiscais</h5>
+              <small>Registros de todas as notas emitidas</small>
+            </div>
+
+            <button class="btn btn-sm btn-dark" onclick="loadInvoices()">
+              <i class="bi bi-arrow-clockwise me-1"></i> Atualizar
+            </button>
+          </div>
+
+          <!-- Filtros notas -->
+          <div class="row g-2 mb-3">
+            <div class="col-md-3">
+              <input type="number" id="filter-inv-customer" class="form-control"
+                     placeholder="ID Cliente">
+            </div>
+
+            <div class="col-md-3">
+              <input type="number" id="filter-inv-company" class="form-control"
+                     placeholder="ID Empresa">
+            </div>
+
+            <div class="col-md-3">
+              <input type="date" id="filter-inv-start" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+              <input type="date" id="filter-inv-end" class="form-control">
+            </div>
+
+            <div class="col-md-3 mt-2">
+              <input type="number" step="0.01" id="filter-inv-min"
+                     class="form-control" placeholder="Valor mínimo">
+            </div>
+
+            <div class="col-md-3 mt-2">
+              <input type="number" step="0.01" id="filter-inv-max"
+                     class="form-control" placeholder="Valor máximo">
+            </div>
+
+            <div class="col-md-3 mt-2">
+              <select id="filter-inv-status" class="form-select">
+                <option value="">Status: Todos</option>
+                <option value="EMITIDA">Emitida</option>
+                <option value="PAGA">Paga</option>
+                <option value="CANCELADA">Cancelada</option>
+              </select>
+            </div>
+
+            <div class="col-md-3 mt-2">
+              <button class="btn btn-dark w-100" onclick="loadInvoices()">
+                Aplicar filtros
+              </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Cliente</th>
+                  <th>Empresa</th>
+                  <th>Emitida em</th>
+                  <th>Valor total</th>
+                  <th>Valor pago</th>
+                  <th>Taxa</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+
+              <tbody id="invoices-tbody">
+                <tr>
+                  <td colspan="8" class="text-center text-muted small">
+                    Nenhuma nota carregada.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <div class="card-section">
+          <div class="card-section-header">
+            <h5>JSON cru (debug)</h5>
+            <small>Retorno bruto da API</small>
+          </div>
+
+          <pre class="json-output" id="invoices-json-output">[]</pre>
+        </div>
+      </section>
+
+      <!-- ========== RELATÓRIOS ========== -->
+      <section id="section-reports" class="d-none">
+        <div class="card-section mb-3">
+          <div class="card-section-header">
+            <h5>Relatórios financeiros</h5>
+            <small>Totais e valores filtrados</small>
+          </div>
+
+          <!-- Filtros relatório -->
+          <form class="row g-3 mb-2" onsubmit="event.preventDefault(); loadSummary();">
+            <div class="col-md-3">
+              <label class="form-label">Data inicial</label>
+              <input type="date" id="report-start" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Data final</label>
+              <input type="date" id="report-end" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">ID Cliente</label>
+              <input type="number" id="report-customer-id" class="form-control" placeholder="Opcional">
+            </div>
+
+            <div class="col-md-3 d-flex align-items-end">
+              <button class="btn btn-dark w-100" type="submit">
+                <i class="bi bi-arrow-repeat me-1"></i> Atualizar
+              </button>
+            </div>
+          </form>
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="card-elevated">
+                <small class="text-muted">Total de notas</small>
+                <h4 id="rep-total-notas" class="mt-1 mb-0">–</h4>
               </div>
             </div>
-            <pre class="json-output" id="reports-output">[]</pre>
+
+            <div class="col-md-4">
+              <div class="card-elevated">
+                <small class="text-muted">Soma valores</small>
+                <h4 id="rep-soma-valor" class="mt-1 mb-0">R$ 0,00</h4>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="card-elevated">
+                <small class="text-muted">Taxas totais</small>
+                <h4 id="rep-soma-taxas" class="mt-1 mb-0">R$ 0,00</h4>
+              </div>
+            </div>
           </div>
-        </section>
-      </div>
-    </main>
-  </div>
+        </div>
 
-  <!-- ========= Modais Bootstrap ========= -->
-  <div class="modal fade" id="customerModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content" style="background:#020617;border-radius:18px;border:1px solid #1f2937;">
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title">Cliente WhatsApp</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        <div class="card-section">
+          <div class="card-section-header">
+            <h5>Resumo por cliente</h5>
+          </div>
+
+          <pre class="json-output" id="reports-output">[]</pre>
         </div>
-        <div class="modal-body">
-          <form id="customer-form">
-            <input type="hidden" id="customer-id" />
-            <div class="mb-2">
-              <label class="form-label">Nome</label>
-              <input type="text" id="customer-name" class="form-control" required />
-            </div>
-            <div class="mb-2">
-              <label class="form-label">WhatsApp (ex: +5599999999999)</label>
-              <input type="text" id="customer-whatsapp" class="form-control" required />
-            </div>
-            <div class="mb-2">
-              <label class="form-label">Taxa (%)</label>
-              <input type="number" step="0.01" id="customer-fee" class="form-control" required />
-            </div>
-            <div class="mb-2 form-check">
-              <input class="form-check-input" type="checkbox" id="customer-active" checked />
-              <label class="form-check-label" for="customer-active">Ativo</label>
-            </div>
-          </form>
-          <div id="customer-modal-error" class="text-danger small mt-1"></div>
-        </div>
-        <div class="modal-footer border-secondary">
-          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-accent btn-sm" onclick="saveCustomer()">Salvar</button>
-        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ========== MODAL CLIENTE ========== -->
+<div class="modal fade" id="customerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:#020617;border-radius:18px;border:1px solid #1f2937;">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title">Cliente WhatsApp</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <form id="customer-form">
+          <input type="hidden" id="customer-id">
+
+          <div class="mb-2">
+            <label class="form-label">Nome</label>
+            <input type="text" id="customer-name" class="form-control" required>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">WhatsApp</label>
+            <input type="text" id="customer-whatsapp" class="form-control" required>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Taxa (%)</label>
+            <input type="number" id="customer-fee" step="0.01" class="form-control" required>
+          </div>
+
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="customer-active" checked>
+            <label for="customer-active" class="form-check-label">Ativo</label>
+          </div>
+        </form>
+
+        <div id="customer-modal-error" class="text-danger small"></div>
+      </div>
+
+      <div class="modal-footer border-secondary">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-accent btn-sm" onclick="saveCustomer()">Salvar</button>
       </div>
     </div>
   </div>
+</div>
 
-  <div class="modal fade" id="companyModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content" style="background:#020617;border-radius:18px;border:1px solid #1f2937;">
-        <div class="modal-header border-secondary">
-          <h5 class="modal-title">Empresa emissora</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-        </div>
-        <div class="modal-body">
-          <form id="company-form">
-            <input type="hidden" id="company-id" />
-            <div class="mb-2">
-              <label class="form-label">CNPJ</label>
-              <input type="text" id="company-cnpj" class="form-control" required />
-            </div>
-            <div class="mb-2">
-              <label class="form-label">Nome</label>
-              <input type="text" id="company-name" class="form-control" required />
-            </div>
-            <div class="mb-2">
-              <label class="form-label">Chave de acesso / Token</label>
-              <input type="text" id="company-access-key" class="form-control" required />
-            </div>
-            <div class="mb-2 form-check">
-              <input class="form-check-input" type="checkbox" id="company-active" checked />
-              <label class="form-check-label" for="company-active">Ativa</label>
-            </div>
-          </form>
-          <div id="company-modal-error" class="text-danger small mt-1"></div>
-        </div>
-        <div class="modal-footer border-secondary">
-          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-accent btn-sm" onclick="saveCompany()">Salvar</button>
-        </div>
+<!-- ========== MODAL EMPRESA ========== -->
+<div class="modal fade" id="companyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:#020617;border-radius:18px;border:1px solid #1f2937;">
+
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title">Empresa emissora</h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <form id="company-form">
+          <input type="hidden" id="company-id">
+
+          <div class="mb-2">
+            <label class="form-label">CNPJ</label>
+            <input type="text" id="company-cnpj" class="form-control" required>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Nome</label>
+            <input type="text" id="company-name" class="form-control" required>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Chave de acesso</label>
+            <input type="text" id="company-access-key" class="form-control" required>
+          </div>
+
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="company-active" checked>
+            <label class="form-check-label" for="company-active">Ativa</label>
+          </div>
+        </form>
+
+        <div id="company-modal-error" class="text-danger small"></div>
+      </div>
+
+      <div class="modal-footer border-secondary">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-accent btn-sm" onclick="saveCompany()">Salvar</button>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- ================== APP SCRIPT ================== -->
-  <script>
-    const API_BASE = '/api';
-    let customerModalInstance = null;
-    let companyModalInstance = null;
+<script>
+/* ==========================
+   AUTH & SESSION
+========================== */
+const API_BASE = "/api";
+let customerModalInstance = null;
+let companyModalInstance = null;
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const token = getToken();
-      if (token) {
-        showAppLayout();
-        loadDashboardSummary();
-      }
-      const cm = document.getElementById('customerModal');
-      const com = document.getElementById('companyModal');
-      if (cm) customerModalInstance = new bootstrap.Modal(cm);
-      if (com) companyModalInstance = new bootstrap.Modal(com);
+document.addEventListener("DOMContentLoaded", () => {
+  const token = getToken();
+  if (token) {
+    showAppLayout();
+    loadDashboardSummary();
+  }
+
+  customerModalInstance = new bootstrap.Modal(document.getElementById("customerModal"));
+  companyModalInstance = new bootstrap.Modal(document.getElementById("companyModal"));
+});
+
+function setToken(t) { localStorage.setItem("token_nf_app", t); }
+function getToken() { return localStorage.getItem("token_nf_app"); }
+function clearToken() { localStorage.removeItem("token_nf_app"); }
+
+async function login() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const errorEl = document.getElementById("login-error");
+  errorEl.textContent = "";
+
+  if (!email || !password) {
+    errorEl.textContent = "Informe e-mail e senha.";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
     });
 
-    function setToken(token) {
-      localStorage.setItem('token_nf_app', token);
+    const data = await res.json();
+
+    if (!res.ok) {
+      errorEl.textContent = data.error || "Credenciais inválidas";
+      return;
     }
 
-    function getToken() {
-      return localStorage.getItem('token_nf_app');
-    }
+    setToken(data.token);
+    showAppLayout();
+    loadDashboardSummary();
+  } catch (e) {
+    errorEl.textContent = "Erro ao tentar autenticar.";
+  }
+}
 
-    function clearToken() {
-      localStorage.removeItem('token_nf_app');
-    }
+function showAppLayout() {
+  document.getElementById("login-page").classList.add("d-none");
+  document.getElementById("app-layout").classList.remove("d-none");
+}
 
-    async function login() {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const errorEl = document.getElementById('login-error');
-      errorEl.textContent = '';
+function logout() {
+  clearToken();
+  location.reload();
+}
 
-      if (!email || !password) {
-        errorEl.textContent = 'Informe e-mail e senha.';
-        return;
-      }
+/* ==========================
+   MOBILE SIDEBAR
+========================== */
+function toggleMobileMenu() {
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = document.getElementById("mobile-sidebar-overlay");
 
-      try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
+  if (sidebar.classList.contains("mobile-open")) {
+    sidebar.classList.remove("mobile-open");
+    overlay.classList.remove("visible");
+  } else {
+    sidebar.classList.add("mobile-open");
+    overlay.classList.add("visible");
+  }
+}
 
-        const data = await res.json();
-        if (!res.ok) {
-          errorEl.textContent = data.error || 'Credenciais inválidas';
-          return;
-        }
+/* ==========================
+   FETCH AUTENTICADO
+========================== */
+async function authorizedFetch(url, options = {}) {
+  const token = getToken();
+  const headers = options.headers || {};
+  headers["Authorization"] = `Bearer ${token}`;
+  if (!headers["Content-Type"] && options.body) {
+    headers["Content-Type"] = "application/json";
+  }
+  return await fetch(url, { ...options, headers });
+}
 
-        setToken(data.token);
-        showAppLayout(data.user);
-        loadDashboardSummary();
-      } catch (err) {
-        console.error(err);
-        errorEl.textContent = 'Erro de rede ao tentar autenticar.';
-      }
-    }
+/* ==========================
+   FORMATAÇÃO
+========================== */
+function formatCurrency(v) {
+  return Number(v).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+}
 
-    function showAppLayout(user) {
-      document.getElementById('login-page').classList.add('d-none');
-      document.getElementById('app-layout').classList.remove('d-none');
-      if (user && user.email) {
-        document.getElementById('current-user-email').textContent = user.email;
-      }
-    }
+function formatDateTime(v) {
+  const d = new Date(v);
+  return d.toLocaleString("pt-BR");
+}
 
-    function logout() {
-      clearToken();
-      location.reload();
-    }
+/* ==========================
+   DASHBOARD
+========================== */
+async function loadDashboardSummary() {
+  const end = new Date().toISOString().slice(0, 10);
+  const start = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
 
-    function switchSection(sectionId, linkEl) {
-      const sections = ['dashboard', 'customers', 'companies', 'invoices', 'reports'];
-      sections.forEach(id => {
-        const sec = document.getElementById(`section-${id}`);
-        if (sec) sec.classList.toggle('d-none', id !== sectionId);
-      });
+  const res = await authorizedFetch(`${API_BASE}/reports/summary?start=${start}&end=${end}`);
+  if (!res.ok) return;
 
-      document.querySelectorAll('.sidebar-link').forEach(a => a.classList.remove('active'));
-      if (linkEl) linkEl.classList.add('active');
+  const data = await res.json();
+  const t = data.totals || {};
 
-      const labelMap = {
-        dashboard: '· Visão geral',
-        customers: '· Clientes WhatsApp',
-        companies: '· Empresas emissoras',
-        invoices: '· Notas fiscais',
-        reports: '· Relatórios'
-      };
-      document.getElementById('topbar-section-label').textContent = labelMap[sectionId] || '';
+  document.getElementById("dash-total-notas").textContent = t.total_notas || 0;
+  document.getElementById("dash-soma-valor").textContent = formatCurrency(t.soma_valor_total || 0);
+  document.getElementById("dash-soma-taxas").textContent = formatCurrency(t.soma_taxas || 0);
+}
 
-      if (sectionId === 'customers') loadCustomers();
-      if (sectionId === 'companies') loadCompanies();
-      if (sectionId === 'invoices') loadInvoices();
-    }
+/* ==========================
+   CLIENTES
+========================== */
+async function loadCustomers() {
+  const tbody = document.getElementById("customers-tbody");
+  tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted small">Carregando...</td></tr>`;
 
-    async function authorizedFetch(url, options = {}) {
-      const token = getToken();
-      if (!token) {
-        logout();
-        return;
-      }
-      const headers = options.headers || {};
-      headers['Authorization'] = `Bearer ${token}`;
-      if (!headers['Content-Type'] && options.body) {
-        headers['Content-Type'] = 'application/json';
-      }
-      const res = await fetch(url, { ...options, headers });
+  const res = await authorizedFetch(`${API_BASE}/customers`);
+  if (!res.ok) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-danger text-center small">Erro ao carregar.</td></tr>`;
+    return;
+  }
 
-      if (res.status === 401) {
-        alert('Sua sessão expirou. Faça login novamente.');
-        logout();
-        return;
-      }
-      return res;
-    }
+  let data = await res.json();
 
-    function formatCurrency(value) {
-      if (value == null) return 'R$ 0,00';
-      const num = Number(value);
-      if (Number.isNaN(num)) return 'R$ 0,00';
-      return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    }
+  // filtros
+  const fName = document.getElementById("filter-customer-name").value.toLowerCase();
+  const fWpp  = document.getElementById("filter-customer-whatsapp").value.toLowerCase();
+  const fAct  = document.getElementById("filter-customer-active").value;
+  const fFee  = document.getElementById("filter-customer-fee").value;
 
-    function formatDateTime(value) {
-      if (!value) return '-';
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) return value;
-      return d.toLocaleString('pt-BR');
-    }
+  data = data.filter(c => {
+    if (fName && !c.name.toLowerCase().includes(fName)) return false;
+    if (fWpp && !c.whatsapp_number.toLowerCase().includes(fWpp)) return false;
+    if (fAct && String(c.is_active) !== fAct) return false;
+    if (fFee && Number(c.fee_percent) !== Number(fFee)) return false;
+    return true;
+  });
 
-    // ===== Dashboard summary =====
-    async function loadDashboardSummary() {
-      try {
-        const now = new Date();
-        const end = now.toISOString().slice(0, 10);
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - 30);
-        const start = startDate.toISOString().slice(0, 10);
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted small">Nenhum registro.</td></tr>`;
+    return;
+  }
 
-        document.getElementById('dash-period-label').textContent = 'Últimos 30 dias';
+  tbody.innerHTML = "";
+  for (const c of data) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${c.id}</td>
+      <td>${c.name}</td>
+      <td>${c.whatsapp_number}</td>
+      <td>${c.fee_percent}%</td>
+      <td><span class="badge-status ${c.is_active ? 'active':'inactive'}">${c.is_active ? "Ativo":"Inativo"}</span></td>
+      <td>
+        <button class="btn btn-sm btn-outline-light me-1" onclick='editCustomer(${JSON.stringify(c)})'>
+          <i class="bi bi-pencil"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(${c.id})">
+          <i class="bi bi-trash"></i>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
 
-        const url = `${API_BASE}/reports/summary?start=${start}&end=${end}`;
-        const res = await authorizedFetch(url);
-        if (!res || !res.ok) return;
-        const data = await res.json();
+function openCustomerFormModal() {
+  document.getElementById("customer-id").value = "";
+  document.getElementById("customer-form").reset();
+  document.getElementById("customer-modal-error").textContent = "";
+  customerModalInstance.show();
+}
 
-        const totals = data.totals || {};
-        document.getElementById('dash-total-notas').textContent = totals.total_notas || 0;
-        document.getElementById('dash-soma-valor').textContent = formatCurrency(totals.soma_valor_total || 0);
-        document.getElementById('dash-soma-taxas').textContent = formatCurrency(totals.soma_taxas || 0);
-      } catch (err) {
-        console.error('Erro ao carregar dashboard:', err);
-      }
-    }
+function editCustomer(c) {
+  document.getElementById("customer-id").value = c.id;
+  document.getElementById("customer-name").value = c.name;
+  document.getElementById("customer-whatsapp").value = c.whatsapp_number;
+  document.getElementById("customer-fee").value = c.fee_percent;
+  document.getElementById("customer-active").checked = c.is_active;
+  document.getElementById("customer-modal-error").textContent = "";
+  customerModalInstance.show();
+}
 
-    // ===== Clientes =====
-    async function loadCustomers() {
-      const tbody = document.getElementById('customers-tbody');
-      tbody.innerHTML = `
-        <tr><td colspan="6" class="text-center text-muted small">Carregando...</td></tr>
-      `;
-      try {
-        const res = await authorizedFetch(`${API_BASE}/customers`);
-        if (!res || !res.ok) {
-          tbody.innerHTML = `
-            <tr><td colspan="6" class="text-center text-danger small">Erro ao carregar clientes.</td></tr>
-          `;
-          return;
-        }
-        const data = await res.json();
-        if (!data.length) {
-          tbody.innerHTML = `
-            <tr><td colspan="6" class="text-center text-muted small">Nenhum cliente cadastrado ainda.</td></tr>
-          `;
-          return;
-        }
-        tbody.innerHTML = '';
-        data.forEach(c => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${c.id}</td>
-            <td>${c.name}</td>
-            <td>${c.whatsapp_number}</td>
-            <td>${Number(c.fee_percent).toFixed(2)}%</td>
-            <td>
-              <span class="badge-status ${c.is_active ? 'active' : 'inactive'}">
-                ${c.is_active ? 'Ativo' : 'Inativo'}
-              </span>
-            </td>
-            <td>
-              <button class="btn btn-sm btn-outline-light me-1" onclick='editCustomer(${JSON.stringify(c)})'>
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(${c.id})">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        console.error(err);
-        tbody.innerHTML = `
-          <tr><td colspan="6" class="text-center text-danger small">Erro ao carregar clientes.</td></tr>
-        `;
-      }
-    }
+async function saveCustomer() {
+  const id = document.getElementById("customer-id").value;
+  const payload = {
+    name: document.getElementById("customer-name").value,
+    whatsapp_number: document.getElementById("customer-whatsapp").value,
+    fee_percent: Number(document.getElementById("customer-fee").value),
+    is_active: document.getElementById("customer-active").checked
+  };
 
-    function openCustomerFormModal() {
-      document.getElementById('customer-form').reset();
-      document.getElementById('customer-id').value = '';
-      document.getElementById('customer-modal-error').textContent = '';
-      document.getElementById('customer-active').checked = true;
-      customerModalInstance && customerModalInstance.show();
-    }
+  const errorEl = document.getElementById("customer-modal-error");
 
-    function editCustomer(c) {
-      document.getElementById('customer-id').value = c.id;
-      document.getElementById('customer-name').value = c.name || '';
-      document.getElementById('customer-whatsapp').value = c.whatsapp_number || '';
-      document.getElementById('customer-fee').value = c.fee_percent || 0;
-      document.getElementById('customer-active').checked = c.is_active;
-      document.getElementById('customer-modal-error').textContent = '';
-      customerModalInstance && customerModalInstance.show();
-    }
+  let res;
+  if (id) {
+    res = await authorizedFetch(`${API_BASE}/customers/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload)
+    });
+  } else {
+    res = await authorizedFetch(`${API_BASE}/customers`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  }
 
-    async function saveCustomer() {
-      const id = document.getElementById('customer-id').value;
-      const name = document.getElementById('customer-name').value.trim();
-      const whatsapp = document.getElementById('customer-whatsapp').value.trim();
-      const fee = document.getElementById('customer-fee').value;
-      const active = document.getElementById('customer-active').checked;
-      const errorEl = document.getElementById('customer-modal-error');
-      errorEl.textContent = '';
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    errorEl.textContent = err.error || "Erro ao salvar.";
+    return;
+  }
 
-      if (!name || !whatsapp || fee === '') {
-        errorEl.textContent = 'Preencha nome, WhatsApp e taxa.';
-        return;
-      }
+  customerModalInstance.hide();
+  loadCustomers();
+}
 
-      const payload = {
-        name,
-        whatsapp_number: whatsapp,
-        fee_percent: Number(fee),
-        is_active: active
-      };
+async function deleteCustomer(id) {
+  if (!confirm("Excluir cliente?")) return;
+  const res = await authorizedFetch(`${API_BASE}/customers/${id}`, { method: "DELETE" });
+  if (res.ok) loadCustomers();
+}
 
-      try {
-        let res;
-        if (id) {
-          res = await authorizedFetch(`${API_BASE}/customers/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(payload)
-          });
-        } else {
-          res = await authorizedFetch(`${API_BASE}/customers`, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-          });
-        }
+/* ==========================
+   EMPRESAS
+========================== */
+async function loadCompanies() {
+  const tbody = document.getElementById("companies-tbody");
+  tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted small">Carregando...</td></tr>`;
 
-        if (!res || !res.ok) {
-          const data = await res.json().catch(() => ({}));
-          errorEl.textContent = data.error || 'Erro ao salvar cliente.';
-          return;
-        }
+  const res = await authorizedFetch(`${API_BASE}/companies`);
+  if (!res.ok) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-danger text-center small">Erro ao carregar.</td></tr>`;
+    return;
+  }
 
-        customerModalInstance && customerModalInstance.hide();
-        loadCustomers();
-      } catch (err) {
-        console.error(err);
-        errorEl.textContent = 'Erro de rede ao salvar cliente.';
-      }
-    }
+  let data = await res.json();
 
-    async function deleteCustomer(id) {
-      if (!confirm('Tem certeza que deseja excluir este cliente?')) return;
-      try {
-        const res = await authorizedFetch(`${API_BASE}/customers/${id}`, {
-          method: 'DELETE'
-        });
-        if (!res || (res.status !== 200 && res.status !== 204)) {
-          alert('Erro ao excluir cliente.');
-          return;
-        }
-        loadCustomers();
-      } catch (err) {
-        console.error(err);
-        alert('Erro de rede ao excluir cliente.');
-      }
-    }
+  const fName = document.getElementById("filter-company-name").value.toLowerCase();
+  const fCnpj = document.getElementById("filter-company-cnpj").value.toLowerCase();
+  const fAct  = document.getElementById("filter-company-active").value;
 
-    // ===== Empresas =====
-    async function loadCompanies() {
-      const tbody = document.getElementById('companies-tbody');
-      tbody.innerHTML = `
-        <tr><td colspan="6" class="text-center text-muted small">Carregando...</td></tr>
-      `;
-      try {
-        const res = await authorizedFetch(`${API_BASE}/companies`);
-        if (!res || !res.ok) {
-          tbody.innerHTML = `
-            <tr><td colspan="6" class="text-center text-danger small">Erro ao carregar empresas.</td></tr>
-          `;
-          return;
-        }
-        const data = await res.json();
-        if (!data.length) {
-          tbody.innerHTML = `
-            <tr><td colspan="6" class="text-center text-muted small">Nenhuma empresa cadastrada ainda.</td></tr>
-          `;
-          return;
-        }
-        tbody.innerHTML = '';
-        data.forEach(c => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${c.id}</td>
-            <td>${c.cnpj}</td>
-            <td>${c.name}</td>
-            <td><span class="text-muted small">${(c.access_key || '').slice(0, 18)}...</span></td>
-            <td>
-              <span class="badge-status ${c.is_active ? 'active' : 'inactive'}">
-                ${c.is_active ? 'Ativa' : 'Inativa'}
-              </span>
-            </td>
-            <td>
-              <button class="btn btn-sm btn-outline-light me-1" onclick='editCompany(${JSON.stringify(c)})'>
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button class="btn btn-sm btn-outline-danger" onclick="deleteCompany(${c.id})">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        console.error(err);
-        tbody.innerHTML = `
-          <tr><td colspan="6" class="text-center text-danger small">Erro ao carregar empresas.</td></tr>
-        `;
-      }
-    }
+  data = data.filter(c => {
+    if (fName && !c.name.toLowerCase().includes(fName)) return false;
+    if (fCnpj && !c.cnpj.toLowerCase().includes(fCnpj)) return false;
+    if (fAct && String(c.is_active) !== fAct) return false;
+    return true;
+  });
 
-    function openCompanyFormModal() {
-      document.getElementById('company-form').reset();
-      document.getElementById('company-id').value = '';
-      document.getElementById('company-modal-error').textContent = '';
-      document.getElementById('company-active').checked = true;
-      companyModalInstance && companyModalInstance.show();
-    }
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted small">Nenhum registro.</td></tr>`;
+    return;
+  }
 
-    function editCompany(c) {
-      document.getElementById('company-id').value = c.id;
-      document.getElementById('company-cnpj').value = c.cnpj || '';
-      document.getElementById('company-name').value = c.name || '';
-      document.getElementById('company-access-key').value = c.access_key || '';
-      document.getElementById('company-active').checked = c.is_active;
-      document.getElementById('company-modal-error').textContent = '';
-      companyModalInstance && companyModalInstance.show();
-    }
+  tbody.innerHTML = "";
+  for (const c of data) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${c.id}</td>
+      <td>${c.cnpj}</td>
+      <td>${c.name}</td>
+      <td class="text-muted small">${(c.access_key || "").slice(0, 18)}...</td>
+      <td><span class="badge-status ${c.is_active ? "active":"inactive"}">${c.is_active?"Ativa":"Inativa"}</span></td>
+      <td>
+        <button class="btn btn-sm btn-outline-light me-1" onclick='editCompany(${JSON.stringify(c)})'>
+          <i class="bi bi-pencil"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-danger" onclick="deleteCompany(${c.id})">
+          <i class="bi bi-trash"></i>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
 
-    async function saveCompany() {
-      const id = document.getElementById('company-id').value;
-      const cnpj = document.getElementById('company-cnpj').value.trim();
-      const name = document.getElementById('company-name').value.trim();
-      const accessKey = document.getElementById('company-access-key').value.trim();
-      const active = document.getElementById('company-active').checked;
-      const errorEl = document.getElementById('company-modal-error');
-      errorEl.textContent = '';
+function openCompanyFormModal() {
+  document.getElementById("company-id").value = "";
+  document.getElementById("company-form").reset();
+  document.getElementById("company-modal-error").textContent = "";
+  companyModalInstance.show();
+}
 
-      if (!cnpj || !name || !accessKey) {
-        errorEl.textContent = 'Preencha CNPJ, nome e chave de acesso.';
-        return;
-      }
+function editCompany(c) {
+  document.getElementById("company-id").value = c.id;
+  document.getElementById("company-cnpj").value = c.cnpj;
+  document.getElementById("company-name").value = c.name;
+  document.getElementById("company-access-key").value = c.access_key;
+  document.getElementById("company-active").checked = c.is_active;
 
-      const payload = {
-        cnpj,
-        name,
-        access_key: accessKey,
-        is_active: active
-      };
+  document.getElementById("company-modal-error").textContent = "";
+  companyModalInstance.show();
+}
 
-      try {
-        let res;
-        if (id) {
-          res = await authorizedFetch(`${API_BASE}/companies/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(payload)
-          });
-        } else {
-          res = await authorizedFetch(`${API_BASE}/companies`, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-          });
-        }
+async function saveCompany() {
+  const id = document.getElementById("company-id").value;
+  const payload = {
+    cnpj: document.getElementById("company-cnpj").value,
+    name: document.getElementById("company-name").value,
+    access_key: document.getElementById("company-access-key").value,
+    is_active: document.getElementById("company-active").checked
+  };
 
-        if (!res || !res.ok) {
-          const data = await res.json().catch(() => ({}));
-          errorEl.textContent = data.error || 'Erro ao salvar empresa.';
-          return;
-        }
+  const errorEl = document.getElementById("company-modal-error");
 
-        companyModalInstance && companyModalInstance.hide();
-        loadCompanies();
-      } catch (err) {
-        console.error(err);
-        errorEl.textContent = 'Erro de rede ao salvar empresa.';
-      }
-    }
+  let res;
+  if (id) {
+    res = await authorizedFetch(`${API_BASE}/companies/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload)
+    });
+  } else {
+    res = await authorizedFetch(`${API_BASE}/companies`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  }
 
-    async function deleteCompany(id) {
-      if (!confirm('Tem certeza que deseja excluir esta empresa?')) return;
-      try {
-        const res = await authorizedFetch(`${API_BASE}/companies/${id}`, {
-          method: 'DELETE'
-        });
-        if (!res || (res.status !== 200 && res.status !== 204)) {
-          alert('Erro ao excluir empresa.');
-          return;
-        }
-        loadCompanies();
-      } catch (err) {
-        console.error(err);
-        alert('Erro de rede ao excluir empresa.');
-      }
-    }
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    errorEl.textContent = err.error || "Erro ao salvar.";
+    return;
+  }
 
-    // ===== Notas =====
-    async function loadInvoices() {
-      const tbody = document.getElementById('invoices-tbody');
-      const jsonOut = document.getElementById('invoices-json-output');
-      tbody.innerHTML = `
-        <tr><td colspan="8" class="text-center text-muted small">Carregando...</td></tr>
-      `;
-      jsonOut.textContent = '[]';
-      try {
-        const res = await authorizedFetch(`${API_BASE}/invoices`);
-        if (!res || !res.ok) {
-          tbody.innerHTML = `
-            <tr><td colspan="8" class="text-center text-danger small">Erro ao carregar notas.</td></tr>
-          `;
-          return;
-        }
-        const data = await res.json();
-        jsonOut.textContent = JSON.stringify(data, null, 2);
+  companyModalInstance.hide();
+  loadCompanies();
+}
 
-        if (!data.length) {
-          tbody.innerHTML = `
-            <tr><td colspan="8" class="text-center text-muted small">Nenhuma nota encontrada.</td></tr>
-          `;
-          return;
-        }
-        tbody.innerHTML = '';
-        data.forEach(inv => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${inv.id}</td>
-            <td>${inv.Customer ? inv.Customer.name : inv.customer_id}</td>
-            <td>${inv.Company ? inv.Company.name : inv.company_id}</td>
-            <td>${formatDateTime(inv.issued_at)}</td>
-            <td>${formatCurrency(inv.total_amount)}</td>
-            <td>${inv.paid_amount != null ? formatCurrency(inv.paid_amount) : '-'}</td>
-            <td>${Number(inv.fee_percent).toFixed(2)}% (${formatCurrency(inv.fee_value)})</td>
-            <td>
-              <span class="badge-status ${inv.status === 'EMITIDA' ? 'active' : 'inactive'}">
-                ${inv.status}
-              </span>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        console.error(err);
-        tbody.innerHTML = `
-          <tr><td colspan="8" class="text-center text-danger small">Erro ao carregar notas.</td></tr>
-        `;
-      }
-    }
+async function deleteCompany(id) {
+  if (!confirm("Excluir empresa?")) return;
+  const res = await authorizedFetch(`${API_BASE}/companies/${id}`, { method:"DELETE" });
+  if (res.ok) loadCompanies();
+}
 
-    // ===== Relatórios =====
-    async function loadSummary() {
-      try {
-        const start = document.getElementById('report-start').value;
-        const end = document.getElementById('report-end').value;
-        const customerId = document.getElementById('report-customer-id').value;
+/* ==========================
+   NOTAS
+========================== */
+async function loadInvoices() {
+  const tbody = document.getElementById("invoices-tbody");
+  const jsonOut = document.getElementById("invoices-json-output");
 
-        const params = new URLSearchParams();
-        if (start) params.append('start', start);
-        if (end) params.append('end', end);
-        if (customerId) params.append('customer_id', customerId);
+  tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted small">Carregando...</td></tr>`;
+  jsonOut.textContent = "[]";
 
-        const url = `${API_BASE}/reports/summary?${params.toString()}`;
-        const res = await authorizedFetch(url);
-        if (!res || !res.ok) {
-          alert('Erro ao gerar relatório.');
-          return;
-        }
-        const data = await res.json();
+  const res = await authorizedFetch(`${API_BASE}/invoices`);
+  if (!res.ok) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-danger text-center small">Erro ao carregar.</td></tr>`;
+    return;
+  }
 
-        const totals = data.totals || {};
-        document.getElementById('rep-total-notas').textContent = totals.total_notas || 0;
-        document.getElementById('rep-soma-valor').textContent = formatCurrency(totals.soma_valor_total || 0);
-        document.getElementById('rep-soma-taxas').textContent = formatCurrency(totals.soma_taxas || 0);
+  let data = await res.json();
+  jsonOut.textContent = JSON.stringify(data, null, 2);
 
-        document.getElementById('reports-output').textContent = JSON.stringify(
-          data.porCliente || [],
-          null,
-          2
-        );
-      } catch (err) {
-        console.error(err);
-        alert('Erro de rede ao carregar relatório.');
-      }
-    }
-  </script>
+  const fCust = document.getElementById("filter-inv-customer").value;
+  const fComp = document.getElementById("filter-inv-company").value;
+  const fStart = document.getElementById("filter-inv-start").value;
+  const fEnd = document.getElementById("filter-inv-end").value;
+  const fMin = document.getElementById("filter-inv-min").value;
+  const fMax = document.getElementById("filter-inv-max").value;
+  const fStatus = document.getElementById("filter-inv-status").value;
+
+  data = data.filter(inv => {
+    if (fCust && inv.customer_id != fCust) return false;
+    if (fComp && inv.company_id != fComp) return false;
+    if (fStatus && inv.status !== fStatus) return false;
+
+    const dt = new Date(inv.issued_at);
+    if (fStart && dt < new Date(fStart)) return false;
+    if (fEnd && dt > new Date(fEnd + "T23:59:59")) return false;
+
+    if (fMin && inv.total_amount < Number(fMin)) return false;
+    if (fMax && inv.total_amount > Number(fMax)) return false;
+
+    return true;
+  });
+
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted small">Nenhuma nota encontrada.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = "";
+  for (const inv of data) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${inv.id}</td>
+      <td>${inv.Customer ? inv.Customer.name : inv.customer_id}</td>
+      <td>${inv.Company ? inv.Company.name : inv.company_id}</td>
+      <td>${formatDateTime(inv.issued_at)}</td>
+      <td>${formatCurrency(inv.total_amount)}</td>
+      <td>${inv.paid_amount ? formatCurrency(inv.paid_amount) : "-"}</td>
+      <td>${inv.fee_percent}% (${formatCurrency(inv.fee_value)})</td>
+      <td><span class="badge-status ${inv.status === "EMITIDA"?"active":"inactive"}">${inv.status}</span></td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+/* ==========================
+   RELATÓRIO
+========================== */
+async function loadSummary() {
+  const params = new URLSearchParams();
+  const start = document.getElementById("report-start").value;
+  const end   = document.getElementById("report-end").value;
+  const cust  = document.getElementById("report-customer-id").value;
+
+  if (start) params.append("start", start);
+  if (end) params.append("end", end);
+  if (cust) params.append("customer_id", cust);
+
+  const res = await authorizedFetch(`${API_BASE}/reports/summary?${params.toString()}`);
+
+  if (!res.ok) return alert("Erro ao gerar relatório.");
+
+  const data = await res.json();
+  const t = data.totals || {};
+
+  document.getElementById("rep-total-notas").textContent = t.total_notas || 0;
+  document.getElementById("rep-soma-valor").textContent = formatCurrency(t.soma_valor_total || 0);
+  document.getElementById("rep-soma-taxas").textContent = formatCurrency(t.soma_taxas || 0);
+
+  document.getElementById("reports-output").textContent =
+    JSON.stringify(data.porCliente || [], null, 2);
+}
+</script>
+
 </body>
 </html>
