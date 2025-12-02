@@ -98,8 +98,8 @@ router.get("/summary", async (req, res) => {
         [fn("SUM", col("Invoice.total_amount")), "soma_valor_total"],
         [col("Customer.name"), "customer_name"],
       ],
-      group: ["customer_id", "Customer.id"],
-      order: [[literal("soma_valor_total"), "DESC"]],
+      group: ["customer_id", "Customer.id", "Customer.name"],
+      order: [[fn("SUM", col("Invoice.total_amount")), "DESC"]],
       raw: true,
     });
 
@@ -120,8 +120,8 @@ router.get("/summary", async (req, res) => {
         [fn("SUM", col("Invoice.total_amount")), "soma_valor_total"],
         [col("Company.name"), "company_name"],
       ],
-      group: ["company_id", "Company.id"],
-      order: [[literal("soma_valor_total"), "DESC"]],
+      group: ["company_id", "Company.id", "Company.name"],
+      order: [[fn("SUM", col("Invoice.total_amount")), "DESC"]],
       raw: true,
     });
 
