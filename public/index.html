@@ -1816,19 +1816,22 @@
       // NAV / PAGES
       // ==========================
       function selectPage(page, anchor) {
+        // mostra apenas a seção selecionada
         document.querySelectorAll(".page-section").forEach((sec) => sec.classList.remove("active"));
         const pageEl = document.getElementById("page-" + page);
         if (pageEl) pageEl.classList.add("active");
 
+        // marca item ativo no menu
         document.querySelectorAll(".nav-item").forEach((item) => item.classList.remove("active"));
         if (anchor && page === "pos") {
-          document.querySelectorAll(`.nav-item[data-page="pos"]`).forEach((item) => {
+          document.querySelectorAll('.nav-item[data-page="pos"]').forEach((item) => {
             if (item.getAttribute("data-anchor") === anchor) item.classList.add("active");
           });
         } else {
           document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add("active");
         }
 
+        // textos topbar
         const topbarTitle = document.getElementById("topbarTitle");
         const topbarSubtitle = document.getElementById("topbarSubtitle");
 
@@ -1854,6 +1857,7 @@
           loadRelatorios();
         }
 
+        // ações ao entrar em páginas
         if (page === "notas") {
           resetNotasInfiniteScroll();
           loadNotasPage(true);
@@ -1867,42 +1871,6 @@
             const el = document.getElementById(anchor);
             if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
           }
-        }
-      }"]`)
-          ?.classList.add("active");
-
-        const topbarTitle = document.getElementById("topbarTitle");
-        const topbarSubtitle = document.getElementById("topbarSubtitle");
-
-        if (page === "dashboard") {
-          topbarTitle.textContent = "Dashboard";
-          topbarSubtitle.textContent =
-            "Visão geral das notas fiscais, clientes e empresas";
-        } else if (page === "clientes") {
-          topbarTitle.textContent = "Clientes";
-          topbarSubtitle.textContent =
-            "Gestão de clientes identificados por WhatsApp";
-        } else if (page === "empresas") {
-          topbarTitle.textContent = "Empresas emissoras";
-          topbarSubtitle.textContent =
-            "Configuração das empresas que podem emitir notas";
-        } else if (page === "notas") {
-          topbarTitle.textContent = "Notas fiscais";
-          topbarSubtitle.textContent =
-            "Listagem das notas emitidas com carregamento automático";
-        } else if (page === "pos") {  topbarTitle.textContent = "Maquininhas";  topbarSubtitle.textContent = "Empresas, terminais, taxas e vendas de POS";  loadPosCompanies(); loadPosTerminals(); loadPosVendasRecentes(); loadPosResumo(); } else if (page === "relatorios") {
-          topbarTitle.textContent = "Relatórios";
-          topbarSubtitle.textContent =
-            "Análises consolidadas por período, cliente e empresa";
-
-          // Ao entrar em relatórios, garantir selects populados
-          populateRelatorioSelects();
-          loadRelatorios();
-        }
-
-        if (page === "notas") {
-          resetNotasInfiniteScroll();
-          loadNotasPage(true);
         }
       }
 
@@ -3131,7 +3099,8 @@
         // Sidebar nav
         document.querySelectorAll(".nav-item[data-page]").forEach((item) => {
           item.addEventListener("click", () => {
-            selectPage(item.dataset.page);
+            const anchor = item.getAttribute("data-anchor");
+            selectPage(item.dataset.page, anchor);
             if (window.innerWidth <= 900) {
               document.getElementById("sidebar").classList.remove("open");
               document
