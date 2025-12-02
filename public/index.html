@@ -974,6 +974,14 @@
                       </select>
                     </div>
                   </div>
+                  <div class="form-row">
+                    <div class="form-group checkbox">
+                      <label><input type="checkbox" id="clienteUsaNF" checked /> Ativo para Nota Fiscal</label>
+                    </div>
+                    <div class="form-group checkbox">
+                      <label><input type="checkbox" id="clienteUsaPOS" /> Ativo no POS</label>
+                    </div>
+                  </div>
                   <div style="display: flex; justify-content: flex-end; gap: 8px">
                     <button id="btnCancelCliente" class="btn-secondary">Cancelar</button>
                     <button id="btnSaveCliente" class="btn-primary">Salvar</button>
@@ -1189,9 +1197,13 @@
                 <div class="form-group"><label>CNPJ</label><input id="posCompanyCnpj" /></div>
                 <div class="form-group" style="max-width:140px"><label>Status</label><select id="posCompanyAtiva"><option value="true">Ativa</option><option value="false">Inativa</option></select></div>
               </div>
-              <button class="btn-primary" id="btnPosAddCompany">Cadastrar</button>
+              <div class="form-row">
+                <div class="form-group"><label>Buscar (nome/CNPJ)</label><input id="posCompanySearch" placeholder="Filtrar" /></div>
+                <div class="form-group"><label>&nbsp;</label><button class="btn-secondary" id="btnPosLimparCompany" style="width:100%">Novo / limpar</button></div>
+              </div>
+              <button class="btn-primary" id="btnPosAddCompany">Salvar empresa</button>
               <div class="table-wrapper" style="max-height:200px; margin-top:10px">
-                <table><thead><tr><th>ID</th><th>Nome</th><th>CNPJ</th><th>Status</th></tr></thead><tbody id="posCompaniesTableBody"></tbody></table>
+                <table><thead><tr><th>ID</th><th>Nome</th><th>CNPJ</th><th>Status</th><th>Acoes</th></tr></thead><tbody id="posCompaniesTableBody"></tbody></table>
               </div>
             </div>
           </section>
@@ -1210,9 +1222,13 @@
                 <div class="form-group"><label>Codigo</label><input id="posTerminalCode" /></div>
                 <div class="form-group" style="max-width:140px"><label>Status</label><select id="posTerminalAtivo"><option value="true">Ativo</option><option value="false">Inativo</option></select></div>
               </div>
-              <button class="btn-primary" id="btnPosAddTerminal">Cadastrar</button>
+              <div class="form-row">
+                <div class="form-group"><label>Buscar terminal / empresa / cliente</label><input id="posTerminalSearch" placeholder="Filtrar" /></div>
+                <div class="form-group"><label>&nbsp;</label><button class="btn-secondary" id="btnPosLimparTerminal" style="width:100%">Novo / limpar</button></div>
+              </div>
+              <button class="btn-primary" id="btnPosAddTerminal">Salvar terminal</button>
               <div class="table-wrapper" style="max-height:200px; margin-top:10px">
-                <table><thead><tr><th>ID</th><th>Terminal</th><th>Empresa</th><th>Cliente</th><th>Status</th></tr></thead><tbody id="posTerminalsTableBody"></tbody></table>
+                <table><thead><tr><th>ID</th><th>Terminal</th><th>Empresa</th><th>Cliente</th><th>Status</th><th>Acoes</th></tr></thead><tbody id="posTerminalsTableBody"></tbody></table>
               </div>
             </div>
           </section>
@@ -1227,7 +1243,7 @@
               </div>
               <div class="form-row">
                 <div class="form-group checkbox"><label><input type="checkbox" id="posCliAtivo" checked /> Ativo no POS</label></div>
-                <div class="form-group checkbox"><label><input type="checkbox" id="posCliUsaNF" /> Tambem usa Nota Fiscal</label></div>
+                <div class="form-group checkbox"><label><input type="checkbox" id="posCliUsaNF" /> Ativo para Nota Fiscal</label></div>
               </div>
               <div class="form-row">
                 <div class="form-group"><label>Busca cliente (nome/Whats)</label><input id="posCliSearch" placeholder="Buscar" /></div>
@@ -1258,6 +1274,7 @@
               <div class="card-header"><div><div class="card-title">Registrar venda</div><div class="card-subtitle">Terminal, data/hora, valor, forma, NSU</div></div></div>
               <div class="form-row">
                 <div class="form-group"><label>Terminal</label><select id="posVendaTerminal"></select></div>
+                <div class="form-group"><label>Buscar terminal/cliente</label><input id="posVendaTerminalSearch" placeholder="Filtrar" /></div>
                 <div class="form-group"><label>Data/hora</label><input id="posVendaData" type="datetime-local" /></div>
               </div>
               <div class="form-row">
@@ -1265,14 +1282,17 @@
                 <div class="form-group"><label>Forma</label><select id="posVendaForma"><option value="DEBITO">Debito</option><option value="CREDITO_AVISTA">Credito a vista</option><option value="CREDITO_2A6">Credito 2 a 6x</option><option value="CREDITO_7A12">Credito 7 a 12x</option><option value="PIX">PIX</option></select></div>
                 <div class="form-group"><label>NSU</label><input id="posVendaNsu" /></div>
               </div>
-              <button class="btn-primary" id="btnPosRegistrarVenda">Registrar venda</button>
+              <div class="form-row">
+                <div class="form-group"><label>&nbsp;</label><button class="btn-secondary" id="btnPosLimparVenda" style="width:100%">Novo / limpar</button></div>
+              </div>
+              <button class="btn-primary" id="btnPosRegistrarVenda">Salvar venda</button>
               <div id="posVendaMsg" class="success-text" style="display:none; margin-top:8px"></div>
             </div>
             <div class="card pos-block" style="margin-top: 12px">
               <div class="card-header"><div><div class="card-title">Vendas recentes</div><div class="card-subtitle">Ultimas 50 vendas</div></div></div>
               <div class="table-wrapper" style="max-height: 220px">
                 <table>
-                  <thead><tr><th>Data</th><th>Cliente</th><th>Terminal</th><th>Forma</th><th>Bruto</th><th>Taxa</th><th>Liquido</th></tr></thead>
+                  <thead><tr><th>Data</th><th>Cliente</th><th>Terminal</th><th>Forma</th><th>Bruto</th><th>Taxa</th><th>Liquido</th><th>Acoes</th></tr></thead>
                   <tbody id="posVendasTableBody"></tbody>
                 </table>
               </div>
@@ -1282,15 +1302,19 @@
           <section id="page-pos-resumo" class="page-section">
             <div class="card pos-block">
               <div class="card-header"><div><div class="card-title">Resumo POS</div><div class="card-subtitle">Bruto, liquido, taxas</div></div><button class="btn-secondary" id="btnPosCarregarResumo">Atualizar</button></div>
-              <div class="grid grid-2">
-                <div class="metric-card"><div class="metric-label">Bruto</div><div class="metric-value" id="posResumoBruto">—</div></div>
-                <div class="metric-card"><div class="metric-label">Liquido</div><div class="metric-value" id="posResumoLiquido">—</div></div>
+              <div class="form-row" style="margin-bottom:8px">
+                <div class="form-group"><label>Data inicial</label><input id="posResumoIni" type="date" /></div>
+                <div class="form-group"><label>Data final</label><input id="posResumoFim" type="date" /></div>
               </div>
-              <div class="metric-card" style="margin-top:10px"><div class="metric-label">Taxas</div><div class="metric-value" id="posResumoTaxas">—</div></div>
+              <div class="grid grid-2">
+                <div class="metric-card"><div class="metric-label">Bruto</div><div class="metric-value" id="posResumoBruto">?</div></div>
+                <div class="metric-card"><div class="metric-label">Liquido</div><div class="metric-value" id="posResumoLiquido">?</div></div>
+              </div>
+              <div class="metric-card" style="margin-top:10px"><div class="metric-label">Taxas</div><div class="metric-value" id="posResumoTaxas">?</div></div>
               <div style="margin-top:10px; font-size:13px; display:flex; flex-direction:column; gap:6px">
-                <div><strong>Top cliente periodo:</strong> <span id="posResumoTopCliente">—</span></div>
-                <div><strong>Top cliente hoje:</strong> <span id="posResumoTopDia">—</span></div>
-                <div><strong>Maior venda:</strong> <span id="posResumoMaiorVenda">—</span></div>
+                <div><strong>Top cliente periodo:</strong> <span id="posResumoTopCliente">?</span></div>
+                <div><strong>Top cliente hoje:</strong> <span id="posResumoTopDia">?</span></div>
+                <div><strong>Maior venda:</strong> <span id="posResumoMaiorVenda">?</span></div>
               </div>
             </div>
           </section>
@@ -2339,12 +2363,16 @@
           document.getElementById("clienteAtivo").value = cliente.is_active
             ? "true"
             : "false";
+          document.getElementById("clienteUsaNF").checked = cliente.uses_nf !== false;
+          document.getElementById("clienteUsaPOS").checked = cliente.uses_pos === true;
         } else {
           editingClienteId = null;
           document.getElementById("clienteNome").value = "";
           document.getElementById("clienteWhats").value = "";
           document.getElementById("clienteTaxa").value = "";
           document.getElementById("clienteAtivo").value = "true";
+          document.getElementById("clienteUsaNF").checked = true;
+          document.getElementById("clienteUsaPOS").checked = false;
         }
       }
 
@@ -2358,6 +2386,8 @@
         const whats = document.getElementById("clienteWhats").value.trim();
         const taxa = document.getElementById("clienteTaxa").value.trim();
         const ativo = document.getElementById("clienteAtivo").value === "true";
+        const usaNF = document.getElementById("clienteUsaNF").checked;
+        const usaPOS = document.getElementById("clienteUsaPOS").checked;
         const errEl = document.getElementById("clienteFormError");
 
         errEl.style.display = "none";
@@ -2373,6 +2403,8 @@
           whatsapp_number: whats,
           fee_percent: parseFloat(taxa),
           is_active: ativo,
+          uses_nf: usaNF,
+          uses_pos: usaPOS,
         };
 
         try {
@@ -2761,6 +2793,9 @@ let posCompanies = [];
       let posVendasRecentes = [];
       let posClientes = [];
       let currentPosClienteId = null;
+      let currentPosCompanyId = null;
+      let currentPosTerminalId = null;
+      let currentPosVendaId = null;
 
       async function loadPosCompanies() {
         try {
@@ -2772,91 +2807,77 @@ let posCompanies = [];
         }
       }
 
-      function populateRelatorioSelects(clis = clientes, emps = empresas) {
-        const selCli = document.getElementById("relClienteSelect");
-        const selEmp = document.getElementById("relEmpresaSelect");
-        const searchCli =
-          (document.getElementById("relClienteSearch")?.value || "").toLowerCase();
-        const searchEmp =
-          (document.getElementById("relEmpresaSearch")?.value || "").toLowerCase();
-        const empStatus = document.getElementById("relEmpresaAtivo")?.value || "all";
-
-        const filteredClientes = (clis || [])
-          .filter((c) => c.uses_nf !== false)
-          .filter((c) => {
-            if (!searchCli) return true;
-            const term = searchCli;
-            const name = (c.name || "").toLowerCase();
-            const whats = (c.whatsapp_number || "").toLowerCase();
-            return name.includes(term) || whats.includes(term) || whats.replace(/\D/g, "").includes(term.replace(/\D/g, ""));
-          });
-
-        if (selCli) {
-          selCli.innerHTML =
-            '<option value="">Selecione um cliente</option>' +
-            filteredClientes
-              .map(
-                (c) =>
-                  `<option value="${c.id}">${c.name}${
-                    c.whatsapp_number ? " (" + c.whatsapp_number + ")" : ""
-                  }</option>`
-              )
-              .join("");
-        }
-
-        const filteredEmpresas = (emps || [])
-          .filter((e) => {
-            if (empStatus === "true") return e.is_active !== false;
-            if (empStatus === "false") return e.is_active === false;
-            return true;
-          })
-          .filter((e) => {
-            if (!searchEmp) return true;
-            const term = searchEmp;
-            const name = (e.name || "").toLowerCase();
-            const cnpj = (e.cnpj || "").replace(/\D/g, "");
-            return name.includes(term) || cnpj.includes(term.replace(/\D/g, ""));
-          });
-
-        if (selEmp) {
-          selEmp.innerHTML =
-            '<option value="">Selecione uma empresa</option>' +
-            filteredEmpresas
-              .map((e) => `<option value="${e.id}">${e.name}</option>`)
-              .join("");
-        }
+      function renderPosCompanies() {
+        const tbody = document.getElementById("posCompaniesTableBody");
+        if (!tbody) return;
+        const term = (document.getElementById("posCompanySearch")?.value || "").toLowerCase();
+        const filtered = (posCompanies || []).filter((c) => {
+          if (!term) return true;
+          const nome = (c.name || "").toLowerCase();
+          const cnpj = (c.cnpj || "").replace(/\D/g, "");
+          const tclean = term.replace(/\D/g, "");
+          return nome.includes(term) || cnpj.includes(tclean);
+        });
+        tbody.innerHTML = filtered
+          .map((c) => `
+            <tr data-id="${c.id}">
+              <td>${c.id}</td>
+              <td>${c.name}</td>
+              <td>${c.cnpj}</td>
+              <td>${c.is_active ? "Ativa" : "Inativa"}</td>
+              <td>
+                <button class="btn-secondary" data-edit-pos-company="${c.id}">Editar</button>
+                <button class="btn-danger" data-del-pos-company="${c.id}">Excluir</button>
+              </td>
+            </tr>
+          `)
+          .join("");
       }
 
-      async function addPosCompany() {
+      function resetPosCompanyForm() {
+        currentPosCompanyId = null;
+        document.getElementById("posCompanyName").value = "";
+        document.getElementById("posCompanyCnpj").value = "";
+        document.getElementById("posCompanyAtiva").value = "true";
+        const btn = document.getElementById("btnPosAddCompany");
+        if (btn) btn.textContent = "Salvar empresa";
+      }
+
+      async function savePosCompany() {
         const name = document.getElementById("posCompanyName").value.trim();
         const cnpj = document.getElementById("posCompanyCnpj").value.trim();
         const is_active = document.getElementById("posCompanyAtiva").value === "true";
         if (!name || !cnpj) return alert("Informe nome e CNPJ");
         try {
-          await apiFetch("/api/pos/companies", {
-            method: "POST",
-            body: JSON.stringify({ name, cnpj, is_active }),
-          });
+          if (currentPosCompanyId) {
+            await apiFetch(`/api/pos/companies/${currentPosCompanyId}`, {
+              method: "PUT",
+              body: JSON.stringify({ name, cnpj, is_active }),
+            });
+          } else {
+            await apiFetch("/api/pos/companies", {
+              method: "POST",
+              body: JSON.stringify({ name, cnpj, is_active }),
+            });
+          }
           await loadPosCompanies();
+          resetPosCompanyForm();
         } catch (err) {
-          alert("Erro ao cadastrar empresa POS");
+          alert("Erro ao salvar empresa POS");
           console.error(err);
         }
       }
 
-      function renderPosCompanies() {
-        const tbody = document.getElementById("posCompaniesTableBody");
-        if (!tbody) return;
-        tbody.innerHTML = (posCompanies || [])
-          .map((c) => `
-            <tr>
-              <td>${c.id}</td>
-              <td>${c.name}</td>
-              <td>${c.cnpj}</td>
-              <td>${c.is_active ? "Ativa" : "Inativa"}</td>
-            </tr>
-          `)
-          .join("");
+      async function deletePosCompany(id) {
+        if (!confirm("Excluir empresa?")) return;
+        try {
+          await apiFetch(`/api/pos/companies/${id}`, { method: "DELETE" });
+          await loadPosCompanies();
+          fillPosSelects();
+        } catch (err) {
+          alert("Erro ao excluir empresa POS");
+          console.error(err);
+        }
       }
 
       async function loadPosTerminals() {
@@ -2869,41 +2890,93 @@ let posCompanies = [];
         }
       }
 
-      async function addPosTerminal() {
-        const pos_company_id = document.getElementById("posTerminalEmpresa").value;
-        const customer_id = document.getElementById("posTerminalCliente").value;
-        const terminal_code = document.getElementById("posTerminalCode").value.trim();
-        const is_active = document.getElementById("posTerminalAtivo").value === "true";
-        if (!pos_company_id || !customer_id || !terminal_code) return alert("Preencha empresa, cliente e código");
-        try {
-          await apiFetch("/api/pos/terminals", {
-            method: "POST",
-            body: JSON.stringify({ pos_company_id, customer_id, terminal_code, is_active }),
-          });
-          await loadPosTerminals();
-        } catch (err) {
-          alert("Erro ao cadastrar terminal");
-          console.error(err);
-        }
-      }
-
       function renderPosTerminals() {
         const tbody = document.getElementById("posTerminalsTableBody");
         if (!tbody) return;
-        tbody.innerHTML = (posTerminals || [])
+        const term = (document.getElementById("posTerminalSearch")?.value || "").toLowerCase();
+        const filtered = (posTerminals || []).filter((t) => {
+          if (!term) return true;
+          const code = (t.terminal_code || "").toLowerCase();
+          const emp = (t.PosCompany?.name || "").toLowerCase();
+          const cli = (t.Customer?.name || "").toLowerCase();
+          return code.includes(term) || emp.includes(term) || cli.includes(term);
+        });
+        tbody.innerHTML = filtered
           .map((t) => `
-            <tr>
+            <tr data-id="${t.id}">
               <td>${t.id}</td>
               <td>${t.terminal_code}</td>
-              <td>${t.PosCompany?.name || "—"}</td>
-              <td>${t.Customer?.name || "—"}</td>
+              <td>${t.PosCompany?.name || "?"}</td>
+              <td>${t.Customer?.name || "?"}</td>
               <td>${t.is_active ? "Ativo" : "Inativo"}</td>
+              <td>
+                <button class="btn-secondary" data-edit-pos-terminal="${t.id}">Editar</button>
+                <button class="btn-danger" data-del-pos-terminal="${t.id}">Excluir</button>
+              </td>
             </tr>
           `)
           .join("");
       }
 
-      function fillPosSelects() {
+      function resetPosTerminalForm() {
+        currentPosTerminalId = null;
+        document.getElementById("posTerminalEmpresa").value = "";
+        document.getElementById("posTerminalCliente").value = "";
+        document.getElementById("posTerminalCode").value = "";
+        document.getElementById("posTerminalAtivo").value = "true";
+        const btn = document.getElementById("btnPosAddTerminal");
+        if (btn) btn.textContent = "Salvar terminal";
+      }
+
+      function populatePosTerminalForm(t) {
+        currentPosTerminalId = t?.id || null;
+        document.getElementById("posTerminalEmpresa").value = t?.pos_company_id || "";
+        document.getElementById("posTerminalCliente").value = t?.customer_id || "";
+        document.getElementById("posTerminalCode").value = t?.terminal_code || "";
+        document.getElementById("posTerminalAtivo").value = t?.is_active === false ? "false" : "true";
+        const btn = document.getElementById("btnPosAddTerminal");
+        if (btn) btn.textContent = t ? "Atualizar terminal" : "Salvar terminal";
+      }
+
+      async function savePosTerminal() {
+        const pos_company_id = document.getElementById("posTerminalEmpresa").value;
+        const customer_id = document.getElementById("posTerminalCliente").value;
+        const terminal_code = document.getElementById("posTerminalCode").value.trim();
+        const is_active = document.getElementById("posTerminalAtivo").value === "true";
+        if (!pos_company_id || !customer_id || !terminal_code) return alert("Preencha todos os campos");
+        try {
+          if (currentPosTerminalId) {
+            await apiFetch(`/api/pos/terminals/${currentPosTerminalId}`, {
+              method: "PUT",
+              body: JSON.stringify({ pos_company_id, customer_id, terminal_code, is_active }),
+            });
+          } else {
+            await apiFetch("/api/pos/terminals", {
+              method: "POST",
+              body: JSON.stringify({ pos_company_id, customer_id, terminal_code, is_active }),
+            });
+          }
+          await loadPosTerminals();
+          resetPosTerminalForm();
+        } catch (err) {
+          alert("Erro ao salvar terminal");
+          console.error(err);
+        }
+      }
+
+      async function deletePosTerminal(id) {
+        if (!confirm("Excluir terminal?")) return;
+        try {
+          await apiFetch(`/api/pos/terminals/${id}`, { method: "DELETE" });
+          await loadPosTerminals();
+          fillPosSelects();
+        } catch (err) {
+          alert("Erro ao excluir terminal");
+          console.error(err);
+        }
+      }
+
+function fillPosSelects() {
         const selEmp = document.getElementById("posTerminalEmpresa");
         const selCli = document.getElementById("posTerminalCliente");
         const selRateCli = document.getElementById("posRateCliente");
@@ -2928,6 +3001,13 @@ let posCompanies = [];
           selVendaTerm.innerHTML =
             '<option value="">Selecione</option>' +
             (posTerminals || [])
+              .filter((t) => {
+                const term = (document.getElementById("posVendaTerminalSearch")?.value || "").toLowerCase();
+                if (!term) return true;
+                const code = (t.terminal_code || "").toLowerCase();
+                const cli = (t.Customer?.name || "").toLowerCase();
+                return code.includes(term) || cli.includes(term);
+              })
               .map(
                 (t) => `<option value="${t.id}">${t.terminal_code} - ${t.Customer?.name || "Cliente"}</option>`
               )
@@ -2978,20 +3058,53 @@ let posCompanies = [];
         const amount = document.getElementById("posVendaValor").value;
         const payment_type = document.getElementById("posVendaForma").value;
         const nsu = document.getElementById("posVendaNsu").value.trim();
-        if (!pos_terminal_id || !sale_datetime || !amount || !nsu) return alert("Preencha terminal, data, valor e NSU");
+        if (!pos_terminal_id || !sale_datetime || !amount || !nsu) return alert("Preencha todos os campos");
+        const method = currentPosVendaId ? "PUT" : "POST";
+        const url = currentPosVendaId ? `/api/pos/sales/${currentPosVendaId}` : "/api/pos/sales";
         try {
-          await apiFetch("/api/pos/sales", {
-            method: "POST",
+          await apiFetch(url, {
+            method,
             body: JSON.stringify({ pos_terminal_id, sale_datetime, amount, payment_type, nsu }),
           });
-          document.getElementById("posVendaMsg").textContent = "Venda registrada";
+          document.getElementById("posVendaMsg").textContent = "Venda salva";
           document.getElementById("posVendaMsg").style.display = "block";
           await loadPosVendasRecentes();
           await loadPosResumo();
+          resetPosVendaForm();
         } catch (err) {
           alert("Erro ao registrar venda");
           console.error(err);
         }
+      }
+
+      function resetPosVendaForm() {
+        currentPosVendaId = null;
+        document.getElementById("posVendaTerminal").value = "";
+        document.getElementById("posVendaTerminalSearch").value = "";
+        document.getElementById("posVendaData").value = "";
+        document.getElementById("posVendaValor").value = "";
+        document.getElementById("posVendaForma").value = "DEBITO";
+        document.getElementById("posVendaNsu").value = "";
+        const btn = document.getElementById("btnPosRegistrarVenda");
+        if (btn) btn.textContent = "Salvar venda";
+        document.getElementById("posVendaMsg").style.display = "none";
+        fillPosSelects();
+      }
+
+      function populatePosVendaForm(v) {
+        currentPosVendaId = v?.id || null;
+        const searchInput = document.getElementById("posVendaTerminalSearch");
+        if (searchInput) searchInput.value = "";
+        fillPosSelects();
+        document.getElementById("posVendaTerminal").value = v?.pos_terminal_id || "";
+        document.getElementById("posVendaData").value = v?.sale_datetime
+          ? new Date(v.sale_datetime).toISOString().slice(0, 16)
+          : "";
+        document.getElementById("posVendaValor").value = v?.amount || "";
+        document.getElementById("posVendaForma").value = v?.payment_type || "DEBITO";
+        document.getElementById("posVendaNsu").value = v?.nsu || "";
+        const btn = document.getElementById("btnPosRegistrarVenda");
+        if (btn) btn.textContent = v ? "Atualizar venda" : "Salvar venda";
       }
 
       async function loadPosVendasRecentes() {
@@ -3004,111 +3117,56 @@ let posCompanies = [];
         }
       }
 
-      async function loadPosResumo() {
-        try {
-          const res = await apiFetch("/api/pos/reports/summary");
-          const bruto = Number(res?.totals?.bruto || 0);
-          const liquido = Number(res?.totals?.liquido || 0);
-          const taxas = Number(res?.totals?.taxas || 0);
-          document.getElementById("posResumoBruto").textContent = formatCurrencyBRL(bruto);
-          document.getElementById("posResumoLiquido").textContent = formatCurrencyBRL(liquido);
-          document.getElementById("posResumoTaxas").textContent = formatCurrencyBRL(taxas);
-          document.getElementById("posResumoTopCliente").textContent =
-            res?.topCliente?.Customer?.name || "—";
-          document.getElementById("posResumoTopDia").textContent =
-            res?.topDia?.Customer?.name || "—";
-          const mv = res?.maiorVenda;
-          document.getElementById("posResumoMaiorVenda").textContent = mv
-            ? `${mv.Customer?.name || "—"} - ${formatCurrencyBRL(mv.amount)}`
-            : "—";
-        } catch (err) {
-          console.error("Erro ao carregar resumo POS:", err);
-        }
-      }
-
       function renderPosVendas() {
         const tbody = document.getElementById("posVendasTableBody");
         if (!tbody) return;
         tbody.innerHTML = (posVendasRecentes || [])
           .map((v) => {
-            const dt = v.sale_datetime ? new Date(v.sale_datetime).toLocaleString("pt-BR") : "—";
+            const dt = v.sale_datetime ? new Date(v.sale_datetime).toLocaleString("pt-BR") : "?";
             return `
-              <tr>
+              <tr data-id="${v.id}">
                 <td>${dt}</td>
-                <td>${v.Customer?.name || "—"}</td>
-                <td>${v.PosTerminal?.terminal_code || "—"}</td>
+                <td>${v.Customer?.name || "?"}</td>
+                <td>${v.PosTerminal?.terminal_code || "?"}</td>
                 <td>${v.payment_type}</td>
-                <td>${formatCurrencyBRL(v.amount)}</td>
-                <td>${formatCurrencyBRL(v.fee_value)}</td>
-                <td>${formatCurrencyBRL(v.net_amount)}</td>
-                <td><button class="btn-danger" data-del-pos-sale="${v.id}">Excluir</button></td>
-              </tr>`;
+                <td>${formatCurrencyBRL(Number(v.amount || 0))}</td>
+                <td>${formatCurrencyBRL(Number(v.fee_value || 0))}</td>
+                <td>${formatCurrencyBRL(Number(v.net_amount || 0))}</td>
+                <td>
+                  <button class="btn-secondary" data-edit-pos-venda="${v.id}">Editar</button>
+                  <button class="btn-danger" data-del-pos-venda="${v.id}">Excluir</button>
+                </td>
+              </tr>
+            `;
           })
           .join("");
       }
 
-      // ==========================
-      // EVENTOS GERAIS
-      // ==========================
-      document.addEventListener("DOMContentLoaded", () => {
-        // Theme
-        document
-          .getElementById("btnThemeToggle")
-          .addEventListener("click", () => {
-            const current = document.body.getAttribute("data-theme");
-            applyTheme(current === "dark" ? "light" : "dark");
-          });
+      async function loadPosResumo() {
+        try {
+          const start = document.getElementById("posResumoIni")?.value;
+          const end = document.getElementById("posResumoFim")?.value;
+          const params = new URLSearchParams();
+          if (start) params.append("start", start);
+          if (end) params.append("end", end);
+          const res = await apiFetch(`/api/pos/reports/summary?${params.toString()}`);
+          const bruto = Number(res?.totals?.bruto || 0);
+          const taxas = Number(res?.totals?.taxas || 0);
+          const liquido = Number(res?.totals?.liquido || 0);
+          document.getElementById("posResumoBruto").textContent = formatCurrencyBRL(bruto);
+          document.getElementById("posResumoTaxas").textContent = formatCurrencyBRL(taxas);
+          document.getElementById("posResumoLiquido").textContent = formatCurrencyBRL(liquido);
+          document.getElementById("posResumoTopCliente").textContent = res.topCliente?.Customer?.name || "?";
+          document.getElementById("posResumoTopDia").textContent = res.topDia?.Customer?.name || "?";
+          document.getElementById("posResumoMaiorVenda").textContent = res.maiorVenda
+            ? `${formatCurrencyBRL(Number(res.maiorVenda.amount || 0))} - ${res.maiorVenda.Customer?.name || ""}`
+            : "?";
+        } catch (err) {
+          console.error("Erro ao carregar resumo POS:", err);
+        }
+      }
 
-        // Login
-        document.getElementById("btnLogin").addEventListener("click", doLogin);
-        document
-          .getElementById("loginPassword")
-          .addEventListener("keydown", (e) => {
-            if (e.key === "Enter") doLogin();
-          });
-        document
-          .getElementById("forgotPasswordLink")
-          .addEventListener("click", sendForgotPassword);
-
-        // Logout
-        document
-          .getElementById("btnLogout")
-          .addEventListener("click", logout);
-
-        // Sidebar nav
-        document.querySelectorAll(".nav-item[data-page]").forEach((item) => {
-          item.addEventListener("click", () => {
-            const anchor = item.getAttribute("data-anchor");
-            selectPage(item.dataset.page, anchor);
-            if (window.innerWidth <= 900) {
-              document.getElementById("sidebar").classList.remove("open");
-              document
-                .getElementById("sidebarBackdrop")
-                .classList.remove("show");
-            }
-          });
-        });
-
-        // Mobile sidebar
-        document
-          .getElementById("btnMobileMenu")
-          .addEventListener("click", () => {
-            document.getElementById("sidebar").classList.add("open");
-            document
-              .getElementById("sidebarBackdrop")
-              .classList.add("show");
-          });
-        document
-          .getElementById("sidebarBackdrop")
-          .addEventListener("click", () => {
-            document.getElementById("sidebar").classList.remove("open");
-            document
-              .getElementById("sidebarBackdrop")
-              .classList.remove("show");
-          });
-
-        // POS eventos
-        document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePosCliente);
+document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePosCliente);
         document.getElementById("btnPosNovoCliente")?.addEventListener("click", (e) => {
           e.preventDefault();
           resetPosClienteForm();
@@ -3121,16 +3179,7 @@ let posCompanies = [];
           const c = posClientes.find((x) => x.id === id);
           if (c) populatePosClienteForm(c);
         });
-        document.getElementById("btnPosAddCompany")?.addEventListener("click", addPosCompany);
-        document.getElementById("btnPosAddTerminal")?.addEventListener("click", addPosTerminal);
-        document.getElementById("btnPosSalvarTaxas")?.addEventListener("click", savePosRates);
-        document.getElementById("btnPosRegistrarVenda")?.addEventListener("click", registrarVendaPos);
-        document.getElementById("btnPosCarregarResumo")?.addEventListener("click", loadPosResumo);
-        document.getElementById("posRateCliente")?.addEventListener("change", loadPosRateForSelected);
-        document.getElementById("posVendasTableBody")?.addEventListener("click", (e) => {
-          const delId = e.target.getAttribute("data-del-pos-sale");
-          if (delId && confirm("Excluir venda?")) deletePosVenda(delId);
-        });
+        // (demais listeners de POS adicionados abaixo)
 
         // Clientes
         document
@@ -3380,11 +3429,69 @@ let posCompanies = [];
           console.error(err);
         }
       }
-document.getElementById("btnPosAddCompany")?.addEventListener("click", addPosCompany);
-        document.getElementById("btnPosAddTerminal")?.addEventListener("click", addPosTerminal);
+        document.getElementById("btnPosAddCompany")?.addEventListener("click", savePosCompany);
+        document.getElementById("btnPosLimparCompany")?.addEventListener("click", (e) => {
+          e.preventDefault();
+          resetPosCompanyForm();
+        });
+        document.getElementById("posCompanySearch")?.addEventListener("input", renderPosCompanies);
+        document.getElementById("posCompaniesTableBody")?.addEventListener("click", (e) => {
+          const edit = e.target.getAttribute("data-edit-pos-company");
+          const del = e.target.getAttribute("data-del-pos-company");
+          if (edit) {
+            const c = posCompanies.find((x) => x.id == edit);
+            if (c) {
+              currentPosCompanyId = c.id;
+              document.getElementById("posCompanyName").value = c.name;
+              document.getElementById("posCompanyCnpj").value = c.cnpj;
+              document.getElementById("posCompanyAtiva").value = c.is_active ? "true" : "false";
+              const btn = document.getElementById("btnPosAddCompany");
+              if (btn) btn.textContent = "Atualizar empresa";
+            }
+          } else if (del) {
+            deletePosCompany(del);
+          }
+        });
+
+        document.getElementById("btnPosAddTerminal")?.addEventListener("click", savePosTerminal);
+        document.getElementById("btnPosLimparTerminal")?.addEventListener("click", (e) => {
+          e.preventDefault();
+          resetPosTerminalForm();
+        });
+        document.getElementById("posTerminalSearch")?.addEventListener("input", renderPosTerminals);
+        document.getElementById("posTerminalsTableBody")?.addEventListener("click", (e) => {
+          const edit = e.target.getAttribute("data-edit-pos-terminal");
+          const del = e.target.getAttribute("data-del-pos-terminal");
+          if (edit) {
+            const t = posTerminals.find((x) => x.id == edit);
+            if (t) {
+              populatePosTerminalForm(t);
+            }
+          } else if (del) {
+            deletePosTerminal(del);
+          }
+        });
+
         document.getElementById("btnPosSalvarTaxas")?.addEventListener("click", savePosRates);
         document.getElementById("posRateCliente")?.addEventListener("change", loadPosRateForSelected);
         document.getElementById("btnPosRegistrarVenda")?.addEventListener("click", registrarVendaPos);
+        document.getElementById("btnPosLimparVenda")?.addEventListener("click", (e) => {
+          e.preventDefault();
+          resetPosVendaForm();
+        });
+        document.getElementById("posVendaTerminalSearch")?.addEventListener("input", () => {
+          fillPosSelects();
+        });
+        document.getElementById("posVendasTableBody")?.addEventListener("click", (e) => {
+          const edit = e.target.getAttribute("data-edit-pos-venda");
+          const del = e.target.getAttribute("data-del-pos-venda");
+          if (edit) {
+            const v = posVendasRecentes.find((x) => x.id == edit);
+            if (v) populatePosVendaForm(v);
+          } else if (del) {
+            if (confirm("Excluir venda?")) deletePosVenda(del);
+          }
+        });
         document.getElementById("btnPosCarregarResumo")?.addEventListener("click", loadPosResumo);
 
         // Notas

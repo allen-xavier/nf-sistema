@@ -124,6 +124,60 @@ router.post("/", async (req, res) => {
   }
 });
 
+// ATUALIZAR venda
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      pos_terminal_id,
+      nsu,
+      sale_datetime,
+      amount,
+      payment_type,
+    } = req.body;
+
+    const sale = await PosSale.findByPk(id);
+    if (!sale) return res.status(404).json({ error: "Venda n\u01d8o encontrada" });
+    if (!pos_terminal_id || !nsu || !sale_datetime || !amount || !payment_type) {
+      return res.status(400).json({ error: "pos_terminal_id, nsu, sale_datetime, amount, payment_type s\u01d8o obrigat\u0161rios" });
+    }
+
+    const term = await PosTerminal.findByPk(pos_terminal_id, {
+      include: [
+        { model: PosCompany, as: "PosCompany" },
+        { model: Customer, as: "Customer" },
+      ],
+    });
+    if (!term) return res.status(404).json({ error: "Terminal n\u01d8o encontrado" });
+    if (!term.is_active) return res.status(400).json({ error: "Terminal inativo" });
+
+    const rate = await PosCustomerRate.findOne({
+      where: { customer_id: term.customer_id },
+    });
+
+    const feePercent = getFeePercent(rate, payment_type);
+    const feeValue = Number(((Number(amount) || 0) * feePercent) / 100).toFixed(2);
+    const net = Number(Number(amount || 0) - Number(feeValue)).toFixed(2);
+
+    sale.customer_id = term.customer_id;
+    sale.pos_company_id = term.pos_company_id;
+    sale.pos_terminal_id = pos_terminal_id;
+    sale.nsu = nsu;
+    sale.sale_datetime = sale_datetime;
+    sale.amount = amount;
+    sale.payment_type = payment_type;
+    sale.fee_percent = feePercent;
+    sale.fee_value = feeValue;
+    sale.net_amount = net;
+
+    await sale.save();
+    res.json(sale);
+  } catch (err) {
+    console.error("Erro ao atualizar venda pos:", err);
+    res.status(500).json({ error: "Erro ao atualizar venda" });
+  }
+});
+
 // DELETE venda
 router.delete("/:id", async (req, res) => {
   try {
