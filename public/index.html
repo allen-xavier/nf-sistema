@@ -1817,6 +1817,14 @@
       // ==========================
       // NAV / PAGES
       // ==========================
+
+      document.querySelectorAll('.nav-item').forEach((item) => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          const page = item.getAttribute('data-page');
+          if (page) selectPage(page);
+        });
+      });
       function selectPage(page, anchor) {
         // mostra apenas a seção selecionada
         document.querySelectorAll(".page-section").forEach((sec) => sec.classList.remove("active"));
