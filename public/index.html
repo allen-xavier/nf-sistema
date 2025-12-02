@@ -1956,6 +1956,10 @@
         }
       }
 
+      function refreshRelatorioSelects() {
+        populateRelatorioSelects(clientes, empresas);
+      }
+
       function formatCurrencyBRL(value) {
         return Number(value || 0).toLocaleString("pt-BR", {
           style: "currency",
@@ -3324,13 +3328,13 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
           .addEventListener("input", renderEmpresas);
         document
           .getElementById("relClienteSearch")
-          ?.addEventListener("input", () => populateRelatorioSelects());
+          ?.addEventListener("input", refreshRelatorioSelects);
         document
           .getElementById("relEmpresaSearch")
-          ?.addEventListener("input", () => populateRelatorioSelects());
+          ?.addEventListener("input", refreshRelatorioSelects);
         document
           .getElementById("relEmpresaAtivo")
-          ?.addEventListener("change", () => populateRelatorioSelects());
+          ?.addEventListener("change", refreshRelatorioSelects);
         document
           .querySelectorAll(".chip-filter[data-empresa-ativo]")
           .forEach((el) => {
@@ -3628,9 +3632,9 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
               .getElementById("relClienteSection")
               .classList.remove("hidden");
             if (!clientes || clientes.length === 0) {
-              loadClientes().then(populateRelatorioSelects);
+              loadClientes().then(() => refreshRelatorioSelects());
             } else {
-              populateRelatorioSelects();
+              refreshRelatorioSelects();
             }
           } else if (tab === "empresa") {
             document.getElementById("tabRelEmpresa").classList.add("active");
@@ -3638,9 +3642,9 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
               .getElementById("relEmpresaSection")
               .classList.remove("hidden");
             if (!empresas || empresas.length === 0) {
-              loadEmpresas().then(populateRelatorioSelects);
+              loadEmpresas().then(() => refreshRelatorioSelects());
             } else {
-              populateRelatorioSelects();
+              refreshRelatorioSelects();
             }
           }
         }
