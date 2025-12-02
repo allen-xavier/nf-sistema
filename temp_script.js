@@ -1097,6 +1097,7 @@
       let posCompanies = [];
       let posTerminals = [];
       let posVendasRecentes = [];
+      let posClientes = [];
 
       async function loadPosCompanies() {
         try {
@@ -1281,6 +1282,28 @@
           renderPosVendas();
         } catch (err) {
           console.error("Erro ao carregar vendas:", err);
+        }
+      }
+
+      async function loadPosResumo() {
+        try {
+          const res = await apiFetch("/api/pos/reports/summary");
+          const bruto = Number(res?.totals?.bruto || 0);
+          const liquido = Number(res?.totals?.liquido || 0);
+          const taxas = Number(res?.totals?.taxas || 0);
+          document.getElementById("posResumoBruto").textContent = formatCurrencyBRL(bruto);
+          document.getElementById("posResumoLiquido").textContent = formatCurrencyBRL(liquido);
+          document.getElementById("posResumoTaxas").textContent = formatCurrencyBRL(taxas);
+          document.getElementById("posResumoTopCliente").textContent =
+            res?.topCliente?.Customer?.name || "—";
+          document.getElementById("posResumoTopDia").textContent =
+            res?.topDia?.Customer?.name || "—";
+          const mv = res?.maiorVenda;
+          document.getElementById("posResumoMaiorVenda").textContent = mv
+            ? `${mv.Customer?.name || "—"} - ${formatCurrencyBRL(mv.amount)}`
+            : "—";
+        } catch (err) {
+          console.error("Erro ao carregar resumo POS:", err);
         }
       }
 
@@ -1482,9 +1505,6 @@
           console.error(err);
         }
       }
-      // Clientes POS
-      let posClientes = [];
-
       async function loadPosClientes() {
         try {
           const all = await apiFetch("/api/customers");
