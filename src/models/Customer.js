@@ -21,6 +21,18 @@ const Customer = sequelize.define(
       unique: true,
     },
 
+    uses_nf: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
+
+    uses_pos: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
+
     fee_percent: {
       type: DataTypes.DECIMAL(5, 2),
       allowNull: false,

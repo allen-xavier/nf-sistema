@@ -792,23 +792,23 @@
           </div>
 
           <div class="sidebar-section-label">Maquininhas</div>
-          <div class="nav-item" data-page="pos" data-anchor="pos-companies">
+          <div class="nav-item" data-page="pos-empresas">
             <span class="icon">•</span>
             <span>Empresas POS</span>
           </div>
-          <div class="nav-item" data-page="pos" data-anchor="pos-terminals">
+          <div class="nav-item" data-page="pos-terminais">
             <span class="icon">•</span>
             <span>Terminais</span>
           </div>
-          <div class="nav-item" data-page="pos" data-anchor="pos-rates">
+          <div class="nav-item" data-page="pos-taxas">
             <span class="icon">•</span>
             <span>Taxas</span>
           </div>
-          <div class="nav-item" data-page="pos" data-anchor="pos-vendas">
+          <div class="nav-item" data-page="pos-vendas">
             <span class="icon">•</span>
             <span>Vendas</span>
           </div>
-          <div class="nav-item" data-page="pos" data-anchor="pos-resumo">
+          <div class="nav-item" data-page="pos-resumo">
             <span class="icon">•</span>
             <span>Resumo POS</span>
           </div>
@@ -1176,152 +1176,108 @@
               </div>
             </div>
           </section>          <!-- MAQUININHAS -->
-          <section id="page-pos" class="page-section" data-page-pos>
-            <div class="card">
+          <section id="page-pos-empresas" class="page-section">
+            <div class="card pos-block">
               <div class="card-header">
                 <div>
-                  <div class="card-title">Maquininhas</div>
-                  <div class="card-subtitle">Empresas, terminais, taxas e vendas</div>
+                  <div class="card-title">Empresas POS</div>
+                  <div class="card-subtitle">Adquirentes da maquininha</div>
                 </div>
               </div>
-
-              <div class="grid grid-2 pos-block" id="pos-companies">
-                <div class="card-header">
-                  <div>
-                    <div class="card-title">Empresas POS</div>
-                    <div class="card-subtitle">Adquirentes da maquininha</div>
-                  </div>
-                  </div>
-                  <div class="form-row">
-                    <div class="form-group">
-                      <label>Nome</label>
-                      <input id="posCompanyName" />
-                    </div>
-                    <div class="form-group">
-                      <label>CNPJ</label>
-                      <input id="posCompanyCnpj" />
-                    </div>
-                    <div class="form-group" style="max-width: 140px">
-                      <label>Status</label>
-                      <select id="posCompanyAtiva">
-                        <option value="true">Ativa</option>
-                        <option value="false">Inativa</option>
-                      </select>
-                    </div>
-                  </div>
-                  <button class="btn-primary" id="btnPosAddCompany">Cadastrar</button>
-                  <div class="table-wrapper" style="max-height: 200px; margin-top: 10px">
-                    <table>
-                      <thead>
-                        <tr><th>ID</th><th>Nome</th><th>CNPJ</th><th>Status</th></tr>
-                      </thead>
-                      <tbody id="posCompaniesTableBody"></tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <div class="card pos-block" id="pos-terminals">
-                  <div class="card-header">
-                    <div>
-                      <div class="card-title">Terminais</div>
-                      <div class="card-subtitle">Vincule empresa e cliente</div>
-                    </div>
-                  </div>
-                  <div class="form-row">
-                    <div class="form-group">
-                      <label>Empresa</label>
-                      <select id="posTerminalEmpresa"></select>
-                    </div>
-                    <div class="form-group">
-                      <label>Cliente</label>
-                      <select id="posTerminalCliente"></select>
-                    </div>
-                    <div class="form-group">
-                      <label>Codigo</label>
-                      <input id="posTerminalCode" />
-                    </div>
-                    <div class="form-group" style="max-width: 140px">
-                      <label>Status</label>
-                      <select id="posTerminalAtivo">
-                        <option value="true">Ativo</option>
-                        <option value="false">Inativo</option>
-                      </select>
-                    </div>
-                  </div>
-                  <button class="btn-primary" id="btnPosAddTerminal">Cadastrar</button>
-                  <div class="table-wrapper" style="max-height: 200px; margin-top: 10px">
-                    <table>
-                      <thead>
-                        <tr><th>ID</th><th>Terminal</th><th>Empresa</th><th>Cliente</th><th>Status</th></tr>
-                      </thead>
-                      <tbody id="posTerminalsTableBody"></tbody>
-                    </table>
-                  </div>
-                </div>
+              <div class="form-row">
+                <div class="form-group"><label>Nome</label><input id="posCompanyName" /></div>
+                <div class="form-group"><label>CNPJ</label><input id="posCompanyCnpj" /></div>
+                <div class="form-group" style="max-width:140px"><label>Status</label><select id="posCompanyAtiva"><option value="true">Ativa</option><option value="false">Inativa</option></select></div>
               </div>
-
-              <div class="grid grid-2 pos-block" id="pos-rates" style="margin-top: 14px">
-                  <div class="card-header"><div><div class="card-title">Taxas por cliente</div><div class="card-subtitle">Debito/credito e PIX</div></div></div>
-                  <div class="form-row">
-                    <div class="form-group">
-                      <label>Cliente</label>
-                      <select id="posRateCliente"></select>
-                    </div>
-                    <div class="form-group"><label>PIX</label><input id="posRatePix" /></div>
-                  </div>
-                  <div class="form-row">
-                    <div class="form-group"><label>Debito (%)</label><input id="posRateDebito" type="number" step="0.01" /></div>
-                    <div class="form-group"><label>Credito a vista (%)</label><input id="posRateCreditoAVista" type="number" step="0.01" /></div>
-                  </div>
-                  <div class="form-row">
-                    <div class="form-group"><label>Credito 2 a 6x (%)</label><input id="posRateCredito2a6" type="number" step="0.01" /></div>
-                    <div class="form-group"><label>Credito 7 a 12x (%)</label><input id="posRateCredito7a12" type="number" step="0.01" /></div>
-                  </div>
-                  <button class="btn-primary" id="btnPosSalvarTaxas">Salvar taxas</button>
-                </div>
-
-                <div class="card pos-block" id="pos-vendas">
-                  <div class="card-header"><div><div class="card-title">Registrar venda</div><div class="card-subtitle">Terminal, data/hora, valor, forma, NSU</div></div></div>
-                  <div class="form-row">
-                    <div class="form-group"><label>Terminal</label><select id="posVendaTerminal"></select></div>
-                    <div class="form-group"><label>Data/hora</label><input id="posVendaData" type="datetime-local" /></div>
-                  </div>
-                  <div class="form-row">
-                    <div class="form-group"><label>Valor</label><input id="posVendaValor" type="number" step="0.01" /></div>
-                    <div class="form-group"><label>Forma</label><select id="posVendaForma"><option value="DEBITO">Debito</option><option value="CREDITO_AVISTA">Credito a vista</option><option value="CREDITO_2A6">Credito 2 a 6x</option><option value="CREDITO_7A12">Credito 7 a 12x</option><option value="PIX">PIX</option></select></div>
-                    <div class="form-group"><label>NSU</label><input id="posVendaNsu" /></div>
-                  </div>
-                  <button class="btn-primary" id="btnPosRegistrarVenda">Registrar venda</button>
-                  <div id="posVendaMsg" class="success-text" style="display:none; margin-top:8px"></div>
-                </div>
-              </div>
-
-              <div class="grid grid-2" style="margin-top: 14px">
-                <div class="card pos-block" id="pos-vendas-recentes">
-                  <div class="card-header"><div><div class="card-title">Vendas recentes</div><div class="card-subtitle">Ultimas 50 vendas</div></div></div>
-                  <div class="table-wrapper" style="max-height: 220px">
-                    <table>
-                      <thead><tr><th>Data</th><th>Cliente</th><th>Terminal</th><th>Forma</th><th>Bruto</th><th>Taxa</th><th>Liquido</th></tr></thead>
-                      <tbody id="posVendasTableBody"></tbody>
-                    </table>
-                  </div>
-                </div>
-                <div class="card pos-block" id="pos-resumo">
-                  <div class="card-header"><div><div class="card-title">Resumo</div><div class="card-subtitle">Bruto, liquido, taxas</div></div><button class="btn-secondary" id="btnPosCarregarResumo">Atualizar</button></div>
-                  <div class="grid grid-2">
-                    <div class="metric-card"><div class="metric-label">Bruto</div><div class="metric-value" id="posResumoBruto">—</div></div>
-                    <div class="metric-card"><div class="metric-label">Liquido</div><div class="metric-value" id="posResumoLiquido">—</div></div>
-                  </div>
-                  <div class="metric-card" style="margin-top:10px"><div class="metric-label">Taxas</div><div class="metric-value" id="posResumoTaxas">—</div></div>
-                  <div style="margin-top:10px; font-size:13px; display:flex; flex-direction:column; gap:6px">
-                    <div><strong>Top cliente periodo:</strong> <span id="posResumoTopCliente">—</span></div>
-                    <div><strong>Top cliente hoje:</strong> <span id="posResumoTopDia">—</span></div>
-                    <div><strong>Maior venda:</strong> <span id="posResumoMaiorVenda">—</span></div>
-                  </div>
-                </div>
+              <button class="btn-primary" id="btnPosAddCompany">Cadastrar</button>
+              <div class="table-wrapper" style="max-height:200px; margin-top:10px">
+                <table><thead><tr><th>ID</th><th>Nome</th><th>CNPJ</th><th>Status</th></tr></thead><tbody id="posCompaniesTableBody"></tbody></table>
               </div>
             </div>
           </section>
+
+          <section id="page-pos-terminais" class="page-section">
+            <div class="card pos-block">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Terminais</div>
+                  <div class="card-subtitle">Vincule empresa e cliente</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Empresa</label><select id="posTerminalEmpresa"></select></div>
+                <div class="form-group"><label>Cliente</label><select id="posTerminalCliente"></select></div>
+                <div class="form-group"><label>Codigo</label><input id="posTerminalCode" /></div>
+                <div class="form-group" style="max-width:140px"><label>Status</label><select id="posTerminalAtivo"><option value="true">Ativo</option><option value="false">Inativo</option></select></div>
+              </div>
+              <button class="btn-primary" id="btnPosAddTerminal">Cadastrar</button>
+              <div class="table-wrapper" style="max-height:200px; margin-top:10px">
+                <table><thead><tr><th>ID</th><th>Terminal</th><th>Empresa</th><th>Cliente</th><th>Status</th></tr></thead><tbody id="posTerminalsTableBody"></tbody></table>
+              </div>
+            </div>
+          </section>
+
+          <section id="page-pos-taxas" class="page-section">
+            <div class="card pos-block">
+              <div class="card-header"><div><div class="card-title">Taxas por cliente</div><div class="card-subtitle">Debito/credito e PIX</div></div></div>
+              <div class="form-row">
+                <div class="form-group"><label>Cliente</label><select id="posRateCliente"></select></div>
+                <div class="form-group"><label>PIX</label><input id="posRatePix" /></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Debito (%)</label><input id="posRateDebito" type="number" step="0.01" /></div>
+                <div class="form-group"><label>Credito a vista (%)</label><input id="posRateCreditoAVista" type="number" step="0.01" /></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Credito 2 a 6x (%)</label><input id="posRateCredito2a6" type="number" step="0.01" /></div>
+                <div class="form-group"><label>Credito 7 a 12x (%)</label><input id="posRateCredito7a12" type="number" step="0.01" /></div>
+              </div>
+              <button class="btn-primary" id="btnPosSalvarTaxas">Salvar taxas</button>
+            </div>
+          </section>
+
+          <section id="page-pos-vendas" class="page-section">
+            <div class="card pos-block">
+              <div class="card-header"><div><div class="card-title">Registrar venda</div><div class="card-subtitle">Terminal, data/hora, valor, forma, NSU</div></div></div>
+              <div class="form-row">
+                <div class="form-group"><label>Terminal</label><select id="posVendaTerminal"></select></div>
+                <div class="form-group"><label>Data/hora</label><input id="posVendaData" type="datetime-local" /></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Valor</label><input id="posVendaValor" type="number" step="0.01" /></div>
+                <div class="form-group"><label>Forma</label><select id="posVendaForma"><option value="DEBITO">Debito</option><option value="CREDITO_AVISTA">Credito a vista</option><option value="CREDITO_2A6">Credito 2 a 6x</option><option value="CREDITO_7A12">Credito 7 a 12x</option><option value="PIX">PIX</option></select></div>
+                <div class="form-group"><label>NSU</label><input id="posVendaNsu" /></div>
+              </div>
+              <button class="btn-primary" id="btnPosRegistrarVenda">Registrar venda</button>
+              <div id="posVendaMsg" class="success-text" style="display:none; margin-top:8px"></div>
+            </div>
+            <div class="card pos-block" style="margin-top: 12px">
+              <div class="card-header"><div><div class="card-title">Vendas recentes</div><div class="card-subtitle">Ultimas 50 vendas</div></div></div>
+              <div class="table-wrapper" style="max-height: 220px">
+                <table>
+                  <thead><tr><th>Data</th><th>Cliente</th><th>Terminal</th><th>Forma</th><th>Bruto</th><th>Taxa</th><th>Liquido</th></tr></thead>
+                  <tbody id="posVendasTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section id="page-pos-resumo" class="page-section">
+            <div class="card pos-block">
+              <div class="card-header"><div><div class="card-title">Resumo POS</div><div class="card-subtitle">Bruto, liquido, taxas</div></div><button class="btn-secondary" id="btnPosCarregarResumo">Atualizar</button></div>
+              <div class="grid grid-2">
+                <div class="metric-card"><div class="metric-label">Bruto</div><div class="metric-value" id="posResumoBruto">—</div></div>
+                <div class="metric-card"><div class="metric-label">Liquido</div><div class="metric-value" id="posResumoLiquido">—</div></div>
+              </div>
+              <div class="metric-card" style="margin-top:10px"><div class="metric-label">Taxas</div><div class="metric-value" id="posResumoTaxas">—</div></div>
+              <div style="margin-top:10px; font-size:13px; display:flex; flex-direction:column; gap:6px">
+                <div><strong>Top cliente periodo:</strong> <span id="posResumoTopCliente">—</span></div>
+                <div><strong>Top cliente hoje:</strong> <span id="posResumoTopDia">—</span></div>
+                <div><strong>Maior venda:</strong> <span id="posResumoMaiorVenda">—</span></div>
+              </div>
+            </div>
+          </section>
+
           <section id="page-relatorios" class="page-section">
             <div class="card">
               <div class="card-header">
@@ -1826,13 +1782,7 @@
 
         // marca item ativo no menu
         document.querySelectorAll(".nav-item").forEach((item) => item.classList.remove("active"));
-        if (anchor && page === "pos") {
-          document.querySelectorAll('.nav-item[data-page="pos"]').forEach((item) => {
-            if (item.getAttribute("data-anchor") === anchor) item.classList.add("active");
-          });
-        } else {
-          document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add("active");
-        }
+        document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add("active");
 
         // textos topbar
         const topbarTitle = document.getElementById("topbarTitle");
@@ -1850,7 +1800,7 @@
         } else if (page === "notas") {
           topbarTitle.textContent = "Notas fiscais";
           topbarSubtitle.textContent = "Listagem das notas emitidas com carregamento automatico";
-        } else if (page === "pos") {
+        } else if (page.startsWith("pos")) {
           topbarTitle.textContent = "Maquininhas";
           topbarSubtitle.textContent = "Empresas, terminais, taxas e vendas de POS";
         } else if (page === "relatorios") {
@@ -1865,28 +1815,12 @@
           resetNotasInfiniteScroll();
           loadNotasPage(true);
         }
-        if (page === "pos") {
+        if (page.startsWith("pos")) {
+          // páginas POS independentes
           loadPosCompanies();
           loadPosTerminals();
           loadPosVendasRecentes();
           loadPosResumo();
-          // mostrar apenas o bloco selecionado, se houver anchor
-          const blocks = document.querySelectorAll(".pos-block");
-          if (anchor) {
-            blocks.forEach((b) => {
-              b.style.display = b.id === anchor ? "block" : "none";
-              b.classList.toggle("pos-single", b.id === anchor);
-            });
-          } else {
-            blocks.forEach((b) => {
-              b.style.display = "block";
-              b.classList.remove("pos-single");
-            });
-          }
-          if (anchor) {
-            const el = document.getElementById(anchor);
-            if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
         }
       }
 

@@ -71,6 +71,8 @@ router.post("/", async (req, res) => {
       whatsapp_number,
       fee_percent,
       is_active,
+      uses_nf,
+      uses_pos,
     } = req.body;
 
     if (!name || !whatsapp_number || fee_percent == null) {
@@ -89,6 +91,8 @@ router.post("/", async (req, res) => {
       whatsapp_number,
       fee_percent,
       is_active,
+      uses_nf: uses_nf ?? true,
+      uses_pos: uses_pos ?? true,
     });
 
     res.status(201).json(customer);
@@ -129,6 +133,8 @@ router.put("/:id", async (req, res) => {
       whatsapp_number,
       fee_percent,
       is_active,
+      uses_nf,
+      uses_pos,
     } = req.body;
 
     if (!name || !whatsapp_number || fee_percent == null) {
@@ -146,6 +152,8 @@ router.put("/:id", async (req, res) => {
     customer.whatsapp_number = whatsapp_number;
     customer.fee_percent = fee_percent;
     customer.is_active = is_active;
+    if (uses_nf != null) customer.uses_nf = uses_nf;
+    if (uses_pos != null) customer.uses_pos = uses_pos;
 
     await customer.save();
 
