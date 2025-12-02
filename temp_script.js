@@ -162,8 +162,8 @@
         } else if (page === "relatorios") {
           topbarTitle.textContent = "Relatorios";
           topbarSubtitle.textContent = "Analises consolidadas por periodo, cliente e empresa";
-          populateRelatorioSelects();
-          loadRelatorios();
+          populateRelatorioSelects?.();
+          loadRelatorios?.();
         }
 
         // ações ao entrar em páginas
