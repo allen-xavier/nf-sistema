@@ -41,7 +41,6 @@ router.get("/summary", async (req, res) => {
       include: [{ model: Customer, as: "Customer", attributes: ["name"] }],
       group: ["customer_id", "Customer.id", "Customer.name"],
       order: [[literal("soma"), "DESC"]],
-      raw: true,
     });
 
     // maior venda
@@ -71,7 +70,6 @@ router.get("/summary", async (req, res) => {
       include: [{ model: Customer, as: "Customer", attributes: ["name"] }],
       group: ["customer_id", "Customer.id", "Customer.name"],
       order: [[literal("soma"), "DESC"]],
-      raw: true,
     });
 
     res.json({
