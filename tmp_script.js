@@ -75,16 +75,8 @@
           showApp();
           selectPage("dashboard");
           loadDashboard();
-          loadClientes().then(populateRelatorioSelects);
-          loadEmpresas().then(populateRelatorioSelects);
-          loadPosClientes();
-          loadPosCompanies();
-          loadPosTerminals();
-          loadPosVendasRecentes();
-          loadPosResumo();
-          resetNotasInfiniteScroll();
-          loadNotasPage(true);
-          loadRelatorios();
+          loadClientes();
+          loadEmpresas();
         } catch (err) {
           console.error(err);
           errorEl.textContent = "Credenciais inválidas.";
@@ -196,6 +188,7 @@
           loadPosTerminals();
           loadPosVendasRecentes();
           loadPosResumo();
+        }
       }
 
       // ==========================
@@ -1901,19 +1894,10 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
           document.getElementById("currentUserEmail").textContent = userEmail;
           selectPage("dashboard");
           loadDashboard();
-          loadClientes().then(populateRelatorioSelects);
-          loadEmpresas().then(populateRelatorioSelects);
-          loadPosClientes();
-          loadPosCompanies();
-          loadPosTerminals();
-          loadPosVendasRecentes();
-          loadPosResumo();
-          resetNotasInfiniteScroll();
-          loadNotasPage(true);
-          loadRelatorios();
+          loadClientes();
+          loadEmpresas();
         } else {
           showLogin();
-        }
         }
       }
 
@@ -1925,5 +1909,4 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
       document.getElementById("loginPassword")?.addEventListener("keyup", (e) => {
         if (e.key === "Enter") doLogin();
       });
-      });
-    
+    });
