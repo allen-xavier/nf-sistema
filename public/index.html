@@ -761,50 +761,50 @@
           </div>
         </div>
 
-                                        <nav class="sidebar-nav">
+        <nav class="sidebar-nav">
           <div class="sidebar-section-label">Visao Geral</div>
           <div class="nav-item" data-page="dashboard">
-            <span class="icon">*</span>
+            <span class="icon">•</span>
             <span>Dashboard</span>
           </div>
 
           <div class="sidebar-section-label">Nota Fiscal</div>
           <div class="nav-item" data-page="clientes">
-            <span class="icon">*</span>
+            <span class="icon">•</span>
             <span>Clientes</span>
           </div>
           <div class="nav-item" data-page="empresas">
-            <span class="icon">*</span>
+            <span class="icon">•</span>
             <span>Empresas</span>
           </div>
           <div class="nav-item" data-page="notas">
-            <span class="icon">*</span>
+            <span class="icon">•</span>
             <span>Notas Fiscais</span>
           </div>
           <div class="nav-item" data-page="relatorios">
-            <span class="icon">*</span>
+            <span class="icon">•</span>
             <span>Relatorios</span>
           </div>
 
           <div class="sidebar-section-label">Maquininhas</div>
           <div class="nav-item" data-page="pos" data-anchor="pos-companies">
-            <span class="icon">*</span>
+            <span class="icon">•</span>
             <span>Empresas POS</span>
           </div>
           <div class="nav-item" data-page="pos" data-anchor="pos-terminals">
-            <span class="icon">*</span>
+            <span class="icon">•</span>
             <span>Terminais</span>
           </div>
           <div class="nav-item" data-page="pos" data-anchor="pos-rates">
-            <span class="icon">*</span>
+            <span class="icon">•</span>
             <span>Taxas</span>
           </div>
           <div class="nav-item" data-page="pos" data-anchor="pos-vendas">
-            <span class="icon">*</span>
+            <span class="icon">•</span>
             <span>Vendas</span>
           </div>
           <div class="nav-item" data-page="pos" data-anchor="pos-resumo">
-            <span class="icon">*</span>
+            <span class="icon">•</span>
             <span>Resumo POS</span>
           </div>
         </nav>
@@ -1180,13 +1180,12 @@
                 </div>
               </div>
 
-              <div class="grid grid-2">
-                <div class="card" id="pos-companies">
-                  <div class="card-header">
-                    <div>
-                      <div class="card-title">Empresas POS</div>
-                      <div class="card-subtitle">Adquirentes da maquininha</div>
-                    </div>
+              <div class="grid grid-2 pos-block" id="pos-companies">
+                <div class="card-header">
+                  <div>
+                    <div class="card-title">Empresas POS</div>
+                    <div class="card-subtitle">Adquirentes da maquininha</div>
+                  </div>
                   </div>
                   <div class="form-row">
                     <div class="form-group">
@@ -1216,7 +1215,7 @@
                   </div>
                 </div>
 
-                <div class="card" id="pos-terminals">
+                <div class="card pos-block" id="pos-terminals">
                   <div class="card-header">
                     <div>
                       <div class="card-title">Terminais</div>
@@ -1256,8 +1255,7 @@
                 </div>
               </div>
 
-              <div class="grid grid-2" style="margin-top: 14px">
-                <div class="card" id="pos-rates">
+              <div class="grid grid-2 pos-block" id="pos-rates" style="margin-top: 14px">
                   <div class="card-header"><div><div class="card-title">Taxas por cliente</div><div class="card-subtitle">Debito/credito e PIX</div></div></div>
                   <div class="form-row">
                     <div class="form-group">
@@ -1277,7 +1275,7 @@
                   <button class="btn-primary" id="btnPosSalvarTaxas">Salvar taxas</button>
                 </div>
 
-                <div class="card" id="pos-vendas">
+                <div class="card pos-block" id="pos-vendas">
                   <div class="card-header"><div><div class="card-title">Registrar venda</div><div class="card-subtitle">Terminal, data/hora, valor, forma, NSU</div></div></div>
                   <div class="form-row">
                     <div class="form-group"><label>Terminal</label><select id="posVendaTerminal"></select></div>
@@ -1294,7 +1292,7 @@
               </div>
 
               <div class="grid grid-2" style="margin-top: 14px">
-                <div class="card" id="pos-vendas-recentes">
+                <div class="card pos-block" id="pos-vendas-recentes">
                   <div class="card-header"><div><div class="card-title">Vendas recentes</div><div class="card-subtitle">Ultimas 50 vendas</div></div></div>
                   <div class="table-wrapper" style="max-height: 220px">
                     <table>
@@ -1303,7 +1301,7 @@
                     </table>
                   </div>
                 </div>
-                <div class="card" id="pos-resumo">
+                <div class="card pos-block" id="pos-resumo">
                   <div class="card-header"><div><div class="card-title">Resumo</div><div class="card-subtitle">Bruto, liquido, taxas</div></div><button class="btn-secondary" id="btnPosCarregarResumo">Atualizar</button></div>
                   <div class="grid grid-2">
                     <div class="metric-card"><div class="metric-label">Bruto</div><div class="metric-value" id="posResumoBruto">—</div></div>
@@ -1867,6 +1865,15 @@
           loadPosTerminals();
           loadPosVendasRecentes();
           loadPosResumo();
+          // mostrar apenas o bloco selecionado, se houver anchor
+          const blocks = document.querySelectorAll(".pos-block");
+          if (anchor) {
+            blocks.forEach((b) => {
+              b.style.display = b.id === anchor ? "block" : "none";
+            });
+          } else {
+            blocks.forEach((b) => (b.style.display = "block"));
+          }
           if (anchor) {
             const el = document.getElementById(anchor);
             if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
