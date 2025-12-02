@@ -4,29 +4,38 @@ const { authMiddleware, adminOnly } = require("../middleware/auth");
 
 const router = express.Router();
 
+function parseBool(val) {
+  if (val === true || val === false) return val;
+  if (typeof val === "string") return val.toLowerCase() === "true" || val === "1";
+  if (typeof val === "number") return val === 1;
+  return false;
+}
+
 // Todas as rotas abaixo exigem admin
 router.use(authMiddleware);
 router.use(adminOnly);
 
 /**
- * GET /api/invoices
- * Lista TODAS as notas fiscais.
- * O frontend aplica os filtros.
- */
-/**
- * GET /api/invoices?page=1&limit=50
+ * GET /api/invoices?page=1&limit=50&terminal_sale=true|false
  * Lista paginada das notas fiscais
  */
 router.get("/", async (req, res) => {
   try {
-    let { page, limit } = req.query;
+    let { page, limit, terminal_sale, is_terminal_sale } = req.query;
 
     page = Number(page) || 1;
     limit = Number(limit) || 50;
 
     const offset = (page - 1) * limit;
+    const where = {};
+
+    const terminalFilter = terminal_sale ?? is_terminal_sale;
+    if (terminalFilter !== undefined) {
+      where.is_terminal_sale = parseBool(terminalFilter);
+    }
 
     const { count, rows } = await Invoice.findAndCountAll({
+      where,
       include: [
         { model: Customer, as: "Customer" },
         { model: Company, as: "Company" },
@@ -52,7 +61,6 @@ router.get("/", async (req, res) => {
     });
   }
 });
-
 
 /**
  * GET /api/invoices/:id
@@ -85,7 +93,7 @@ router.get("/:id", async (req, res) => {
 
 /**
  * POST /api/invoices
- * Cria uma nota fiscal manualmente (opcional para você)
+ * Cria uma nota fiscal
  */
 router.post("/", async (req, res) => {
   try {
@@ -98,14 +106,25 @@ router.post("/", async (req, res) => {
       fee_percent,
       fee_value,
       status,
+      terminal_id,
+      nsu,
+      sale_datetime,
+      sale_amount,
+      is_terminal_sale,
+      is_our_terminal,
+      pdf_url,
     } = req.body;
+
+    const terminalSale =
+      parseBool(is_terminal_sale) ||
+      Boolean(terminal_id || nsu || sale_datetime || sale_amount);
+    const ourTerminal = parseBool(is_our_terminal);
 
     if (
       !customer_id ||
       !company_id ||
       !total_amount ||
-      fee_percent == null ||
-      fee_value == null
+      (!ourTerminal && (fee_percent == null || fee_value == null))
     ) {
       return res.status(400).json({
         error:
@@ -113,15 +132,25 @@ router.post("/", async (req, res) => {
       });
     }
 
+    const computedFeePercent = ourTerminal ? 0 : fee_percent;
+    const computedFeeValue = ourTerminal ? 0 : fee_value;
+
     const invoice = await Invoice.create({
       customer_id,
       company_id,
       issued_at: issued_at || new Date(),
       total_amount,
       paid_amount,
-      fee_percent,
-      fee_value,
+      fee_percent: computedFeePercent,
+      fee_value: computedFeeValue,
       status: status || "EMITIDA",
+      terminal_id: terminal_id || null,
+      nsu: nsu || null,
+      sale_datetime: sale_datetime || null,
+      sale_amount: sale_amount || null,
+      is_terminal_sale: terminalSale || ourTerminal,
+      is_our_terminal: ourTerminal,
+      pdf_url: pdf_url || null,
     });
 
     res.status(201).json(invoice);
@@ -157,7 +186,19 @@ router.put("/:id", async (req, res) => {
       fee_percent,
       fee_value,
       status,
+      terminal_id,
+      nsu,
+      sale_datetime,
+      sale_amount,
+      is_terminal_sale,
+      is_our_terminal,
+      pdf_url,
     } = req.body;
+
+    const ourTerminal = parseBool(is_our_terminal ?? invoice.is_our_terminal);
+    const terminalSale =
+      parseBool(is_terminal_sale ?? invoice.is_terminal_sale) ||
+      Boolean(terminal_id || nsu || sale_datetime || sale_amount);
 
     invoice.customer_id =
       customer_id ?? invoice.customer_id;
@@ -169,10 +210,17 @@ router.put("/:id", async (req, res) => {
     invoice.paid_amount =
       paid_amount ?? invoice.paid_amount;
     invoice.fee_percent =
-      fee_percent ?? invoice.fee_percent;
+      ourTerminal ? 0 : (fee_percent ?? invoice.fee_percent);
     invoice.fee_value =
-      fee_value ?? invoice.fee_value;
+      ourTerminal ? 0 : (fee_value ?? invoice.fee_value);
     invoice.status = status ?? invoice.status;
+    invoice.terminal_id = terminal_id ?? invoice.terminal_id;
+    invoice.nsu = nsu ?? invoice.nsu;
+    invoice.sale_datetime = sale_datetime ?? invoice.sale_datetime;
+    invoice.sale_amount = sale_amount ?? invoice.sale_amount;
+    invoice.is_terminal_sale = terminalSale;
+    invoice.is_our_terminal = ourTerminal;
+    invoice.pdf_url = pdf_url ?? invoice.pdf_url;
 
     await invoice.save();
 

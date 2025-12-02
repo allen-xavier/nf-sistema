@@ -52,6 +52,43 @@ const Invoice = sequelize.define(
       defaultValue: "EMITIDA",
     },
 
+    terminal_id: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+    },
+
+    nsu: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+    },
+
+    sale_datetime: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+
+    sale_amount: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: true,
+    },
+
+    is_terminal_sale: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+
+    is_our_terminal: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+
+    pdf_url: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,

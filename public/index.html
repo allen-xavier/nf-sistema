@@ -1099,6 +1099,14 @@
                       <option value="CANCELADA">Cancelada</option>
                     </select>
                   </div>
+                  <div class="form-group" style="max-width: 160px">
+                    <label>Origem</label>
+                    <select id="notasOrigemFilter">
+                      <option value="all">Todas</option>
+                      <option value="terminal">Maquininha</option>
+                      <option value="manual">Manual</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div class="toolbar-right">
@@ -1126,6 +1134,8 @@
                       <th>Valor pago</th>
                       <th>Taxa (%)</th>
                       <th>Taxa (R$)</th>
+                      <th>Origem</th>
+                      <th>Terminal / NSU</th>
                       <th>Status</th>
                     </tr>
                   </thead>
@@ -1361,7 +1371,9 @@
                           <th>Empresa</th>
                           <th>Valor total</th>
                           <th>Taxa (R$)</th>
-                          <th>Status</th>
+                      <th>Origem</th>
+                      <th>Terminal / NSU</th>
+                      <th>Status</th>
                         </tr>
                       </thead>
                       <tbody id="relClienteNotasBody"></tbody>
@@ -1486,7 +1498,9 @@
                           <th>Cliente</th>
                           <th>Valor total</th>
                           <th>Taxa (R$)</th>
-                          <th>Status</th>
+                      <th>Origem</th>
+                      <th>Terminal / NSU</th>
+                      <th>Status</th>
                         </tr>
                       </thead>
                       <tbody id="relEmpresaNotasBody"></tbody>
@@ -2419,9 +2433,10 @@
       function getNotasFiltersKey() {
         const search = document.getElementById("notasSearch").value.trim();
         const status = document.getElementById("notasStatusFilter").value;
+        const origem = document.getElementById("notasOrigemFilter").value;
         const d1 = document.getElementById("notasDataIni").value;
         const d2 = document.getElementById("notasDataFim").value;
-        return JSON.stringify({ search, status, d1, d2 });
+        return JSON.stringify({ search, status, origem, d1, d2 });
       }
 
       async function loadNotasPage(resetIfFiltersChanged) {
@@ -2475,6 +2490,7 @@
         const search = document.getElementById("notasSearch").value
           .toLowerCase();
         const statusFilter = document.getElementById("notasStatusFilter").value;
+        const origemFilter = document.getElementById("notasOrigemFilter").value;
         const dIni = document.getElementById("notasDataIni").value;
         const dFim = document.getElementById("notasDataFim").value;
 
@@ -2494,6 +2510,9 @@
 
             if (statusFilter !== "all" && n.status !== statusFilter)
               return false;
+
+            if (origemFilter === "terminal" && !n.is_terminal_sale) return false;
+            if (origemFilter === "manual" && n.is_terminal_sale) return false;
 
             if (dIni) {
               if (
@@ -2518,6 +2537,11 @@
             const dt = n.issued_at
               ? new Date(n.issued_at).toLocaleString("pt-BR")
               : "—";
+            const origem = n.is_terminal_sale ? "Maquininha" : "Manual";
+            const terminalInfo =
+              n.terminal_id || n.nsu
+                ? `${n.terminal_id || "—"} / ${n.nsu || "—"}`
+                : "—";
             const statusClass =
               n.status === "PAGA"
                 ? "status-paga"
@@ -2534,6 +2558,8 @@
               <td>${n.paid_amount ? formatCurrencyBRL(n.paid_amount) : "—"}</td>
               <td>${Number(n.fee_percent).toFixed(2)}%</td>
               <td>${formatCurrencyBRL(n.fee_value)}</td>
+              <td>${origem}</td>
+              <td>${terminalInfo}</td>
               <td><span class="status-pill ${statusClass}">${n.status}</span></td>
             `;
             tbody.appendChild(tr);
@@ -2786,6 +2812,9 @@
           .getElementById("notasStatusFilter")
           .addEventListener("change", () => renderNotas());
         document
+          .getElementById("notasOrigemFilter")
+          .addEventListener("change", () => renderNotas());
+        document
           .getElementById("notasApplyFilters")
           .addEventListener("click", () => {
             resetNotasInfiniteScroll();
@@ -2861,6 +2890,8 @@
     </script>
   </body>
 </html>
+
+
 
 
 

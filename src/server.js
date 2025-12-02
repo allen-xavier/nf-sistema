@@ -41,8 +41,8 @@ async function start() {
     console.log("Conectado ao banco de dados");
 
     // Sincroniza modelos
-    await sequelize.sync();
-    console.log("Models sincronizados com o banco");
+    await sequelize.sync({ alter: true });
+    console.log("Models sincronizados com o banco (alter: true)");
 
     // ---------------------------------------------
     // 1) Criar administrador se não existir
