@@ -162,7 +162,8 @@
         } else if (page === "relatorios") {
           topbarTitle.textContent = "Relatorios";
           topbarSubtitle.textContent = "Analises consolidadas por periodo, cliente e empresa";
-          populateRelatorioSelects?.();
+          loadClientes().then(populateRelatorioSelects);
+          loadEmpresas().then(populateRelatorioSelects);
           loadRelatorios?.();
         }
 
@@ -1135,13 +1136,14 @@ let posCompanies = [];
       function renderPosCompanies() {
         const tbody = document.getElementById("posCompaniesTableBody");
         if (!tbody) return;
-        const term = (document.getElementById("posCompanySearch")?.value || "").toLowerCase();
+        const termRaw = (document.getElementById("posCompanySearch")?.value || "").trim().toLowerCase();
+        const term = termRaw.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+        const tclean = term.replace(/\D/g, "");
         const filtered = (posCompanies || []).filter((c) => {
           if (!term) return true;
-          const nome = (c.name || "").toLowerCase();
+          const nome = (c.name || "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
           const cnpj = (c.cnpj || "").replace(/\D/g, "");
-          const tclean = term.replace(/\D/g, "");
-          return nome.includes(term) || cnpj.includes(tclean);
+          return nome.includes(term) || (!!tclean && cnpj.includes(tclean));
         });
         tbody.innerHTML = filtered
           .map((c) => `
@@ -1837,6 +1839,20 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
             notasState.lastFiltersKey = getNotasFiltersKey();
             loadNotasPage(false);
           });
+        document
+          .getElementById("notasClearFilters")
+          .addEventListener("click", () => {
+            document.getElementById("notasSearch").value = "";
+            document.getElementById("notasStatusFilter").value = "";
+            document.getElementById("notasOrigemFilter").value = "";
+            document.getElementById("notasDataIni").value = "";
+            document.getElementById("notasDataFim").value = "";
+            document.querySelectorAll(".chip-filter[data-cliente-ativo], .chip-filter[data-empresa-ativo]").forEach((c) => c.classList.remove("active"));
+            resetNotasInfiniteScroll();
+            notasState.lastFiltersKey = getNotasFiltersKey();
+            renderNotas();
+            loadNotasPage(false);
+          });
 
         // Relatórios - tabs
         function setRelTab(tab) {
@@ -1856,13 +1872,21 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
             document
               .getElementById("relClienteSection")
               .classList.remove("hidden");
-            populateRelatorioSelects();
+            if (!clientes || clientes.length === 0) {
+              loadClientes().then(populateRelatorioSelects);
+            } else {
+              populateRelatorioSelects();
+            }
           } else if (tab === "empresa") {
             document.getElementById("tabRelEmpresa").classList.add("active");
             document
               .getElementById("relEmpresaSection")
               .classList.remove("hidden");
-            populateRelatorioSelects();
+            if (!empresas || empresas.length === 0) {
+              loadEmpresas().then(populateRelatorioSelects);
+            } else {
+              populateRelatorioSelects();
+            }
           }
         }
 

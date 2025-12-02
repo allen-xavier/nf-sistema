@@ -1888,6 +1888,65 @@
       let chartRelClientePeriodo = null;
       let chartRelEmpresaPeriodo = null;
 
+      function populateRelatorioSelects(clis = clientes, emps = empresas) {
+        const selCli = document.getElementById("relClienteSelect");
+        const selEmp = document.getElementById("relEmpresaSelect");
+        const searchCli =
+          (document.getElementById("relClienteSearch")?.value || "").toLowerCase();
+        const searchEmp =
+          (document.getElementById("relEmpresaSearch")?.value || "").toLowerCase();
+        const empStatus = document.getElementById("relEmpresaAtivo")?.value || "all";
+
+        const filteredClientes = (clis || [])
+          .filter((c) => c.uses_nf !== false)
+          .filter((c) => {
+            if (!searchCli) return true;
+            const term = searchCli;
+            const name = (c.name || "").toLowerCase();
+            const whats = (c.whatsapp_number || "").toLowerCase();
+            return (
+              name.includes(term) ||
+              whats.includes(term) ||
+              whats.replace(/\D/g, "").includes(term.replace(/\D/g, ""))
+            );
+          });
+
+        if (selCli) {
+          selCli.innerHTML =
+            '<option value="">Selecione um cliente</option>' +
+            filteredClientes
+              .map(
+                (c) =>
+                  `<option value="${c.id}">${c.name}${
+                    c.whatsapp_number ? " (" + c.whatsapp_number + ")" : ""
+                  }</option>`
+              )
+              .join("");
+        }
+
+        const filteredEmpresas = (emps || [])
+          .filter((e) => {
+            if (empStatus === "true") return e.is_active !== false;
+            if (empStatus === "false") return e.is_active === false;
+            return true;
+          })
+          .filter((e) => {
+            if (!searchEmp) return true;
+            const term = searchEmp;
+            const name = (e.name || "").toLowerCase();
+            const cnpj = (e.cnpj || "").replace(/\D/g, "");
+            return name.includes(term) || cnpj.includes(term.replace(/\D/g, ""));
+          });
+
+        if (selEmp) {
+          selEmp.innerHTML =
+            '<option value="">Selecione uma empresa</option>' +
+            filteredEmpresas
+              .map((e) => `<option value="${e.id}">${e.name}</option>`)
+              .join("");
+        }
+      }
+
       function formatCurrencyBRL(value) {
         return Number(value || 0).toLocaleString("pt-BR", {
           style: "currency",
