@@ -1,41 +1,71 @@
-const jwt = require('jsonwebtoken');
-const SystemUser = require('../models/SystemUser');
+const jwt = require("jsonwebtoken");
 
-async function authMiddleware(req, res, next) {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Token não informado' });
-  }
-
-  const [, token] = authHeader.split(' ');
-
+/**
+ * Middleware padrão de autenticação.
+ * Verifica se o token JWT é válido.
+ */
+function authMiddleware(req, res, next) {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await SystemUser.findByPk(decoded.id);
+    const header = req.headers.authorization;
 
-    if (!user) {
-      return res.status(401).json({ error: 'Usuário não encontrado' });
+    if (!header) {
+      return res.status(401).json({
+        error: "Token ausente. Faça login novamente.",
+      });
     }
 
-    req.user = {
-      id: user.id,
-      email: user.email,
-      is_admin: user.is_admin,
-      name: user.name
-    };
+    const [, token] = header.split(" ");
 
-    return next();
+    if (!token) {
+      return res.status(401).json({
+        error: "Token inválido ou mal formatado.",
+      });
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "default_secret_token"
+    );
+
+    req.user = decoded; // {id, email, is_admin}
+
+    next();
   } catch (err) {
-    return res.status(401).json({ error: 'Token inválido' });
+    console.error("[AUTH] Erro de autenticação:", err);
+
+    return res.status(401).json({
+      error: "Token inválido ou expirado.",
+    });
   }
 }
 
+/**
+ * Middleware para permitir apenas administradores.
+ */
 function adminOnly(req, res, next) {
-  if (!req.user || !req.user.is_admin) {
-    return res.status(403).json({ error: 'Acesso restrito ao administrador' });
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        error: "Token inválido.",
+      });
+    }
+
+    if (req.user.is_admin !== true) {
+      return res.status(403).json({
+        error: "Acesso negado. Apenas administradores.",
+      });
+    }
+
+    next();
+  } catch (err) {
+    console.error("[AUTH] Erro no adminOnly:", err);
+    return res.status(500).json({
+      error: "Erro interno na verificação de permissão.",
+    });
   }
-  next();
 }
 
-module.exports = { authMiddleware, adminOnly };
+module.exports = {
+  authMiddleware,
+  adminOnly,
+};

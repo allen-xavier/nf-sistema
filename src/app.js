@@ -18,10 +18,14 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // API
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', authExtraRoutes);
+
 app.use('/api/customers', customerRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/invoices', invoiceRoutes);
-app.use('/api/reports', reportRoutes);
+
+app.use('/api/reports', reportsRoutes); // <-- correto
+
 
 // Healthcheck
 app.get('/health', (req, res) => res.json({ status: 'ok' }));

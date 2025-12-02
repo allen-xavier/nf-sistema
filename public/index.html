@@ -11,7 +11,7 @@
     rel="stylesheet"
   />
 
-  <!-- Icons -->
+  <!-- Icones -->
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
@@ -20,6 +20,7 @@
   <style>
     :root {
       --sidebar-width: 240px;
+
       --bg-dark: #0b1120;
       --bg-darker: #020617;
       --bg-card: #111827;
@@ -28,19 +29,32 @@
       --text-main: #e5e7eb;
       --text-muted: #9ca3af;
       --border-subtle: #1f2937;
+
+      --bg-body: var(--bg-dark);
+      --bg-surface: var(--bg-card);
+      --bg-login: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+      --text-color: var(--text-main);
+    }
+
+    /* Tema claro */
+    body.light-theme {
+      --bg-body: #f3f4f6;
+      --bg-surface: #ffffff;
+      --bg-login: radial-gradient(circle at top, #e5e7eb 0, #d1d5db 55%);
+      --text-color: #111827;
+      --border-subtle: #e5e7eb;
     }
 
     body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
+      background-color: var(--bg-body);
+      color: var(--text-color);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
         sans-serif;
     }
 
-    /* LOGIN */
     .login-bg {
       min-height: 100vh;
-      background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+      background: var(--bg-login);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -52,6 +66,13 @@
       border-radius: 18px;
       box-shadow: 0 18px 50px rgba(15, 23, 42, 0.8);
       backdrop-filter: blur(20px);
+      color: #e5e7eb;
+    }
+    body.light-theme .login-card {
+      background: rgba(255, 255, 255, 0.96);
+      color: #111827;
+      border-color: #e5e7eb;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.15);
     }
 
     .brand-pill {
@@ -64,10 +85,8 @@
       color: var(--text-muted);
       font-size: 0.8rem;
     }
-
     .brand-pill i { color: var(--accent); }
 
-    /* SIDEBAR */
     .sidebar {
       position: fixed;
       top: 0;
@@ -80,6 +99,7 @@
       display: flex;
       flex-direction: column;
       z-index: 1000;
+      color: #e5e7eb;
     }
 
     .sidebar-brand {
@@ -103,13 +123,6 @@
       box-shadow: 0 0 25px rgba(34, 197, 94, 0.7);
     }
 
-    .sidebar-brand-text small {
-      color: var(--text-muted);
-      font-size: 0.7rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
     .sidebar-link {
       display: flex;
       align-items: center;
@@ -120,6 +133,7 @@
       font-size: 0.9rem;
       text-decoration: none;
       transition: all 0.15s ease;
+      cursor: pointer;
     }
 
     .sidebar-link:hover {
@@ -132,7 +146,6 @@
       color: var(--accent);
     }
 
-    /* MOBILE SIDEBAR */
     @media (max-width: 992px) {
       .sidebar {
         display: none;
@@ -161,21 +174,21 @@
       background: rgba(0,0,0,0.45);
       z-index: 900;
     }
-
     #mobile-sidebar-overlay.visible { display: block; }
 
-    /* MAIN LAYOUT */
     .layout-main {
       margin-left: var(--sidebar-width);
       min-height: 100vh;
       background: radial-gradient(circle at top, #0f172a 0, #020617 55%);
+    }
+    body.light-theme .layout-main {
+      background: #f3f4f6;
     }
 
     @media (max-width: 992px) {
       .layout-main { margin-left: 0; }
     }
 
-    /* TOPBAR */
     .topbar {
       display: flex;
       align-items: center;
@@ -187,44 +200,89 @@
       position: sticky;
       top: 0;
       z-index: 900;
+      color: #e5e7eb;
+    }
+    body.light-theme .topbar {
+      background: rgba(255,255,255,0.96);
+      color: #111827;
     }
 
-    .btn-mobile-menu {
-      display: none;
-    }
-
+    .btn-mobile-menu { display: none; }
     @media (max-width: 992px) {
-      .btn-mobile-menu {
-        display: inline-block;
-      }
+      .btn-mobile-menu { display: inline-block; }
     }
 
     .content-wrapper {
       padding: 1.3rem 1.5rem 2.5rem;
     }
 
-    /* CARDS */
     .card-elevated {
       background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.08) 0, #020617 45%);
       border-radius: 18px;
       border: 1px solid rgba(55, 65, 81, 0.7);
       padding: 1.1rem 1.3rem;
       margin-bottom: 1.2rem;
+      color: #e5e7eb;
+    }
+    body.light-theme .card-elevated {
+      background: #ffffff;
+      border-color: #e5e7eb;
+      color: #111827;
     }
 
     .card-section {
-      background: var(--bg-card);
+      background: var(--bg-surface);
       border-radius: 16px;
       border: 1px solid var(--border-subtle);
       padding: 1rem 1.2rem;
       margin-bottom: 1.1rem;
     }
 
-    /* TABLES */
+    .form-control,
+    .form-select {
+      background-color: #020617;
+      border-color: #1f2937;
+      color: #e5e7eb;
+      font-size: 0.86rem;
+    }
+    .form-control:focus,
+    .form-select:focus {
+      background-color: #020617;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.45);
+      color: #e5e7eb;
+    }
+    body.light-theme .form-control,
+    body.light-theme .form-select {
+      background-color: #ffffff;
+      color: #111827;
+      border-color: #d1d5db;
+    }
+
     .table-dark {
       --bs-table-bg: #020617;
       --bs-table-hover-bg: #030712;
       --bs-table-border-color: #111827;
+    }
+    body.light-theme .table-dark {
+      --bs-table-bg: #ffffff;
+      --bs-table-hover-bg: #f3f4f6;
+      --bs-table-border-color: #e5e7eb;
+      color: #111827;
+    }
+
+    .badge-status {
+      font-size: 0.7rem;
+      border-radius: 999px;
+      padding: 0.1rem 0.55rem;
+    }
+    .badge-status.active {
+      background: rgba(34, 197, 94, 0.15);
+      color: #16a34a;
+    }
+    .badge-status.inactive {
+      background: rgba(239, 68, 68, 0.12);
+      color: #b91c1c;
     }
 
     pre.json-output {
@@ -236,9 +294,38 @@
       font-size: 0.78rem;
       color: #9ca3af;
     }
+    body.light-theme pre.json-output {
+      background: #f3f4f6;
+      border-color: #e5e7eb;
+      color: #4b5563;
+    }
+
+    .pill-sm {
+      font-size: 0.72rem;
+      border-radius: 999px;
+      padding: 0.05rem 0.5rem;
+      background: rgba(31, 41, 55, 0.9);
+      color: #9ca3af;
+      border: 1px solid #1f2937;
+    }
+    body.light-theme .pill-sm {
+      background: #e5e7eb;
+      color: #374151;
+      border-color: #d1d5db;
+    }
+
+    .btn-accent {
+      background: linear-gradient(to right, #22c55e, #16a34a);
+      border: none;
+      color: #ecfdf5;
+    }
+    .btn-accent:hover {
+      background: linear-gradient(to right, #16a34a, #15803d);
+      color: #ecfdf5;
+    }
+
   </style>
 </head>
-
 <body>
 
 <!-- =============== LOGIN =============== -->
@@ -253,7 +340,7 @@
             </span>
           </div>
           <h2 class="h4 mb-1">Bem-vindo(a)</h2>
-          <p class="text-muted mb-4" style="font-size: 0.9rem;">
+          <p class="text-muted mb-3" style="font-size: 0.9rem;">
             Acesse o painel de gestão de notas fiscais e clientes via WhatsApp.
           </p>
 
@@ -267,12 +354,16 @@
             <input type="password" id="password" class="form-control" placeholder="••••••••" />
           </div>
 
-          <button class="btn btn-accent w-100 mt-3" onclick="login()">
+          <div class="d-flex justify-content-between mb-3">
+            <small></small>
+            <small><a href="#" class="link-light" onclick="openForgotPasswordModal()">Esqueci minha senha</a></small>
+          </div>
+
+          <button class="btn btn-accent w-100 mb-2" onclick="login()">
             <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
           </button>
 
-          <div id="login-error" class="text-danger small mt-2"></div>
-
+          <div id="login-error" class="text-danger small mb-1"></div>
         </div>
       </div>
     </div>
@@ -281,6 +372,7 @@
 
 <!-- ================= LAYOUT PRINCIPAL ================= -->
 <div id="app-layout" class="d-none">
+
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
@@ -293,35 +385,35 @@
 
     <ul class="sidebar-nav">
       <li>
-        <a href="#" class="sidebar-link active" data-section="dashboard"
+        <a class="sidebar-link active"
            onclick="switchSection('dashboard', this)">
           <i class="bi bi-grid-1x2-fill"></i> <span>Visão geral</span>
         </a>
       </li>
 
       <li>
-        <a href="#" class="sidebar-link" data-section="customers"
+        <a class="sidebar-link"
            onclick="switchSection('customers', this)">
           <i class="bi bi-people-fill"></i> <span>Clientes WhatsApp</span>
         </a>
       </li>
 
       <li>
-        <a href="#" class="sidebar-link" data-section="companies"
+        <a class="sidebar-link"
            onclick="switchSection('companies', this)">
           <i class="bi bi-building"></i> <span>Empresas emissoras</span>
         </a>
       </li>
 
       <li>
-        <a href="#" class="sidebar-link" data-section="invoices"
+        <a class="sidebar-link"
            onclick="switchSection('invoices', this)">
           <i class="bi bi-receipt"></i> <span>Notas fiscais</span>
         </a>
       </li>
 
       <li>
-        <a href="#" class="sidebar-link" data-section="reports"
+        <a class="sidebar-link"
            onclick="switchSection('reports', this)">
           <i class="bi bi-graph-up"></i> <span>Relatórios</span>
         </a>
@@ -339,24 +431,26 @@
 
   <!-- Main content -->
   <main class="layout-main">
-
     <!-- Topbar -->
     <header class="topbar">
-      <button class="btn btn-dark btn-mobile-menu me-2" onclick="toggleMobileMenu()">
-        <i class="bi bi-list" style="font-size: 1.4rem;"></i>
-      </button>
-
-      <div class="topbar-title">
-        Painel <span id="topbar-section-label">· Visão geral</span>
-        <span class="badge-env ms-2">Produção</span>
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-dark btn-mobile-menu me-2" onclick="toggleMobileMenu()">
+          <i class="bi bi-list" style="font-size: 1.4rem;"></i>
+        </button>
+        <div class="topbar-title">
+          Painel <span id="topbar-section-label">· Visão geral</span>
+          <span class="badge-env ms-2 pill-sm">Produção</span>
+        </div>
       </div>
 
       <div class="d-flex align-items-center gap-2">
-        <span class="user-pill" id="current-user-pill">
+        <button class="btn btn-sm btn-outline-light border-0" id="theme-toggle-btn" onclick="toggleTheme()">
+          <i class="bi bi-moon"></i>
+        </button>
+        <span class="pill-sm" id="current-user-pill">
           <i class="bi bi-person-badge"></i>
           <span id="current-user-email">admin</span>
         </span>
-
         <button class="btn btn-sm btn-outline-light border-0" onclick="logout()">
           <i class="bi bi-box-arrow-right"></i>
         </button>
@@ -364,7 +458,6 @@
     </header>
 
     <div class="content-wrapper">
-
       <!-- ========== DASHBOARD ========== -->
       <section id="section-dashboard">
         <div class="row g-3">
@@ -372,12 +465,10 @@
             <div class="card-elevated h-100">
               <small class="text-muted">Notas (últimos 30 dias)</small>
               <h4 id="dash-total-notas" class="mt-1 mb-2">–</h4>
-
               <div class="text-muted small">
                 Valor total: <span id="dash-soma-valor">–</span><br />
                 Taxas: <span id="dash-soma-taxas">–</span>
               </div>
-
               <button class="btn btn-sm btn-outline-light mt-3"
                       onclick="loadDashboardSummary()">
                 <i class="bi bi-arrow-clockwise me-1"></i> Atualizar visão
@@ -387,47 +478,41 @@
 
           <div class="col-md-8">
             <div class="card-section h-100">
-              <div class="card-section-header">
-                <h5 class="mb-1">Atalhos rápidos</h5>
-                <small>Ações comuns:</small>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                  <h5 class="mb-1">Gráfico de notas por status</h5>
+                  <small class="text-muted">Baseado nos últimos 30 dias</small>
+                </div>
+                <span class="pill-sm"><i class="bi bi-bar-chart"></i> Dashboard</span>
               </div>
-
-              <div class="row g-2">
-                <div class="col-md-4">
-                  <button class="btn btn-dark w-100" onclick="openCustomerFormModal()">
-                    <i class="bi bi-person-plus me-1"></i> Novo cliente
-                  </button>
-                </div>
-
-                <div class="col-md-4">
-                  <button class="btn btn-dark w-100" onclick="openCompanyFormModal()">
-                    <i class="bi bi-building-add me-1"></i> Nova empresa
-                  </button>
-                </div>
-
-                <div class="col-md-4">
-                  <button class="btn btn-dark w-100"
-                          onclick="switchSection('reports', document.querySelector('[data-section=reports]'))">
-                    <i class="bi bi-graph-up-arrow me-1"></i> Ver relatórios
-                  </button>
-                </div>
-              </div>
+              <canvas id="chartNotasStatus" height="80"></canvas>
             </div>
           </div>
+        </div>
 
+        <div class="row g-3 mt-1">
+          <div class="col-12">
+            <div class="card-section">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                  <h5 class="mb-1">Notas ao longo do tempo</h5>
+                  <small class="text-muted">Gráfico diário (últimos 30 dias)</small>
+                </div>
+              </div>
+              <canvas id="chartNotasDia" height="80"></canvas>
+            </div>
+          </div>
         </div>
       </section>
 
       <!-- ========== CLIENTES ========== -->
       <section id="section-customers" class="d-none">
         <div class="card-section">
-
-          <div class="card-section-header">
+          <div class="d-flex justify-content-between align-items-center mb-2">
             <div>
               <h5>Clientes</h5>
               <small>Usuários identificados pelo WhatsApp</small>
             </div>
-
             <div class="d-flex gap-2">
               <button class="btn btn-sm btn-dark" onclick="loadCustomers()">
                 <i class="bi bi-arrow-clockwise me-1"></i> Atualizar
@@ -494,8 +579,7 @@
       <!-- ========== EMPRESAS ========== -->
       <section id="section-companies" class="d-none">
         <div class="card-section">
-
-          <div class="card-section-header">
+          <div class="d-flex justify-content-between align-items-center mb-2">
             <div>
               <h5>Empresas emissoras</h5>
               <small>Utilizadas para emissão de notas fiscais</small>
@@ -503,7 +587,7 @@
 
             <div class="d-flex gap-2">
               <button class="btn btn-sm btn-dark" onclick="loadCompanies()">
-                <i class="bi bi-arrow-clockwise me-1"></i> Atualizar
+                <i class="bi bi-arrow-clockwise"></i>
               </button>
               <button class="btn btn-sm btn-accent" onclick="openCompanyFormModal()">
                 <i class="bi bi-building-add me-1"></i> Nova empresa
@@ -559,11 +643,10 @@
         </div>
       </section>
 
-      <!-- ========== NOTAS (INÍCIO) ========== -->
+      <!-- ========== NOTAS ========== -->
       <section id="section-invoices" class="d-none">
         <div class="card-section mb-3">
-
-          <div class="card-section-header">
+          <div class="d-flex justify-content-between align-items-center mb-2">
             <div>
               <h5>Notas fiscais</h5>
               <small>Registros de todas as notas emitidas</small>
@@ -617,6 +700,7 @@
               <button class="btn btn-dark w-100" onclick="loadInvoices()">
                 Aplicar filtros
               </button>
+            </div>
           </div>
 
           <div class="table-responsive">
@@ -647,11 +731,12 @@
         </div>
 
         <div class="card-section">
-          <div class="card-section-header">
-            <h5>JSON cru (debug)</h5>
-            <small>Retorno bruto da API</small>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5>JSON cru (debug)</h5>
+              <small class="text-muted">Retorno bruto da API</small>
+            </div>
           </div>
-
           <pre class="json-output" id="invoices-json-output">[]</pre>
         </div>
       </section>
@@ -659,12 +744,16 @@
       <!-- ========== RELATÓRIOS ========== -->
       <section id="section-reports" class="d-none">
         <div class="card-section mb-3">
-          <div class="card-section-header">
-            <h5>Relatórios financeiros</h5>
-            <small>Totais e valores filtrados</small>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <h5>Relatórios financeiros</h5>
+              <small>Totais, períodos e ranking</small>
+            </div>
+            <button class="btn btn-sm btn-accent" onclick="loadSummary()">
+              <i class="bi bi-play-circle me-1"></i> Gerar relatório
+            </button>
           </div>
 
-          <!-- Filtros relatório -->
           <form class="row g-3 mb-2" onsubmit="event.preventDefault(); loadSummary();">
             <div class="col-md-3">
               <label class="form-label">Data inicial</label>
@@ -676,12 +765,20 @@
               <input type="date" id="report-end" class="form-control">
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-2">
               <label class="form-label">ID Cliente</label>
               <input type="number" id="report-customer-id" class="form-control" placeholder="Opcional">
             </div>
 
-            <div class="col-md-3 d-flex align-items-end">
+            <div class="col-md-2">
+              <label class="form-label">Agrupamento</label>
+              <select id="report-group-by" class="form-select">
+                <option value="day">Diário</option>
+                <option value="month">Mensal</option>
+              </select>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
               <button class="btn btn-dark w-100" type="submit">
                 <i class="bi bi-arrow-repeat me-1"></i> Atualizar
               </button>
@@ -689,34 +786,55 @@
           </form>
 
           <div class="row g-3">
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="card-elevated">
                 <small class="text-muted">Total de notas</small>
                 <h4 id="rep-total-notas" class="mt-1 mb-0">–</h4>
               </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="card-elevated">
                 <small class="text-muted">Soma valores</small>
                 <h4 id="rep-soma-valor" class="mt-1 mb-0">R$ 0,00</h4>
               </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="card-elevated">
                 <small class="text-muted">Taxas totais</small>
                 <h4 id="rep-soma-taxas" class="mt-1 mb-0">R$ 0,00</h4>
               </div>
             </div>
+
+            <div class="col-md-3">
+              <div class="card-elevated">
+                <small class="text-muted">Mais notas (cliente)</small>
+                <h6 id="rep-top-customer" class="mt-1 mb-0 small">–</h6>
+                <small class="text-muted">Maior volume (empresa)</small>
+                <h6 id="rep-top-company" class="mt-1 mb-0 small">–</h6>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="card-section">
-          <div class="card-section-header">
-            <h5>Resumo por cliente</h5>
+        <div class="card-section mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <h5>Notas por período</h5>
+              <small class="text-muted">Conforme agrupamento diário/mensal</small>
+            </div>
           </div>
+          <canvas id="chartReportPeriodo" height="80"></canvas>
+        </div>
 
+        <div class="card-section">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <h5>Dados completos (debug)</h5>
+              <small class="text-muted">Resumo que veio da API</small>
+            </div>
+          </div>
           <pre class="json-output" id="reports-output">[]</pre>
         </div>
       </section>
@@ -816,18 +934,56 @@
   </div>
 </div>
 
+<!-- ========== MODAL ESQUECI SENHA ========== -->
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:#020617;border-radius:18px;border:1px solid #1f2937;">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title">Recuperar senha</h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted">
+          Informe o e-mail de administrador para receber instruções de redefinição de senha.
+        </p>
+        <div class="mb-2">
+          <label class="form-label">E-mail</label>
+          <input type="email" id="forgot-email" class="form-control" placeholder="seuemail@exemplo.com">
+        </div>
+        <div id="forgot-error" class="text-danger small mt-1"></div>
+        <div id="forgot-success" class="text-success small mt-1"></div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-accent btn-sm" onclick="sendPasswordRecovery()">Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-/* ==========================
-   AUTH & SESSION
-========================== */
 const API_BASE = "/api";
 let customerModalInstance = null;
 let companyModalInstance = null;
+let forgotModalInstance = null;
+
+let chartNotasStatus = null;
+let chartNotasDia = null;
+let chartReportPeriodo = null;
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Tema salvo
+  const theme = localStorage.getItem("nf_theme") || "dark";
+  if (theme === "light") {
+    document.body.classList.add("light-theme");
+    updateThemeIcon();
+  }
+
   const token = getToken();
   if (token) {
     showAppLayout();
@@ -836,6 +992,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   customerModalInstance = new bootstrap.Modal(document.getElementById("customerModal"));
   companyModalInstance = new bootstrap.Modal(document.getElementById("companyModal"));
+  forgotModalInstance = new bootstrap.Modal(document.getElementById("forgotPasswordModal"));
 });
 
 function setToken(t) { localStorage.setItem("token_nf_app", t); }
@@ -868,6 +1025,7 @@ async function login() {
     }
 
     setToken(data.token);
+    document.getElementById("current-user-email").textContent = data.user?.email || email;
     showAppLayout();
     loadDashboardSummary();
   } catch (e) {
@@ -885,9 +1043,6 @@ function logout() {
   location.reload();
 }
 
-/* ==========================
-   MOBILE SIDEBAR
-========================== */
 function toggleMobileMenu() {
   const sidebar = document.querySelector(".sidebar");
   const overlay = document.getElementById("mobile-sidebar-overlay");
@@ -901,24 +1056,78 @@ function toggleMobileMenu() {
   }
 }
 
-/* ==========================
-   FETCH AUTENTICADO
-========================== */
+function toggleTheme() {
+  document.body.classList.toggle("light-theme");
+  const isLight = document.body.classList.contains("light-theme");
+  localStorage.setItem("nf_theme", isLight ? "light" : "dark");
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  const btn = document.getElementById("theme-toggle-btn");
+  if (!btn) return;
+  const icon = btn.querySelector("i");
+  if (!icon) return;
+  if (document.body.classList.contains("light-theme")) {
+    icon.className = "bi bi-sun";
+  } else {
+    icon.className = "bi bi-moon";
+  }
+}
+
+function openForgotPasswordModal() {
+  document.getElementById("forgot-email").value = "";
+  document.getElementById("forgot-error").textContent = "";
+  document.getElementById("forgot-success").textContent = "";
+  forgotModalInstance.show();
+}
+
+async function sendPasswordRecovery() {
+  const email = document.getElementById("forgot-email").value.trim();
+  const errorEl = document.getElementById("forgot-error");
+  const successEl = document.getElementById("forgot-success");
+  errorEl.textContent = "";
+  successEl.textContent = "";
+
+  if (!email) {
+    errorEl.textContent = "Informe um e-mail válido.";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      errorEl.textContent = data.error || "Erro ao enviar e-mail de recuperação.";
+      return;
+    }
+
+    successEl.textContent = "Se o e-mail existir, um link de recuperação foi enviado.";
+  } catch (err) {
+    errorEl.textContent = "Erro de rede ao enviar recuperação de senha.";
+  }
+}
+
 async function authorizedFetch(url, options = {}) {
   const token = getToken();
   const headers = options.headers || {};
-  headers["Authorization"] = `Bearer ${token}`;
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
   if (!headers["Content-Type"] && options.body) {
     headers["Content-Type"] = "application/json";
   }
   return await fetch(url, { ...options, headers });
 }
 
-/* ==========================
-   FORMATAÇÃO
-========================== */
 function formatCurrency(v) {
-  return Number(v).toLocaleString("pt-BR", {
+  const n = Number(v || 0);
+  return n.toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",
   });
@@ -926,30 +1135,110 @@ function formatCurrency(v) {
 
 function formatDateTime(v) {
   const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return v;
   return d.toLocaleString("pt-BR");
 }
 
-/* ==========================
-   DASHBOARD
-========================== */
-async function loadDashboardSummary() {
-  const end = new Date().toISOString().slice(0, 10);
-  const start = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+function switchSection(sectionId, linkEl) {
+  const sections = ["dashboard", "customers", "companies", "invoices", "reports"];
+  sections.forEach(id => {
+    const sec = document.getElementById(`section-${id}`);
+    if (sec) sec.classList.add("d-none");
+  });
 
-  const res = await authorizedFetch(`${API_BASE}/reports/summary?start=${start}&end=${end}`);
-  if (!res.ok) return;
+  const target = document.getElementById(`section-${sectionId}`);
+  if (target) target.classList.remove("d-none");
 
-  const data = await res.json();
-  const t = data.totals || {};
+  const labels = {
+    dashboard: "· Visão geral",
+    customers: "· Clientes WhatsApp",
+    companies: "· Empresas emissoras",
+    invoices: "· Notas fiscais",
+    reports: "· Relatórios"
+  };
+  document.getElementById("topbar-section-label").innerText = labels[sectionId];
 
-  document.getElementById("dash-total-notas").textContent = t.total_notas || 0;
-  document.getElementById("dash-soma-valor").textContent = formatCurrency(t.soma_valor_total || 0);
-  document.getElementById("dash-soma-taxas").textContent = formatCurrency(t.soma_taxas || 0);
+  document.querySelectorAll(".sidebar-link").forEach(a => a.classList.remove("active"));
+  if (linkEl) linkEl.classList.add("active");
+
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = document.getElementById("mobile-sidebar-overlay");
+  if (sidebar.classList.contains("mobile-open")) {
+    sidebar.classList.remove("mobile-open");
+    overlay.classList.remove("visible");
+  }
+
+  if (sectionId === "customers") loadCustomers();
+  if (sectionId === "companies") loadCompanies();
+  if (sectionId === "invoices") loadInvoices();
+  if (sectionId === "reports") loadSummary();
 }
 
-/* ==========================
-   CLIENTES
-========================== */
+async function loadDashboardSummary() {
+  try {
+    const end = new Date().toISOString().slice(0, 10);
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+    const start = startDate.toISOString().slice(0, 10);
+
+    const res = await authorizedFetch(`${API_BASE}/reports/summary?start=${start}&end=${end}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const totals = data.totals || {};
+    document.getElementById("dash-total-notas").textContent = totals.total_notas || 0;
+    document.getElementById("dash-soma-valor").textContent =
+      formatCurrency(totals.soma_valor_total || 0);
+    document.getElementById("dash-soma-taxas").textContent =
+      formatCurrency(totals.soma_taxas || 0);
+
+    const porStatus = data.porStatus || [];
+    const labelsStatus = porStatus.map(s => s.status);
+    const valuesStatus = porStatus.map(s => s.total_notas);
+
+    const ctx1 = document.getElementById("chartNotasStatus").getContext("2d");
+    if (chartNotasStatus) chartNotasStatus.destroy();
+    chartNotasStatus = new Chart(ctx1, {
+      type: "bar",
+      data: {
+        labels: labelsStatus,
+        datasets: [{
+          label: "Quantidade de notas",
+          data: valuesStatus
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    const porDia = data.porDia || [];
+    const labelsDia = porDia.map(d => d.label || d.date);
+    const valuesDia = porDia.map(d => d.total_notas);
+
+    const ctx2 = document.getElementById("chartNotasDia").getContext("2d");
+    if (chartNotasDia) chartNotasDia.destroy();
+    chartNotasDia = new Chart(ctx2, {
+      type: "line",
+      data: {
+        labels: labelsDia,
+        datasets: [{
+          label: "Notas por dia",
+          data: valuesDia,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } }
+      }
+    });
+  } catch (err) {
+    console.error("Erro dashboard:", err);
+  }
+}
+
 async function loadCustomers() {
   const tbody = document.getElementById("customers-tbody");
   tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted small">Carregando...</td></tr>`;
@@ -962,7 +1251,6 @@ async function loadCustomers() {
 
   let data = await res.json();
 
-  // filtros
   const fName = document.getElementById("filter-customer-name").value.toLowerCase();
   const fWpp  = document.getElementById("filter-customer-whatsapp").value.toLowerCase();
   const fAct  = document.getElementById("filter-customer-active").value;
@@ -988,7 +1276,7 @@ async function loadCustomers() {
       <td>${c.id}</td>
       <td>${c.name}</td>
       <td>${c.whatsapp_number}</td>
-      <td>${c.fee_percent}%</td>
+      <td>${Number(c.fee_percent).toFixed(2)}%</td>
       <td><span class="badge-status ${c.is_active ? 'active':'inactive'}">${c.is_active ? "Ativo":"Inativo"}</span></td>
       <td>
         <button class="btn btn-sm btn-outline-light me-1" onclick='editCustomer(${JSON.stringify(c)})'>
@@ -1060,9 +1348,6 @@ async function deleteCustomer(id) {
   if (res.ok) loadCustomers();
 }
 
-/* ==========================
-   EMPRESAS
-========================== */
 async function loadCompanies() {
   const tbody = document.getElementById("companies-tbody");
   tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted small">Carregando...</td></tr>`;
@@ -1126,7 +1411,6 @@ function editCompany(c) {
   document.getElementById("company-name").value = c.name;
   document.getElementById("company-access-key").value = c.access_key;
   document.getElementById("company-active").checked = c.is_active;
-
   document.getElementById("company-modal-error").textContent = "";
   companyModalInstance.show();
 }
@@ -1171,9 +1455,6 @@ async function deleteCompany(id) {
   if (res.ok) loadCompanies();
 }
 
-/* ==========================
-   NOTAS
-========================== */
 async function loadInvoices() {
   const tbody = document.getElementById("invoices-tbody");
   const jsonOut = document.getElementById("invoices-json-output");
@@ -1228,39 +1509,75 @@ async function loadInvoices() {
       <td>${formatDateTime(inv.issued_at)}</td>
       <td>${formatCurrency(inv.total_amount)}</td>
       <td>${inv.paid_amount ? formatCurrency(inv.paid_amount) : "-"}</td>
-      <td>${inv.fee_percent}% (${formatCurrency(inv.fee_value)})</td>
+      <td>${Number(inv.fee_percent).toFixed(2)}% (${formatCurrency(inv.fee_value)})</td>
       <td><span class="badge-status ${inv.status === "EMITIDA"?"active":"inactive"}">${inv.status}</span></td>
     `;
     tbody.appendChild(tr);
   }
 }
 
-/* ==========================
-   RELATÓRIO
-========================== */
 async function loadSummary() {
   const params = new URLSearchParams();
   const start = document.getElementById("report-start").value;
   const end   = document.getElementById("report-end").value;
   const cust  = document.getElementById("report-customer-id").value;
+  const group = document.getElementById("report-group-by").value;
 
   if (start) params.append("start", start);
   if (end) params.append("end", end);
   if (cust) params.append("customer_id", cust);
+  if (group) params.append("group_by", group);
 
   const res = await authorizedFetch(`${API_BASE}/reports/summary?${params.toString()}`);
-
-  if (!res.ok) return alert("Erro ao gerar relatório.");
+  if (!res.ok) {
+    alert("Erro ao gerar relatório.");
+    return;
+  }
 
   const data = await res.json();
-  const t = data.totals || {};
+  document.getElementById("reports-output").textContent = JSON.stringify(data, null, 2);
 
-  document.getElementById("rep-total-notas").textContent = t.total_notas || 0;
-  document.getElementById("rep-soma-valor").textContent = formatCurrency(t.soma_valor_total || 0);
-  document.getElementById("rep-soma-taxas").textContent = formatCurrency(t.soma_taxas || 0);
+  const totals = data.totals || {};
+  document.getElementById("rep-total-notas").textContent = totals.total_notas || 0;
+  document.getElementById("rep-soma-valor").textContent = formatCurrency(totals.soma_valor_total || 0);
+  document.getElementById("rep-soma-taxas").textContent = formatCurrency(totals.soma_taxas || 0);
 
-  document.getElementById("reports-output").textContent =
-    JSON.stringify(data.porCliente || [], null, 2);
+  const porCliente = data.porCliente || [];
+  if (porCliente.length) {
+    porCliente.sort((a,b)=> (b.total_notas || 0) - (a.total_notas || 0));
+    const top = porCliente[0];
+    document.getElementById("rep-top-customer").textContent =
+      `${top.name || ("ID " + top.customer_id)} (${top.total_notas} notas)`;
+  } else {
+    document.getElementById("rep-top-customer").textContent = "–";
+  }
+
+  const porEmpresa = data.porEmpresa || [];
+  if (porEmpresa.length) {
+    porEmpresa.sort((a,b)=> (b.soma_valor_total || 0) - (a.soma_valor_total || 0));
+    const topE = porEmpresa[0];
+    document.getElementById("rep-top-company").textContent =
+      `${topE.name || ("Empresa " + topE.company_id)} (${formatCurrency(topE.soma_valor_total || 0)})`;
+  } else {
+    document.getElementById("rep-top-company").textContent = "–";
+  }
+
+  const porPeriodo = data.porPeriodo || [];
+  const labels = porPeriodo.map(p => p.label);
+  const values = porPeriodo.map(p => p.total_notas);
+  const ctx = document.getElementById("chartReportPeriodo").getContext("2d");
+  if (chartReportPeriodo) chartReportPeriodo.destroy();
+  chartReportPeriodo = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{ label: "Notas", data: values, tension: 0.25 }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } }
+    }
+  });
 }
 </script>
 
