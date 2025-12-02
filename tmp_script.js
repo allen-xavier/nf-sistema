@@ -1916,5 +1916,14 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
         }
         }
       }
+
+      // listeners de login
+      document.getElementById("btnLogin")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        doLogin();
+      });
+      document.getElementById("loginPassword")?.addEventListener("keyup", (e) => {
+        if (e.key === "Enter") doLogin();
+      });
       });
     
