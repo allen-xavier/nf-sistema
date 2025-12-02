@@ -800,9 +800,9 @@
             <span class="icon">•</span>
             <span>Terminais</span>
           </div>
-          <div class="nav-item" data-page="pos-taxas">
+          <div class="nav-item" data-page="pos-clientes">
             <span class="icon">•</span>
-            <span>Taxas</span>
+            <span>Clientes POS</span>
           </div>
           <div class="nav-item" data-page="pos-vendas">
             <span class="icon">•</span>
@@ -1217,22 +1217,31 @@
             </div>
           </section>
 
-          <section id="page-pos-taxas" class="page-section">
+          <section id="page-pos-clientes" class="page-section">
             <div class="card pos-block">
-              <div class="card-header"><div><div class="card-title">Taxas por cliente</div><div class="card-subtitle">Debito/credito e PIX</div></div></div>
+              <div class="card-header"><div><div class="card-title">Clientes POS</div><div class="card-subtitle">Cadastro rápido com taxas e PIX</div></div></div>
               <div class="form-row">
-                <div class="form-group"><label>Cliente</label><select id="posRateCliente"></select></div>
-                <div class="form-group"><label>PIX</label><input id="posRatePix" /></div>
+                <div class="form-group"><label>Nome</label><input id="posCliNome" /></div>
+                <div class="form-group"><label>WhatsApp (único)</label><input id="posCliWhats" /></div>
+                <div class="form-group"><label>PIX</label><input id="posCliPix" /></div>
               </div>
               <div class="form-row">
-                <div class="form-group"><label>Debito (%)</label><input id="posRateDebito" type="number" step="0.01" /></div>
-                <div class="form-group"><label>Credito a vista (%)</label><input id="posRateCreditoAVista" type="number" step="0.01" /></div>
+                <div class="form-group"><label>Debito (%)</label><input id="posCliDeb" type="number" step="0.01" /></div>
+                <div class="form-group"><label>Credito a vista (%)</label><input id="posCliCredAv" type="number" step="0.01" /></div>
               </div>
               <div class="form-row">
-                <div class="form-group"><label>Credito 2 a 6x (%)</label><input id="posRateCredito2a6" type="number" step="0.01" /></div>
-                <div class="form-group"><label>Credito 7 a 12x (%)</label><input id="posRateCredito7a12" type="number" step="0.01" /></div>
+                <div class="form-group"><label>Credito 2 a 6x (%)</label><input id="posCliCred2a6" type="number" step="0.01" /></div>
+                <div class="form-group"><label>Credito 7 a 12x (%)</label><input id="posCliCred7a12" type="number" step="0.01" /></div>
               </div>
-              <button class="btn-primary" id="btnPosSalvarTaxas">Salvar taxas</button>
+              <button class="btn-primary" id="btnPosSalvarCliente">Salvar cliente</button>
+              <div class="table-wrapper" style="max-height: 220px; margin-top:10px">
+                <table>
+                  <thead>
+                    <tr><th>ID</th><th>Nome</th><th>Whats</th><th>Deb</th><th>Cred av</th><th>2-6x</th><th>7-12x</th><th>PIX</th></tr>
+                  </thead>
+                  <tbody id="posClientesTableBody"></tbody>
+                </table>
+              </div>
             </div>
           </section>
 
@@ -2921,107 +2930,12 @@
       }
 
       function renderPosVendas() {
-        const tbody = document.getElementById("posVendasTableBody");
-        if (!tbody) return;
-        tbody.innerHTML = (posVendasRecentes || [])
-          .map((v) => {
-            const dt = v.sale_datetime ? new Date(v.sale_datetime).toLocaleString("pt-BR") : "—";
-            return `
-              <tr>
-                <td>${dt}</td>
-                <td>${v.Customer?.name || "—"}</td>
-                <td>${v.PosTerminal?.terminal_code || "—"}</td>
-                <td>${v.payment_type}</td>
-                <td>${formatCurrencyBRL(v.amount)}</td>
-                <td>${formatCurrencyBRL(v.fee_value)}</td>
-                <td>${formatCurrencyBRL(v.net_amount)}</td>
-              </tr>`;
-          })
-          .join("");
-      }
-
-      async function loadPosResumo() {
-        try {
-          const res = await apiFetch("/api/pos/reports/summary");
-          const bruto = Number(res?.totals?.bruto || 0);
-          const liquido = Number(res?.totals?.liquido || 0);
-          const taxas = Number(res?.totals?.taxas || 0);
-          document.getElementById("posResumoBruto").textContent = formatCurrencyBRL(bruto);
-          document.getElementById("posResumoLiquido").textContent = formatCurrencyBRL(liquido);
-          document.getElementById("posResumoTaxas").textContent = formatCurrencyBRL(taxas);
-          document.getElementById("posResumoTopCliente").textContent = res?.topCliente?.Customer?.name || "—";
-          document.getElementById("posResumoTopDia").textContent = res?.topDia?.Customer?.name || "—";
-          const mv = res?.maiorVenda;
-          document.getElementById("posResumoMaiorVenda").textContent = mv ? `${mv.Customer?.name || "—"} - ${formatCurrencyBRL(mv.amount)}` : "—";
-        } catch (err) {
-          console.error("Erro ao carregar resumo POS:", err);
-        }
-      }
-      // ==========================
-      // RELATÓRIOS - SELECTS
-      // ==========================
-      function populateRelatorioSelects(clis = clientes, emps = empresas) {
-        const selCli = document.getElementById("relClienteSelect");
-        const selEmp = document.getElementById("relEmpresaSelect");
-        if (!selCli || !selEmp) return;
-
-        const currentCli = selCli.value;
-        const currentEmp = selEmp.value;
-
-        const cliSearch =
-          (document.getElementById("relClienteSearch")?.value || "")
-            .toLowerCase()
-            .trim();
-        const empSearch =
-          (document.getElementById("relEmpresaSearch")?.value || "")
-            .toLowerCase()
-            .trim();
-        const empStatus =
-          document.getElementById("relEmpresaAtivo")?.value || "all";
-
-        const filteredClis = (clis || []).filter((c) => {
-          if (!cliSearch) return true;
-          const name = (c.name || "").toLowerCase();
-          const phone = (c.whatsapp_number || "").toLowerCase();
-          return name.includes(cliSearch) || phone.includes(cliSearch);
+        const tbody = document.getElementById("posVendasTableBody")?.addEventListener("click", (e) => {
+          const delId = e.target.getAttribute("data-del-pos-sale");
+          if (delId && confirm("Excluir venda?")) deletePosVenda(delId);
         });
 
-        const filteredEmps = (emps || []).filter((e) => {
-          if (empStatus === "true" && !e.is_active) return false;
-          if (empStatus === "false" && e.is_active) return false;
-          if (!empSearch) return true;
-          const name = (e.name || "").toLowerCase();
-          const cnpj = (e.cnpj || "").toLowerCase();
-          return name.includes(empSearch) || cnpj.includes(empSearch);
-        });
-
-        selCli.innerHTML = '<option value="">Selecione um cliente</option>';
-        filteredClis.forEach((c) => {
-          const opt = document.createElement("option");
-          opt.value = c.id;
-          opt.textContent = `${c.name} (${c.whatsapp_number})`;
-          selCli.appendChild(opt);
-        });
-        if (currentCli && filteredClis.some((c) => String(c.id) === currentCli)) {
-          selCli.value = currentCli;
-        }
-
-        selEmp.innerHTML = '<option value="">Selecione uma empresa</option>';
-        filteredEmps.forEach((e) => {
-          const opt = document.createElement("option");
-          opt.value = e.id;
-          opt.textContent = `${e.name} (${e.cnpj})`;
-          selEmp.appendChild(opt);
-        });
-        if (currentEmp && filteredEmps.some((e) => String(e.id) === currentEmp)) {
-          selEmp.value = currentEmp;
-        }
-      }
-
-      // ==========================
-      // EVENTOS GERAIS
-      // ==========================
-      document.addEventListener("DOMContentLoaded", () => {
+        document("DOMContentLoaded", () => {
         // Theme
         document
           .getElementById("btnThemeToggle")
@@ -3172,6 +3086,103 @@
           });
 
         // POS (Maquininhas)
+      async function deletePosVenda(id) {
+        try {
+          await apiFetch(`/api/pos/sales/${id}`, { method: "DELETE" });
+          await loadPosVendasRecentes();
+          await loadPosResumo();
+        } catch (err) {
+          alert("Erro ao excluir venda POS");
+          console.error(err);
+        }
+      }      // POS (Maquininhas)
+      async function deletePosVenda(id) {
+        try {
+          await apiFetch(`/api/pos/sales/${id}`, { method: "DELETE" });
+          await loadPosVendasRecentes();
+          await loadPosResumo();
+        } catch (err) {
+          alert("Erro ao excluir venda POS");
+          console.error(err);
+        }
+      } - Clientes POS
+      let posClientes = [];
+
+      async function loadPosClientes() {
+        try {
+          const all = await apiFetch("/api/customers");
+          posClientes = (all || []).filter((c) => c.uses_pos !== false);
+          renderPosClientes();
+          fillPosSelects();
+        } catch (err) {
+          console.error("Erro ao carregar clientes POS:", err);
+        }
+      }
+
+      function renderPosClientes() {
+        const tbody = document.getElementById("posClientesTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = posClientes
+          .map((c) => `
+            <tr>
+              <td>${c.id}</td>
+              <td>${c.name}</td>
+              <td>${c.whatsapp_number}</td>
+              <td>${Number(c.PosRate?.debit_percent || 0).toFixed(2)}%</td>
+              <td>${Number(c.PosRate?.credit_avista_percent || 0).toFixed(2)}%</td>
+              <td>${Number(c.PosRate?.credit_2a6_percent || 0).toFixed(2)}%</td>
+              <td>${Number(c.PosRate?.credit_7a12_percent || 0).toFixed(2)}%</td>
+              <td>${c.PosRate?.pix_key || "—"}</td>
+            </tr>
+          `)
+          .join("");
+      }
+
+      async function savePosCliente() {
+        const name = document.getElementById("posCliNome").value.trim();
+        const whatsapp_number = document.getElementById("posCliWhats").value.trim();
+        const pix_key = document.getElementById("posCliPix").value.trim();
+        const debit_percent = Number(document.getElementById("posCliDeb").value || 0);
+        const credit_avista_percent = Number(document.getElementById("posCliCredAv").value || 0);
+        const credit_2a6_percent = Number(document.getElementById("posCliCred2a6").value || 0);
+        const credit_7a12_percent = Number(document.getElementById("posCliCred7a12").value || 0);
+
+        if (!name || !whatsapp_number) {
+          alert("Informe nome e WhatsApp");
+          return;
+        }
+
+        try {
+          const created = await apiFetch("/api/customers", {
+            method: "POST",
+            body: JSON.stringify({
+              name,
+              whatsapp_number,
+              fee_percent: 0,
+              is_active: true,
+              uses_nf: false,
+              uses_pos: true,
+            }),
+          });
+
+          await apiFetch(`/api/pos/rates/${created.id}`, {
+            method: "POST",
+            body: JSON.stringify({
+              pix_key,
+              debit_percent,
+              credit_avista_percent,
+              credit_2a6_percent,
+              credit_7a12_percent,
+            }),
+          });
+
+          await loadPosClientes();
+          alert("Cliente POS salvo");
+        } catch (err) {
+          alert("Erro ao salvar cliente POS (WhatsApp deve ser unico)");
+          console.error(err);
+        }
+      }
         document.getElementById("btnPosAddCompany")?.addEventListener("click", addPosCompany);
         document.getElementById("btnPosAddTerminal")?.addEventListener("click", addPosTerminal);
         document.getElementById("btnPosSalvarTaxas")?.addEventListener("click", savePosRates);
