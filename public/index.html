@@ -1219,11 +1219,19 @@
 
           <section id="page-pos-clientes" class="page-section">
             <div class="card pos-block">
-              <div class="card-header"><div><div class="card-title">Clientes POS</div><div class="card-subtitle">Cadastro rápido com taxas e PIX</div></div></div>
+              <div class="card-header"><div><div class="card-title">Clientes POS</div><div class="card-subtitle">Cadastro rapido com taxas e PIX</div></div></div>
               <div class="form-row">
                 <div class="form-group"><label>Nome</label><input id="posCliNome" /></div>
-                <div class="form-group"><label>WhatsApp (único)</label><input id="posCliWhats" /></div>
+                <div class="form-group"><label>WhatsApp (unico)</label><input id="posCliWhats" /></div>
                 <div class="form-group"><label>PIX</label><input id="posCliPix" /></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group checkbox"><label><input type="checkbox" id="posCliAtivo" checked /> Ativo no POS</label></div>
+                <div class="form-group checkbox"><label><input type="checkbox" id="posCliUsaNF" /> Tambem usa Nota Fiscal</label></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Busca cliente (nome/Whats)</label><input id="posCliSearch" placeholder="Buscar" /></div>
+                <div class="form-group"><label>&nbsp;</label><button class="btn-secondary" id="btnPosNovoCliente" style="width:100%">Novo / limpar</button></div>
               </div>
               <div class="form-row">
                 <div class="form-group"><label>Debito (%)</label><input id="posCliDeb" type="number" step="0.01" /></div>
@@ -1237,7 +1245,7 @@
               <div class="table-wrapper" style="max-height: 220px; margin-top:10px">
                 <table>
                   <thead>
-                    <tr><th>ID</th><th>Nome</th><th>Whats</th><th>Deb</th><th>Cred av</th><th>2-6x</th><th>7-12x</th><th>PIX</th></tr>
+                    <tr><th>ID</th><th>Nome</th><th>Whats</th><th>POS</th><th>NF</th><th>Deb</th><th>Cred av</th><th>2-6x</th><th>7-12x</th><th>PIX</th></tr>
                   </thead>
                   <tbody id="posClientesTableBody"></tbody>
                 </table>
@@ -2748,10 +2756,11 @@
             // ==========================
       // MAQUININHAS (POS)
       // ==========================
-      let posCompanies = [];
+let posCompanies = [];
       let posTerminals = [];
       let posVendasRecentes = [];
       let posClientes = [];
+      let currentPosClienteId = null;
 
       async function loadPosCompanies() {
         try {
@@ -2910,6 +2919,7 @@
           selCli.innerHTML =
             '<option value="">Selecione</option>' +
             (posClientes || [])
+              .filter((c) => c.uses_pos !== false && c.is_active !== false)
               .map((c) => `<option value="${c.id}">${c.name}</option>`)
               .join("");
         }
@@ -3099,6 +3109,18 @@
 
         // POS eventos
         document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePosCliente);
+        document.getElementById("btnPosNovoCliente")?.addEventListener("click", (e) => {
+          e.preventDefault();
+          resetPosClienteForm();
+        });
+        document.getElementById("posCliSearch")?.addEventListener("input", renderPosClientes);
+        document.getElementById("posClientesTableBody")?.addEventListener("click", (e) => {
+          const tr = e.target.closest("tr[data-id]");
+          if (!tr) return;
+          const id = Number(tr.getAttribute("data-id"));
+          const c = posClientes.find((x) => x.id === id);
+          if (c) populatePosClienteForm(c);
+        });
         document.getElementById("btnPosAddCompany")?.addEventListener("click", addPosCompany);
         document.getElementById("btnPosAddTerminal")?.addEventListener("click", addPosTerminal);
         document.getElementById("btnPosSalvarTaxas")?.addEventListener("click", savePosRates);
@@ -3217,7 +3239,17 @@
       async function loadPosClientes() {
         try {
           const all = await apiFetch("/api/customers");
-          posClientes = (all || []).filter((c) => c.uses_pos !== false);
+          posClientes = await Promise.all(
+            (all || []).map(async (c) => {
+              let rate = null;
+              try {
+                rate = await apiFetch(`/api/pos/rates/${c.id}`);
+              } catch (err) {
+                // ignora erro de taxa individual
+              }
+              return { ...c, PosRate: rate || null };
+            })
+          );
           renderPosClientes();
           fillPosSelects();
         } catch (err) {
@@ -3228,20 +3260,63 @@
       function renderPosClientes() {
         const tbody = document.getElementById("posClientesTableBody");
         if (!tbody) return;
-        tbody.innerHTML = posClientes
+        const term = (document.getElementById("posCliSearch")?.value || "").toLowerCase();
+        const filtered = (posClientes || []).filter((c) => {
+          if (!term) return true;
+          const name = (c.name || "").toLowerCase();
+          const whats = (c.whatsapp_number || "").toLowerCase();
+          const digits = whats.replace(/\D/g, "");
+          const tclean = term.replace(/\D/g, "");
+          return (
+            name.includes(term) ||
+            whats.includes(term) ||
+            (tclean && digits.includes(tclean))
+          );
+        });
+
+        tbody.innerHTML = filtered
+          .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
           .map((c) => `
-            <tr>
+            <tr data-id="${c.id}">
               <td>${c.id}</td>
-              <td>${c.name}</td>
-              <td>${c.whatsapp_number}</td>
+              <td>${c.name || ""}</td>
+              <td>${c.whatsapp_number || ""}</td>
+              <td>${c.uses_pos === false ? "N?o" : "Sim"}</td>
+              <td>${c.uses_nf === false ? "N?o" : "Sim"}</td>
               <td>${Number(c.PosRate?.debit_percent || 0).toFixed(2)}%</td>
               <td>${Number(c.PosRate?.credit_avista_percent || 0).toFixed(2)}%</td>
               <td>${Number(c.PosRate?.credit_2a6_percent || 0).toFixed(2)}%</td>
               <td>${Number(c.PosRate?.credit_7a12_percent || 0).toFixed(2)}%</td>
-              <td>${c.PosRate?.pix_key || "—"}</td>
+              <td>${c.PosRate?.pix_key || "?"}</td>
             </tr>
           `)
           .join("");
+      }
+
+      function populatePosClienteForm(c) {
+        currentPosClienteId = c?.id || null;
+        document.getElementById("posCliNome").value = c?.name || "";
+        document.getElementById("posCliWhats").value = c?.whatsapp_number || "";
+        document.getElementById("posCliPix").value = c?.PosRate?.pix_key || "";
+        document.getElementById("posCliDeb").value = c?.PosRate?.debit_percent || "";
+        document.getElementById("posCliCredAv").value = c?.PosRate?.credit_avista_percent || "";
+        document.getElementById("posCliCred2a6").value = c?.PosRate?.credit_2a6_percent || "";
+        document.getElementById("posCliCred7a12").value = c?.PosRate?.credit_7a12_percent || "";
+        document.getElementById("posCliAtivo").checked = c?.is_active !== false && c?.uses_pos !== false;
+        document.getElementById("posCliUsaNF").checked = c?.uses_nf !== false;
+      }
+
+      function resetPosClienteForm() {
+        currentPosClienteId = null;
+        document.getElementById("posCliNome").value = "";
+        document.getElementById("posCliWhats").value = "";
+        document.getElementById("posCliPix").value = "";
+        document.getElementById("posCliDeb").value = "";
+        document.getElementById("posCliCredAv").value = "";
+        document.getElementById("posCliCred2a6").value = "";
+        document.getElementById("posCliCred7a12").value = "";
+        document.getElementById("posCliAtivo").checked = true;
+        document.getElementById("posCliUsaNF").checked = false;
       }
 
       async function savePosCliente() {
@@ -3252,6 +3327,8 @@
         const credit_avista_percent = Number(document.getElementById("posCliCredAv").value || 0);
         const credit_2a6_percent = Number(document.getElementById("posCliCred2a6").value || 0);
         const credit_7a12_percent = Number(document.getElementById("posCliCred7a12").value || 0);
+        const ativo = document.getElementById("posCliAtivo").checked;
+        const usaNF = document.getElementById("posCliUsaNF").checked;
 
         if (!name || !whatsapp_number) {
           alert("Informe nome e WhatsApp");
@@ -3259,19 +3336,32 @@
         }
 
         try {
-          const created = await apiFetch("/api/customers", {
-            method: "POST",
-            body: JSON.stringify({
-              name,
-              whatsapp_number,
-              fee_percent: 0,
-              is_active: true,
-              uses_nf: false,
-              uses_pos: true,
-            }),
-          });
+          const isEdit = !!currentPosClienteId;
+          let custId = currentPosClienteId;
+          const base = posClientes.find((c) => c.id === custId) || {};
+          const payload = {
+            name,
+            whatsapp_number,
+            fee_percent: base.fee_percent ?? 0,
+            is_active: ativo,
+            uses_pos: ativo,
+            uses_nf: usaNF,
+          };
 
-          await apiFetch(`/api/pos/rates/${created.id}`, {
+          if (isEdit) {
+            await apiFetch(`/api/customers/${custId}`, {
+              method: "PUT",
+              body: JSON.stringify(payload),
+            });
+          } else {
+            const created = await apiFetch("/api/customers", {
+              method: "POST",
+              body: JSON.stringify(payload),
+            });
+            custId = created.id;
+          }
+
+          await apiFetch(`/api/pos/rates/${custId}`, {
             method: "POST",
             body: JSON.stringify({
               pix_key,
@@ -3283,13 +3373,14 @@
           });
 
           await loadPosClientes();
+          resetPosClienteForm();
           alert("Cliente POS salvo");
         } catch (err) {
           alert("Erro ao salvar cliente POS (WhatsApp deve ser unico)");
           console.error(err);
         }
       }
-        document.getElementById("btnPosAddCompany")?.addEventListener("click", addPosCompany);
+document.getElementById("btnPosAddCompany")?.addEventListener("click", addPosCompany);
         document.getElementById("btnPosAddTerminal")?.addEventListener("click", addPosTerminal);
         document.getElementById("btnPosSalvarTaxas")?.addEventListener("click", savePosRates);
         document.getElementById("posRateCliente")?.addEventListener("change", loadPosRateForSelected);
