@@ -1711,7 +1711,7 @@
             },
           });
 
-          //const porStatus = data.porStatus || [];
+          const porStatus = data.porStatus || [];
           if (chartStatus) chartStatus.destroy();
           const ctxStatus = document.getElementById("chartStatus").getContext("2d");
           chartStatus = new Chart(ctxStatus, {
