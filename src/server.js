@@ -16,6 +16,12 @@ const authRoutes = require("./routes/auth");
 // Rotas NOVAS
 const reportsRoutes = require("./routes/reports");
 const authExtraRoutes = require("./routes/authExtra");
+// POS (maquininha)
+const posCompaniesRoutes = require("./routes/pos/companies");
+const posTerminalsRoutes = require("./routes/pos/terminals");
+const posRatesRoutes = require("./routes/pos/rates");
+const posSalesRoutes = require("./routes/pos/sales");
+const posReportsRoutes = require("./routes/pos/reports");
 
 app.use(cors());
 app.use(express.json());
@@ -27,6 +33,12 @@ app.use("/api/invoices", invoicesRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", authExtraRoutes); // forgot-password
 app.use("/api/reports", reportsRoutes);
+// POS (maquininha)
+app.use("/api/pos/companies", posCompaniesRoutes);
+app.use("/api/pos/terminals", posTerminalsRoutes);
+app.use("/api/pos/rates", posRatesRoutes);
+app.use("/api/pos/sales", posSalesRoutes);
+app.use("/api/pos/reports", posReportsRoutes);
 
 // Arquivos estáticos (frontend)
 app.use(express.static("public"));

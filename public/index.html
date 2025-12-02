@@ -781,6 +781,7 @@
             <span class="icon">🧾</span>
             <span>Notas Fiscais</span>
           </div>
+          <div class="nav-item" data-page="pos">`r`n            <span class="icon">?</span>\n            <span>Maquininhas</span>\n          </div>
 
           <div class="sidebar-section-label">Análises</div>
           <div class="nav-item" data-page="relatorios">
@@ -1150,8 +1151,155 @@
                 </div>
               </div>
             </div>
-          </section>
+          </section>          <!-- MAQUININHAS -->
+          <section id="page-pos" class="page-section">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Maquininhas</div>
+                  <div class="card-subtitle">Empresas, terminais, taxas e vendas</div>
+                </div>
+              </div>
 
+              <div class="grid grid-2">
+                <div class="card">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-title">Empresas</div>
+                      <div class="card-subtitle">Adquirentes da maquininha</div>
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Nome</label>
+                      <input id="posCompanyName" />
+                    </div>
+                    <div class="form-group">
+                      <label>CNPJ</label>
+                      <input id="posCompanyCnpj" />
+                    </div>
+                    <div class="form-group" style="max-width: 140px">
+                      <label>Status</label>
+                      <select id="posCompanyAtiva">
+                        <option value="true">Ativa</option>
+                        <option value="false">Inativa</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button class="btn-primary" id="btnPosAddCompany">Cadastrar</button>
+                  <div class="table-wrapper" style="max-height: 200px; margin-top: 10px">
+                    <table>
+                      <thead>
+                        <tr><th>ID</th><th>Nome</th><th>CNPJ</th><th>Status</th></tr>
+                      </thead>
+                      <tbody id="posCompaniesTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-title">Terminais</div>
+                      <div class="card-subtitle">Vincule empresa e cliente</div>
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Empresa</label>
+                      <select id="posTerminalEmpresa"></select>
+                    </div>
+                    <div class="form-group">
+                      <label>Cliente</label>
+                      <select id="posTerminalCliente"></select>
+                    </div>
+                    <div class="form-group">
+                      <label>C�digo</label>
+                      <input id="posTerminalCode" />
+                    </div>
+                    <div class="form-group" style="max-width: 140px">
+                      <label>Status</label>
+                      <select id="posTerminalAtivo">
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button class="btn-primary" id="btnPosAddTerminal">Cadastrar</button>
+                  <div class="table-wrapper" style="max-height: 200px; margin-top: 10px">
+                    <table>
+                      <thead>
+                        <tr><th>ID</th><th>Terminal</th><th>Empresa</th><th>Cliente</th><th>Status</th></tr>
+                      </thead>
+                      <tbody id="posTerminalsTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-2" style="margin-top: 14px">
+                <div class="card">
+                  <div class="card-header"><div><div class="card-title">Taxas por cliente</div><div class="card-subtitle">D�bito/cr�dito e PIX</div></div></div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Cliente</label>
+                      <select id="posRateCliente"></select>
+                    </div>
+                    <div class="form-group"><label>PIX</label><input id="posRatePix" /></div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group"><label>D�bito (%)</label><input id="posRateDebito" type="number" step="0.01" /></div>
+                    <div class="form-group"><label>Cr�dito � vista (%)</label><input id="posRateCreditoAVista" type="number" step="0.01" /></div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group"><label>Cr�dito 2 a 6x (%)</label><input id="posRateCredito2a6" type="number" step="0.01" /></div>
+                    <div class="form-group"><label>Cr�dito 7 a 12x (%)</label><input id="posRateCredito7a12" type="number" step="0.01" /></div>
+                  </div>
+                  <button class="btn-primary" id="btnPosSalvarTaxas">Salvar taxas</button>
+                </div>
+
+                <div class="card">
+                  <div class="card-header"><div><div class="card-title">Registrar venda</div><div class="card-subtitle">Terminal, data/hora, valor, forma, NSU</div></div></div>
+                  <div class="form-row">
+                    <div class="form-group"><label>Terminal</label><select id="posVendaTerminal"></select></div>
+                    <div class="form-group"><label>Data/hora</label><input id="posVendaData" type="datetime-local" /></div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group"><label>Valor</label><input id="posVendaValor" type="number" step="0.01" /></div>
+                    <div class="form-group"><label>Forma</label><select id="posVendaForma"><option value="DEBITO">D�bito</option><option value="CREDITO_AVISTA">Cr�dito � vista</option><option value="CREDITO_2A6">Cr�dito 2 a 6x</option><option value="CREDITO_7A12">Cr�dito 7 a 12x</option><option value="PIX">PIX</option></select></div>
+                    <div class="form-group"><label>NSU</label><input id="posVendaNsu" /></div>
+                  </div>
+                  <button class="btn-primary" id="btnPosRegistrarVenda">Registrar venda</button>
+                  <div id="posVendaMsg" class="success-text" style="display:none; margin-top:8px"></div>
+                </div>
+              </div>
+
+              <div class="grid grid-2" style="margin-top: 14px">
+                <div class="card">
+                  <div class="card-header"><div><div class="card-title">Vendas recentes</div><div class="card-subtitle">�ltimas 50 vendas</div></div></div>
+                  <div class="table-wrapper" style="max-height: 220px">
+                    <table>
+                      <thead><tr><th>Data</th><th>Cliente</th><th>Terminal</th><th>Forma</th><th>Bruto</th><th>Taxa</th><th>L�quido</th></tr></thead>
+                      <tbody id="posVendasTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-header"><div><div class="card-title">Resumo</div><div class="card-subtitle">Bruto, l�quido, taxas</div></div><button class="btn-secondary" id="btnPosCarregarResumo">Atualizar</button></div>
+                  <div class="grid grid-2">
+                    <div class="metric-card"><div class="metric-label">Bruto</div><div class="metric-value" id="posResumoBruto">�</div></div>
+                    <div class="metric-card"><div class="metric-label">L�quido</div><div class="metric-value" id="posResumoLiquido">�</div></div>
+                  </div>
+                  <div class="metric-card" style="margin-top:10px"><div class="metric-label">Taxas</div><div class="metric-value" id="posResumoTaxas">�</div></div>
+                  <div style="margin-top:10px; font-size:13px; display:flex; flex-direction:column; gap:6px">
+                    <div><strong>Top cliente per�odo:</strong> <span id="posResumoTopCliente">�</span></div>
+                    <div><strong>Top cliente hoje:</strong> <span id="posResumoTopDia">�</span></div>
+                    <div><strong>Maior venda:</strong> <span id="posResumoMaiorVenda">�</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
           <!-- RELATÓRIOS -->
           <section id="page-relatorios" class="page-section">
             <div class="card">
@@ -1596,6 +1744,10 @@
           loadDashboard();
           loadClientes().then(populateRelatorioSelects);
           loadEmpresas().then(populateRelatorioSelects);
+          loadPosCompanies();
+          loadPosTerminals();
+          loadPosVendasRecentes();
+          loadPosResumo();
           resetNotasInfiniteScroll();
           loadNotasPage(true);
           loadRelatorios();
@@ -1677,7 +1829,7 @@
           topbarTitle.textContent = "Notas fiscais";
           topbarSubtitle.textContent =
             "Listagem das notas emitidas com carregamento automático";
-        } else if (page === "relatorios") {
+        } else if (page === "pos") {  topbarTitle.textContent = "Maquininhas";  topbarSubtitle.textContent = "Empresas, terminais, taxas e vendas de POS";  loadPosCompanies(); loadPosTerminals(); loadPosVendasRecentes(); loadPosResumo(); } else if (page === "relatorios") {
           topbarTitle.textContent = "Relatórios";
           topbarSubtitle.textContent =
             "Análises consolidadas por período, cliente e empresa";
@@ -2604,6 +2756,228 @@
         notasState.observer.observe(sentinel);
       }
 
+            // ==========================
+      // MAQUININHAS (POS)
+      // ==========================
+      let posCompanies = [];
+      let posTerminals = [];
+      let posVendasRecentes = [];
+
+      async function loadPosCompanies() {
+        try {
+          posCompanies = await apiFetch("/api/pos/companies");
+          renderPosCompanies();
+          fillPosSelects();
+        } catch (err) {
+          console.error("Erro ao carregar empresas POS:", err);
+        }
+      }
+
+      async function addPosCompany() {
+        const name = document.getElementById("posCompanyName").value.trim();
+        const cnpj = document.getElementById("posCompanyCnpj").value.trim();
+        const is_active = document.getElementById("posCompanyAtiva").value === "true";
+        if (!name || !cnpj) return alert("Informe nome e CNPJ");
+        try {
+          await apiFetch("/api/pos/companies", {
+            method: "POST",
+            body: JSON.stringify({ name, cnpj, is_active }),
+          });
+          await loadPosCompanies();
+        } catch (err) {
+          alert("Erro ao cadastrar empresa POS");
+          console.error(err);
+        }
+      }
+
+      function renderPosCompanies() {
+        const tbody = document.getElementById("posCompaniesTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = (posCompanies || [])
+          .map((c) => `
+            <tr>
+              <td>${c.id}</td>
+              <td>${c.name}</td>
+              <td>${c.cnpj}</td>
+              <td>${c.is_active ? "Ativa" : "Inativa"}</td>
+            </tr>
+          `)
+          .join("");
+      }
+
+      async function loadPosTerminals() {
+        try {
+          posTerminals = await apiFetch("/api/pos/terminals");
+          renderPosTerminals();
+          fillPosSelects();
+        } catch (err) {
+          console.error("Erro ao carregar terminais:", err);
+        }
+      }
+
+      async function addPosTerminal() {
+        const pos_company_id = document.getElementById("posTerminalEmpresa").value;
+        const customer_id = document.getElementById("posTerminalCliente").value;
+        const terminal_code = document.getElementById("posTerminalCode").value.trim();
+        const is_active = document.getElementById("posTerminalAtivo").value === "true";
+        if (!pos_company_id || !customer_id || !terminal_code) return alert("Preencha empresa, cliente e código");
+        try {
+          await apiFetch("/api/pos/terminals", {
+            method: "POST",
+            body: JSON.stringify({ pos_company_id, customer_id, terminal_code, is_active }),
+          });
+          await loadPosTerminals();
+        } catch (err) {
+          alert("Erro ao cadastrar terminal");
+          console.error(err);
+        }
+      }
+
+      function renderPosTerminals() {
+        const tbody = document.getElementById("posTerminalsTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = (posTerminals || [])
+          .map((t) => `
+            <tr>
+              <td>${t.id}</td>
+              <td>${t.terminal_code}</td>
+              <td>${t.PosCompany?.name || "—"}</td>
+              <td>${t.Customer?.name || "—"}</td>
+              <td>${t.is_active ? "Ativo" : "Inativo"}</td>
+            </tr>
+          `)
+          .join("");
+      }
+
+      function fillPosSelects() {
+        const selEmp = document.getElementById("posTerminalEmpresa");
+        const selCli = document.getElementById("posTerminalCliente");
+        const selRateCli = document.getElementById("posRateCliente");
+        const selVendaTerm = document.getElementById("posVendaTerminal");
+        if (selEmp) {
+          selEmp.innerHTML = '<option value="">Selecione</option>' + (posCompanies || [])
+            .map((c) => `<option value="${c.id}">${c.name}</option>`)
+            .join("");
+        }
+        if (selCli) {
+          selCli.innerHTML = '<option value="">Selecione</option>' + (clientes || [])
+            .map((c) => `<option value="${c.id}">${c.name}</option>`)
+            .join("");
+        }
+        if (selRateCli) selRateCli.innerHTML = selCli ? selCli.innerHTML : '';
+        if (selVendaTerm) {
+          selVendaTerm.innerHTML = '<option value="">Selecione</option>' + (posTerminals || [])
+            .map((t) => `<option value="${t.id}">${t.terminal_code} - ${t.Customer?.name || "Cliente"}</option>`)
+            .join("");
+        }
+      }
+
+      async function loadPosRateForSelected() {
+        const cid = document.getElementById("posRateCliente").value;
+        if (!cid) return;
+        try {
+          const rate = await apiFetch(`/api/pos/rates/${cid}`);
+          document.getElementById("posRatePix").value = rate?.pix_key || "";
+          document.getElementById("posRateDebito").value = rate?.debit_percent || "";
+          document.getElementById("posRateCreditoAVista").value = rate?.credit_avista_percent || "";
+          document.getElementById("posRateCredito2a6").value = rate?.credit_2a6_percent || "";
+          document.getElementById("posRateCredito7a12").value = rate?.credit_7a12_percent || "";
+        } catch (err) {
+          console.error("Erro ao carregar taxa:", err);
+        }
+      }
+
+      async function savePosRates() {
+        const cid = document.getElementById("posRateCliente").value;
+        if (!cid) return alert("Selecione um cliente");
+        const payload = {
+          pix_key: document.getElementById("posRatePix").value.trim(),
+          debit_percent: Number(document.getElementById("posRateDebito").value || 0),
+          credit_avista_percent: Number(document.getElementById("posRateCreditoAVista").value || 0),
+          credit_2a6_percent: Number(document.getElementById("posRateCredito2a6").value || 0),
+          credit_7a12_percent: Number(document.getElementById("posRateCredito7a12").value || 0),
+        };
+        try {
+          await apiFetch(`/api/pos/rates/${cid}`, {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+          alert("Taxas salvas");
+        } catch (err) {
+          alert("Erro ao salvar taxas");
+          console.error(err);
+        }
+      }
+
+      async function registrarVendaPos() {
+        const pos_terminal_id = document.getElementById("posVendaTerminal").value;
+        const sale_datetime = document.getElementById("posVendaData").value;
+        const amount = document.getElementById("posVendaValor").value;
+        const payment_type = document.getElementById("posVendaForma").value;
+        const nsu = document.getElementById("posVendaNsu").value.trim();
+        if (!pos_terminal_id || !sale_datetime || !amount || !nsu) return alert("Preencha terminal, data, valor e NSU");
+        try {
+          await apiFetch("/api/pos/sales", {
+            method: "POST",
+            body: JSON.stringify({ pos_terminal_id, sale_datetime, amount, payment_type, nsu }),
+          });
+          document.getElementById("posVendaMsg").textContent = "Venda registrada";
+          document.getElementById("posVendaMsg").style.display = "block";
+          await loadPosVendasRecentes();
+          await loadPosResumo();
+        } catch (err) {
+          alert("Erro ao registrar venda");
+          console.error(err);
+        }
+      }
+
+      async function loadPosVendasRecentes() {
+        try {
+          const res = await apiFetch("/api/pos/sales?page=1&limit=50");
+          posVendasRecentes = res.data || [];
+          renderPosVendas();
+        } catch (err) {
+          console.error("Erro ao carregar vendas:", err);
+        }
+      }
+
+      function renderPosVendas() {
+        const tbody = document.getElementById("posVendasTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = (posVendasRecentes || [])
+          .map((v) => {
+            const dt = v.sale_datetime ? new Date(v.sale_datetime).toLocaleString("pt-BR") : "—";
+            return `
+              <tr>
+                <td>${dt}</td>
+                <td>${v.Customer?.name || "—"}</td>
+                <td>${v.PosTerminal?.terminal_code || "—"}</td>
+                <td>${v.payment_type}</td>
+                <td>${formatCurrencyBRL(v.amount)}</td>
+                <td>${formatCurrencyBRL(v.fee_value)}</td>
+                <td>${formatCurrencyBRL(v.net_amount)}</td>
+              </tr>`;
+          })
+          .join("");
+      }
+
+      async function loadPosResumo() {
+        try {
+          const res = await apiFetch("/api/pos/reports/summary");
+          const bruto = Number(res?.totals?.bruto || 0);
+          const liquido = Number(res?.totals?.liquido || 0);
+          const taxas = Number(res?.totals?.taxas || 0);
+          document.getElementById("posResumoBruto").textContent = formatCurrencyBRL(bruto);
+          document.getElementById("posResumoLiquido").textContent = formatCurrencyBRL(liquido);
+          document.getElementById("posResumoTaxas").textContent = formatCurrencyBRL(taxas);
+          document.getElementById("posResumoTopCliente").textContent = res?.topCliente?.Customer?.name || "—";
+          document.getElementById("posResumoTopDia").textContent = res?.topDia?.Customer?.name || "—";
+          const mv = res?.maiorVenda;
+          document.getElementById("posResumoMaiorVenda").textContent = mv ? `${mv.Customer?.name || "—"} - ${formatCurrencyBRL(mv.amount)}` : "—";
+        } catch (err) {
+          console.error("Erro ao carregar resumo POS:", err);
+        }
+      }
       // ==========================
       // RELATÓRIOS - SELECTS
       // ==========================
@@ -2817,6 +3191,14 @@
             }
           });
 
+        // POS (Maquininhas)
+        document.getElementById("btnPosAddCompany")?.addEventListener("click", addPosCompany);
+        document.getElementById("btnPosAddTerminal")?.addEventListener("click", addPosTerminal);
+        document.getElementById("btnPosSalvarTaxas")?.addEventListener("click", savePosRates);
+        document.getElementById("posRateCliente")?.addEventListener("change", loadPosRateForSelected);
+        document.getElementById("btnPosRegistrarVenda")?.addEventListener("click", registrarVendaPos);
+        document.getElementById("btnPosCarregarResumo")?.addEventListener("click", loadPosResumo);
+
         // Notas
         setupNotasInfiniteScroll();
         document
@@ -2894,6 +3276,10 @@
           loadDashboard();
           loadClientes().then(populateRelatorioSelects);
           loadEmpresas().then(populateRelatorioSelects);
+          loadPosCompanies();
+          loadPosTerminals();
+          loadPosVendasRecentes();
+          loadPosResumo();
           resetNotasInfiniteScroll();
           loadNotasPage(true);
           loadRelatorios();
@@ -2904,6 +3290,8 @@
     </script>
   </body>
 </html>
+
+
 
 
 
