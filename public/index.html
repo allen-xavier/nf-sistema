@@ -1918,30 +1918,32 @@
           const empMap = new Map();
           notas.forEach((n) => {
             const nome = n.Company?.name || "—";
-            const obj = empMap.get(nome) || { empresa: nome, total_notas: 0, soma_valor_total: 0 };
-            obj.total_notas++;
+            const obj =
+              empMap.get(nome) || { empresa: nome, total_notas: 0, soma_valor_total: 0 };
+            obj.total_notas += 1;
             obj.soma_valor_total += Number(n.total_amount || 0);
             empMap.set(nome, obj);
           });
 
           const empBody = document.getElementById("relClienteEmpresasBody");
-          empBody.innerHTML = "";
-          Array.from(empMap.values())
+          const empRows = Array.from(empMap.values())
             .sort((a, b) => b.soma_valor_total - a.soma_valor_total)
-            .forEach((e) => {
-              empBody.innerHTML += `
+            .map(
+              (e) => `
                 <tr>
                   <td>${e.empresa}</td>
                   <td>${e.total_notas}</td>
                   <td>${formatCurrencyBRL(e.soma_valor_total)}</td>
-                </tr>`;
-            });
+                </tr>`
+            )
+            .join("");
+          empBody.innerHTML = empRows;
 
           // tabela notas
           const notasBody = document.getElementById("relClienteNotasBody");
-          notasBody.innerHTML = "";
-          notas.forEach((n) => {
-            notasBody.innerHTML += `
+          const notasRows = notas
+            .map(
+              (n) => `
               <tr>
                 <td>${n.id}</td>
                 <td>${n.issued_at ? new Date(n.issued_at).toLocaleString("pt-BR") : "—"}</td>
@@ -1949,8 +1951,10 @@
                 <td>${formatCurrencyBRL(n.total_amount)}</td>
                 <td>${formatCurrencyBRL(n.fee_value)}</td>
                 <td>${n.status}</td>
-              </tr>`;
-          });
+              </tr>`
+            )
+            .join("");
+          notasBody.innerHTML = notasRows;
 
         } catch (err) {
           console.error("Erro relatório por cliente:", err);
@@ -2033,32 +2037,31 @@
               total_notas: 0,
               soma_valor_total: 0,
             };
-            obj.total_notas++;
+            obj.total_notas += 1;
             obj.soma_valor_total += Number(n.total_amount || 0);
             cliMap.set(nome, obj);
           });
 
           const cliBody = document.getElementById("relEmpresaClientesBody");
-          cliBody.innerHTML = "";
-
-          Array.from(cliMap.values())
+          const cliRows = Array.from(cliMap.values())
             .sort((a, b) => b.soma_valor_total - a.soma_valor_total)
-            .forEach((c) => {
-              cliBody.innerHTML += `
+            .map(
+              (c) => `
                 <tr>
                   <td>${c.cliente}</td>
                   <td>${c.total_notas}</td>
                   <td>${formatCurrencyBRL(c.soma_valor_total)}</td>
                 </tr>
-              `;
-            });
+              `
+            )
+            .join("");
+          cliBody.innerHTML = cliRows;
 
           // Tabela de notas da empresa
           const notasBody = document.getElementById("relEmpresaNotasBody");
-          notasBody.innerHTML = "";
-
-          notas.forEach((n) => {
-            notasBody.innerHTML += `
+          const notasRows = notas
+            .map(
+              (n) => `
               <tr>
                 <td>${n.id}</td>
                 <td>${n.issued_at ? new Date(n.issued_at).toLocaleString("pt-BR") : "—"}</td>
@@ -2067,8 +2070,10 @@
                 <td>${formatCurrencyBRL(n.fee_value)}</td>
                 <td>${n.status}</td>
               </tr>
-            `;
-          });
+            `
+            )
+            .join("");
+          notasBody.innerHTML = notasRows;
 
         } catch (err) {
           console.error("Erro relatório por empresa:", err);
