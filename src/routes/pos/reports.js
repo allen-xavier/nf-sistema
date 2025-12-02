@@ -22,10 +22,10 @@ router.get("/summary", async (req, res) => {
     const totals = await PosSale.findOne({
       where,
       attributes: [
-        [fn("SUM", col("amount")), "bruto"],
-        [fn("SUM", col("fee_value")), "taxas"],
-        [fn("SUM", col("net_amount")), "liquido"],
-        [fn("COUNT", col("id")), "total_vendas"],
+        [fn("SUM", col("PosSale.amount")), "bruto"],
+        [fn("SUM", col("PosSale.fee_value")), "taxas"],
+        [fn("SUM", col("PosSale.net_amount")), "liquido"],
+        [fn("COUNT", col("PosSale.id")), "total_vendas"],
       ],
       raw: true,
     });
@@ -35,8 +35,8 @@ router.get("/summary", async (req, res) => {
       where,
       attributes: [
         "customer_id",
-        [fn("SUM", col("amount")), "soma"],
-        [fn("COUNT", col("id")), "qtd"],
+        [fn("SUM", col("PosSale.amount")), "soma"],
+        [fn("COUNT", col("PosSale.id")), "qtd"],
       ],
       include: [{ model: Customer, as: "Customer", attributes: ["name"] }],
       group: ["customer_id", "Customer.id", "Customer.name"],
@@ -65,8 +65,8 @@ router.get("/summary", async (req, res) => {
       },
       attributes: [
         "customer_id",
-        [fn("SUM", col("amount")), "soma"],
-        [fn("COUNT", col("id")), "qtd"],
+        [fn("SUM", col("PosSale.amount")), "soma"],
+        [fn("COUNT", col("PosSale.id")), "qtd"],
       ],
       include: [{ model: Customer, as: "Customer", attributes: ["name"] }],
       group: ["customer_id", "Customer.id", "Customer.name"],
