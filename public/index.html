@@ -2490,8 +2490,9 @@
         const tbody = document.getElementById("notasTableBody");
         tbody.innerHTML = "";
 
-        const search = document.getElementById("notasSearch").value
-          .toLowerCase();
+        const searchRaw = document.getElementById("notasSearch").value;
+        const search = searchRaw.toLowerCase();
+        const searchDigits = searchRaw.replace(/\D/g, "");
         const statusFilter = document.getElementById("notasStatusFilter").value;
         const origemFilter = document.getElementById("notasOrigemFilter").value;
         const dIni = document.getElementById("notasDataIni").value;
@@ -2503,6 +2504,7 @@
             const empresa = n.Company?.name?.toLowerCase() || "";
             const comprador = n.buyer_name?.toLowerCase() || "";
             const cpfComprador = n.buyer_cpf?.toLowerCase() || "";
+            const cpfDigits = (n.buyer_cpf || "").replace(/\D/g, "");
 
             if (
               search &&
@@ -2510,7 +2512,8 @@
                 cliente.includes(search) ||
                 empresa.includes(search) ||
                 comprador.includes(search) ||
-                cpfComprador.includes(search)
+                cpfComprador.includes(search) ||
+                (searchDigits && cpfDigits.includes(searchDigits))
               )
             )
               return false;
