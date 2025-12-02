@@ -1914,7 +1914,7 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
         } else {
           showLogin();
         }
-      }
+        }
       }
       });
     
