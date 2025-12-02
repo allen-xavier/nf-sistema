@@ -1889,6 +1889,8 @@
       let chartRelEmpresaPeriodo = null;
 
       function populateRelatorioSelects(clis = clientes, emps = empresas) {
+        const baseClis = (clis && clis.length ? clis : clientes) || [];
+        const baseEmps = (emps && emps.length ? emps : empresas) || [];
         const selCli = document.getElementById("relClienteSelect");
         const selEmp = document.getElementById("relEmpresaSelect");
         const norm = (str) =>
@@ -1904,7 +1906,7 @@
           norm(document.getElementById("relEmpresaSearch")?.value || "");
         const empStatus = document.getElementById("relEmpresaAtivo")?.value || "all";
 
-        const filteredClientes = (clis || [])
+        const filteredClientes = baseClis
           .filter((c) => c.uses_nf !== false)
           .filter((c) => {
             if (!searchCli) return true;
@@ -1931,7 +1933,7 @@
               .join("");
         }
 
-        const filteredEmpresas = (emps || [])
+        const filteredEmpresas = baseEmps
           .filter((e) => {
             if (empStatus === "true") return e.is_active !== false;
             if (empStatus === "false") return e.is_active === false;
