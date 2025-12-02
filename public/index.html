@@ -1130,12 +1130,15 @@
                       <th>Data emissão</th>
                       <th>Cliente</th>
                       <th>Empresa</th>
+                      <th>Comprador</th>
+                      <th>CPF comprador</th>
                       <th>Valor total</th>
                       <th>Valor pago</th>
                       <th>Taxa (%)</th>
                       <th>Taxa (R$)</th>
                       <th>Origem</th>
                       <th>Terminal / NSU</th>
+                      <th>NF-e</th>
                       <th>Status</th>
                     </tr>
                   </thead>
@@ -2498,12 +2501,16 @@
           .filter((n) => {
             const cliente = n.Customer?.name?.toLowerCase() || "";
             const empresa = n.Company?.name?.toLowerCase() || "";
+            const comprador = n.buyer_name?.toLowerCase() || "";
+            const cpfComprador = n.buyer_cpf?.toLowerCase() || "";
 
             if (
               search &&
               !(
                 cliente.includes(search) ||
-                empresa.includes(search)
+                empresa.includes(search) ||
+                comprador.includes(search) ||
+                cpfComprador.includes(search)
               )
             )
               return false;
@@ -2542,6 +2549,9 @@
               n.terminal_id || n.nsu
                 ? `${n.terminal_id || "—"} / ${n.nsu || "—"}`
                 : "—";
+            const nfLink = n.nf_link
+              ? `<a href="${n.nf_link}" target="_blank" rel="noopener noreferrer">Download</a>`
+              : "—";
             const statusClass =
               n.status === "PAGA"
                 ? "status-paga"
@@ -2554,12 +2564,15 @@
               <td>${dt}</td>
               <td>${n.Customer?.name || "—"}</td>
               <td>${n.Company?.name || "—"}</td>
+              <td>${n.buyer_name || "—"}</td>
+              <td>${n.buyer_cpf || "—"}</td>
               <td>${formatCurrencyBRL(n.total_amount)}</td>
               <td>${n.paid_amount ? formatCurrencyBRL(n.paid_amount) : "—"}</td>
               <td>${Number(n.fee_percent).toFixed(2)}%</td>
               <td>${formatCurrencyBRL(n.fee_value)}</td>
               <td>${origem}</td>
               <td>${terminalInfo}</td>
+              <td>${nfLink}</td>
               <td><span class="status-pill ${statusClass}">${n.status}</span></td>
             `;
             tbody.appendChild(tr);

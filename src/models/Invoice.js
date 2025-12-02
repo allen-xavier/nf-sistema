@@ -52,6 +52,16 @@ const Invoice = sequelize.define(
       defaultValue: "EMITIDA",
     },
 
+    buyer_name: {
+      type: DataTypes.STRING(150),
+      allowNull: true,
+    },
+
+    buyer_cpf: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+    },
+
     terminal_id: {
       type: DataTypes.STRING(50),
       allowNull: true,
@@ -85,6 +95,11 @@ const Invoice = sequelize.define(
     },
 
     pdf_url: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+
+    nf_link: {
       type: DataTypes.TEXT,
       allowNull: true,
     },

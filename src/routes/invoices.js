@@ -113,6 +113,9 @@ router.post("/", async (req, res) => {
       is_terminal_sale,
       is_our_terminal,
       pdf_url,
+      buyer_name,
+      buyer_cpf,
+      nf_link,
     } = req.body;
 
     const terminalSale =
@@ -151,6 +154,9 @@ router.post("/", async (req, res) => {
       is_terminal_sale: terminalSale || ourTerminal,
       is_our_terminal: ourTerminal,
       pdf_url: pdf_url || null,
+      nf_link: nf_link || null,
+      buyer_name: buyer_name || null,
+      buyer_cpf: buyer_cpf || null,
     });
 
     res.status(201).json(invoice);
@@ -193,6 +199,9 @@ router.put("/:id", async (req, res) => {
       is_terminal_sale,
       is_our_terminal,
       pdf_url,
+      buyer_name,
+      buyer_cpf,
+      nf_link,
     } = req.body;
 
     const ourTerminal = parseBool(is_our_terminal ?? invoice.is_our_terminal);
@@ -221,6 +230,9 @@ router.put("/:id", async (req, res) => {
     invoice.is_terminal_sale = terminalSale;
     invoice.is_our_terminal = ourTerminal;
     invoice.pdf_url = pdf_url ?? invoice.pdf_url;
+    invoice.nf_link = nf_link ?? invoice.nf_link;
+    invoice.buyer_name = buyer_name ?? invoice.buyer_name;
+    invoice.buyer_cpf = buyer_cpf ?? invoice.buyer_cpf;
 
     await invoice.save();
 
