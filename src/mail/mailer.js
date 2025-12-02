@@ -5,41 +5,38 @@ const {
   SMTP_PORT,
   SMTP_USERNAME,
   SMTP_PASSWORD,
-  SMTP_ENABLE_STARTTLS_AUTO,
-  SMTP_SSL,
   MAILER_SENDER_EMAIL,
 } = process.env;
 
 /**
- * Transporter configurado para Gmail (porta 587 com STARTTLS)
+ * Transporter correto para Gmail com STARTTLS na porta 587
  */
 const transporter = nodemailer.createTransport({
   host: SMTP_ADDRESS || "smtp.gmail.com",
   port: Number(SMTP_PORT || 587),
-  secure: SMTP_SSL === "true", // false para STARTTLS na porta 587
+  secure: false, // IMPORTANTÍSSIMO: SEMPRE false para porta 587
   auth: {
     user: SMTP_USERNAME,
     pass: SMTP_PASSWORD,
   },
   tls: {
     rejectUnauthorized: false,
-    ciphers: "SSLv3",
   },
 });
 
 /**
- * Testa conexão ao iniciar
+ * Teste inicial de conexão
  */
 transporter.verify((err, success) => {
   if (err) {
     console.error("[SMTP] Erro ao conectar no servidor SMTP:", err);
   } else {
-    console.log("[SMTP] Conexão estabelecida com sucesso.");
+    console.log("[SMTP] Conexão SMTP estabelecida com sucesso.");
   }
 });
 
 /**
- * Função geral de envio
+ * Envio genérico
  */
 async function sendMail({ to, subject, text, html }) {
   try {
@@ -62,7 +59,7 @@ async function sendMail({ to, subject, text, html }) {
 }
 
 /**
- * E-mail de recuperação de senha
+ * Envio do e-mail de recuperação
  */
 async function sendPasswordRecoveryMail(email, token) {
   const resetLink = `https://app.micheledeiansa.com.br/reset-password?token=${encodeURIComponent(
@@ -82,7 +79,7 @@ async function sendPasswordRecoveryMail(email, token) {
     to: email,
     subject,
     html,
-    text: `Link para redefinir sua senha: ${resetLink}`,
+    text: `Redefina sua senha no link: ${resetLink}`,
   });
 }
 

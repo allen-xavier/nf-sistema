@@ -13,24 +13,46 @@ router.use(adminOnly);
  * Lista TODAS as notas fiscais.
  * O frontend aplica os filtros.
  */
+/**
+ * GET /api/invoices?page=1&limit=50
+ * Lista paginada das notas fiscais
+ */
 router.get("/", async (req, res) => {
   try {
-    const invoices = await Invoice.findAll({
+    let { page, limit } = req.query;
+
+    page = Number(page) || 1;
+    limit = Number(limit) || 50;
+
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Invoice.findAndCountAll({
       include: [
         { model: Customer, as: "Customer" },
         { model: Company, as: "Company" },
       ],
       order: [["issued_at", "DESC"]],
+      limit,
+      offset,
     });
 
-    res.json(invoices);
+    res.json({
+      data: rows,
+      pagination: {
+        total: count,
+        page,
+        limit,
+        pages: Math.ceil(count / limit),
+      },
+    });
   } catch (err) {
-    console.error("Erro ao listar notas:", err);
-    res
-      .status(500)
-      .json({ error: "Erro ao listar notas fiscais." });
+    console.error("Erro ao listar notas paginadas:", err);
+    res.status(500).json({
+      error: "Erro ao listar notas fiscais.",
+    });
   }
 });
+
 
 /**
  * GET /api/invoices/:id

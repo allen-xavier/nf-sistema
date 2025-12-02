@@ -1,40 +1,39 @@
 const sequelize = require("../config/database");
-
+const Invoice = require("./Invoice");
 const Customer = require("./Customer");
 const Company = require("./Company");
-const Invoice = require("./Invoice");
 const SystemUser = require("./SystemUser");
 
-// ========== ASSOCIAÇÕES ==========
+// =============================
+// RELACIONAMENTOS CORRETOS
+// =============================
 
-// Customer → Invoice
+// --- CLIENTE → NOTAS
 Customer.hasMany(Invoice, {
   foreignKey: "customer_id",
-  onDelete: "CASCADE",
+  as: "Invoices",              // <── ALIAS CORRETO
 });
 
 Invoice.belongsTo(Customer, {
   foreignKey: "customer_id",
-  as: "Customer",
-  onDelete: "CASCADE",
+  as: "Customer",              // <── BATE COM REPORTS
 });
 
-// Company → Invoice
+// --- EMPRESA → NOTAS
 Company.hasMany(Invoice, {
   foreignKey: "company_id",
-  onDelete: "CASCADE",
+  as: "Invoices",              // <── ALIAS CORRETO
 });
 
 Invoice.belongsTo(Company, {
   foreignKey: "company_id",
-  as: "Company",
-  onDelete: "CASCADE",
+  as: "Company",               // <── BATE COM REPORTS
 });
 
 module.exports = {
   sequelize,
+  Invoice,
   Customer,
   Company,
-  Invoice,
   SystemUser,
 };

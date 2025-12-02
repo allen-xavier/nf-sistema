@@ -5,36 +5,28 @@ const { authMiddleware, adminOnly } = require("../middleware/auth");
 
 const router = express.Router();
 
-// Proteção – igual ao arquivo antigo
 router.use(authMiddleware);
 router.use(adminOnly);
 
 /**
+ * -------------------------------------------------------------
+ * DASHBOARD PRINCIPAL
  * GET /api/reports/summary
- * Query: start, end, customer_id, group_by=day|month
+ * -------------------------------------------------------------
  */
 router.get("/summary", async (req, res) => {
   try {
-    const { start, end, customer_id, group_by } = req.query;
+    const { start, end, group_by = "day" } = req.query;
 
     const where = {};
-
-    // FILTROS DE DATA
     if (start || end) {
       where.issued_at = {};
       if (start) where.issued_at[Op.gte] = new Date(start);
-      if (end)
-        where.issued_at[Op.lte] = new Date(end + "T23:59:59");
+      if (end) where.issued_at[Op.lte] = new Date(`${end} 23:59:59`);
     }
 
-    if (customer_id) {
-      where.customer_id = customer_id;
-    }
-
-    // ============================================================
-    // 1) TOTAL GERAL
-    // ============================================================
-    const totalsRow = await Invoice.findOne({
+    // 1️⃣ Totais gerais
+    const totals = await Invoice.findOne({
       where,
       attributes: [
         [fn("COUNT", col("id")), "total_notas"],
@@ -44,153 +36,266 @@ router.get("/summary", async (req, res) => {
       raw: true,
     });
 
-    const totals = {
-      total_notas: Number(totalsRow.total_notas || 0),
-      soma_valor_total: Number(totalsRow.soma_valor_total || 0),
-      soma_taxas: Number(totalsRow.soma_taxas || 0),
-    };
-
-    // ============================================================
-    // 2) POR STATUS (para cards e dashboards)
-    // ============================================================
-    const porStatus = await Invoice.findAll({
-      where,
-      attributes: [
-        "status",
-        [fn("COUNT", col("id")), "total_notas"],
-      ],
-      group: ["status"],
-      raw: true,
-    });
-
-    // ============================================================
-    // 3) POR DIA (últimos 30 dias) – Dashboard
-    // ============================================================
-    let where30 = { ...where };
-    if (!where30.issued_at) where30.issued_at = {};
-
-    const hoje = new Date();
-    const dt30 = new Date();
-    dt30.setDate(hoje.getDate() - 30);
-
-    if (!where30.issued_at[Op.gte]) {
-      where30.issued_at[Op.gte] = dt30;
-    }
-
-    const porDiaBD = await Invoice.findAll({
-      where: where30,
-      attributes: [
-        [literal(`DATE("issued_at")`), "data"],
-        [fn("COUNT", col("id")), "total_notas"],
-      ],
-      group: [literal(`DATE("issued_at")`)],
-      order: [literal(`DATE("issued_at") ASC`)],
-      raw: true,
-    });
-
-    const porDia = porDiaBD.map((row) => {
-      const d = new Date(row.data);
-      const dia = String(d.getDate()).padStart(2, "0");
-      const mes = String(d.getMonth() + 1).padStart(2, "0");
-      return {
-        date: row.data,
-        label: `${dia}/${mes}`,
-        total_notas: Number(row.total_notas),
-      };
-    });
-
-    // ============================================================
-    // 4) POR PERÍODO (para relatório) - day|month
-    // ============================================================
-    const groupBy = group_by === "month" ? "month" : "day";
-    let groupExpr, labelExpr;
-
-    if (groupBy === "month") {
-      groupExpr = literal(`DATE_TRUNC('month', "issued_at")`);
-      labelExpr = literal(
-        `TO_CHAR(DATE_TRUNC('month', "issued_at"), 'MM/YYYY')`
-      );
-    } else {
-      groupExpr = literal(`DATE("issued_at")`);
-      labelExpr = literal(
-        `TO_CHAR(DATE("issued_at"), 'DD/MM')`
-      );
-    }
+    // 2️⃣ Agrupado por período (dia ou mês)
+    const dateFormat =
+      group_by === "month"
+        ? "TO_CHAR(issued_at, 'MM/YYYY')"
+        : "TO_CHAR(issued_at, 'DD/MM')";
 
     const porPeriodo = await Invoice.findAll({
       where,
       attributes: [
-        [groupExpr, "periodo"],
-        [labelExpr, "label"],
+        [literal(dateFormat), "label"],
         [fn("COUNT", col("id")), "total_notas"],
         [fn("SUM", col("total_amount")), "soma_valor_total"],
       ],
-      group: [groupExpr, labelExpr],
-      order: [groupExpr],
+      group: ["label"],
       raw: true,
+      order: [literal("MIN(issued_at)")],
     });
 
-    // ============================================================
-    // 5) POR CLIENTE
-    // ============================================================
-    const porCliente = await Invoice.findAll({
+    // 3️⃣ Top clientes (sem subselect, usando include + col)
+    const topClientesRaw = await Invoice.findAll({
       where,
-      include: [{ model: Customer, attributes: ["name"] }],
+      include: [{ model: Customer, as: "Customer", attributes: [] }],
       attributes: [
         "customer_id",
         [fn("COUNT", col("Invoice.id")), "total_notas"],
-        [fn("SUM", col("total_amount")), "soma_valor_total"],
-        [fn("SUM", col("fee_value")), "soma_taxas"],
+        [fn("SUM", col("Invoice.total_amount")), "soma_valor_total"],
+        [col("Customer.name"), "customer_name"],
       ],
-      group: ["customer_id", "Customer.id", "Customer.name"],
+      group: ["customer_id", "Customer.id"],
+      order: [[literal("soma_valor_total"), "DESC"]],
       raw: true,
-    }).then((rows) =>
-      rows.map((r) => ({
-        customer_id: r.customer_id,
-        name: r["Customer.name"],
-        total_notas: Number(r.total_notas),
-        soma_valor_total: Number(r.soma_valor_total),
-        soma_taxas: Number(r.soma_taxas),
-      }))
-    );
+    });
 
-    // ============================================================
-    // 6) POR EMPRESA
-    // ============================================================
-    const porEmpresa = await Invoice.findAll({
+    const porCliente = topClientesRaw.map((c) => ({
+      customer_id: c.customer_id,
+      total_notas: Number(c.total_notas || 0),
+      soma_valor_total: c.soma_valor_total,
+      name: c.customer_name || null,
+    }));
+
+    // 4️⃣ Top empresas
+    const topEmpresasRaw = await Invoice.findAll({
       where,
-      include: [{ model: Company, attributes: ["name"] }],
+      include: [{ model: Company, as: "Company", attributes: [] }],
       attributes: [
         "company_id",
         [fn("COUNT", col("Invoice.id")), "total_notas"],
-        [fn("SUM", col("total_amount")), "soma_valor_total"],
+        [fn("SUM", col("Invoice.total_amount")), "soma_valor_total"],
+        [col("Company.name"), "company_name"],
       ],
-      group: ["company_id", "Company.id", "Company.name"],
+      group: ["company_id", "Company.id"],
+      order: [[literal("soma_valor_total"), "DESC"]],
       raw: true,
-    }).then((rows) =>
-      rows.map((r) => ({
-        company_id: r.company_id,
-        name: r["Company.name"],
-        total_notas: Number(r.total_notas),
-        soma_valor_total: Number(r.soma_valor_total),
-      }))
-    );
+    });
 
-    // ============================================================
-    // RESPOSTA FINAL COMPLETA
-    // ============================================================
+    const porEmpresa = topEmpresasRaw.map((e) => ({
+      company_id: e.company_id,
+      total_notas: Number(e.total_notas || 0),
+      soma_valor_total: e.soma_valor_total,
+      name: e.company_name || null,
+    }));
+
     res.json({
       totals,
-      porStatus,
-      porDia,
       porPeriodo,
       porCliente,
       porEmpresa,
     });
-
   } catch (err) {
     console.error("Erro em /api/reports/summary:", err);
-    res.status(500).json({ error: "Erro ao gerar relatório" });
+    res.status(500).json({ error: "Erro ao gerar resumo" });
+  }
+});
+
+/**
+ * -------------------------------------------------------------
+ * RELATÓRIO POR CLIENTE
+ * GET /api/reports/cliente/:id
+ * -------------------------------------------------------------
+ */
+router.get("/cliente/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { start, end, group_by = "day" } = req.query;
+
+    const cliente = await Customer.findByPk(id);
+    if (!cliente) {
+      return res.status(404).json({ error: "Cliente não encontrado" });
+    }
+
+    const where = { customer_id: id };
+
+    if (start || end) {
+      where.issued_at = {};
+      if (start) where.issued_at[Op.gte] = new Date(start);
+      if (end) where.issued_at[Op.lte] = new Date(`${end} 23:59:59`);
+    }
+
+    // Notas do cliente (com empresa junto)
+    const notas = await Invoice.findAll({
+      where,
+      include: [{ model: Company, as: "Company" }],
+      order: [["issued_at", "DESC"]],
+    });
+
+    // Totais do cliente
+    const totais = await Invoice.findOne({
+      where,
+      attributes: [
+        [fn("COUNT", col("id")), "total_notas"],
+        [fn("SUM", col("total_amount")), "soma_valor_total"],
+        [fn("SUM", col("fee_value")), "soma_taxas"],
+      ],
+      raw: true,
+    });
+
+    // Agrupado por período
+    const dateFormat =
+      group_by === "month"
+        ? "TO_CHAR(issued_at, 'MM/YYYY')"
+        : "TO_CHAR(issued_at, 'DD/MM')";
+
+    const porPeriodo = await Invoice.findAll({
+      where,
+      attributes: [
+        [literal(dateFormat), "label"],
+        [fn("COUNT", col("id")), "total_notas"],
+        [fn("SUM", col("total_amount")), "soma_valor_total"],
+      ],
+      group: ["label"],
+      raw: true,
+      order: [literal("label ASC")],
+    });
+
+    // Agrupado por empresa (onde esse cliente emite)
+    const porEmpresaRaw = await Invoice.findAll({
+      where,
+      include: [{ model: Company, as: "Company", attributes: [] }],
+      attributes: [
+        "company_id",
+        [fn("COUNT", col("Invoice.id")), "total_notas"],
+        [fn("SUM", col("Invoice.total_amount")), "soma_valor_total"],
+        [col("Company.name"), "company_name"],
+      ],
+      group: ["company_id", "Company.id"],
+      raw: true,
+      order: [[literal("soma_valor_total"), "DESC"]],
+    });
+
+    const porEmpresa = porEmpresaRaw.map((e) => ({
+      company_id: e.company_id,
+      total_notas: Number(e.total_notas || 0),
+      soma_valor_total: e.soma_valor_total,
+      name: e.company_name || null,
+    }));
+
+    res.json({
+      cliente,
+      totais,
+      notas,
+      porPeriodo,
+      porEmpresa,
+    });
+  } catch (err) {
+    console.error("Erro em /api/reports/cliente/:id", err);
+    res.status(500).json({ error: "Erro ao gerar relatório do cliente" });
+  }
+});
+
+/**
+ * -------------------------------------------------------------
+ * RELATÓRIO POR EMPRESA
+ * GET /api/reports/empresa/:id
+ * -------------------------------------------------------------
+ */
+router.get("/empresa/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { start, end, group_by = "day" } = req.query;
+
+    const empresa = await Company.findByPk(id);
+    if (!empresa) {
+      return res.status(404).json({ error: "Empresa não encontrada" });
+    }
+
+    const where = { company_id: id };
+
+    if (start || end) {
+      where.issued_at = {};
+      if (start) where.issued_at[Op.gte] = new Date(start);
+      if (end) where.issued_at[Op.lte] = new Date(`${end} 23:59:59`);
+    }
+
+    // Notas da empresa (com cliente junto)
+    const notas = await Invoice.findAll({
+      where,
+      include: [{ model: Customer, as: "Customer" }],
+      order: [["issued_at", "DESC"]],
+    });
+
+    // Totais da empresa
+    const totais = await Invoice.findOne({
+      where,
+      attributes: [
+        [fn("COUNT", col("id")), "total_notas"],
+        [fn("SUM", col("total_amount")), "soma_valor_total"],
+      ],
+      raw: true,
+    });
+
+    // Agrupado por período
+    const dateFormat =
+      group_by === "month"
+        ? "TO_CHAR(issued_at, 'MM/YYYY')"
+        : "TO_CHAR(issued_at, 'DD/MM')";
+
+    const porPeriodo = await Invoice.findAll({
+      where,
+      attributes: [
+        [literal(dateFormat), "label"],
+        [fn("COUNT", col("id")), "total_notas"],
+        [fn("SUM", col("total_amount")), "soma_valor_total"],
+      ],
+      group: ["label"],
+      raw: true,
+      order: [literal("label ASC")],
+    });
+
+    // Agrupado por cliente
+    const porClienteRaw = await Invoice.findAll({
+      where,
+      include: [{ model: Customer, as: "Customer", attributes: [] }],
+      attributes: [
+        "customer_id",
+        [fn("COUNT", col("Invoice.id")), "total_notas"],
+        [fn("SUM", col("Invoice.total_amount")), "soma_valor_total"],
+        [col("Customer.name"), "customer_name"],
+      ],
+      group: ["customer_id", "Customer.id"],
+      raw: true,
+      order: [[literal("soma_valor_total"), "DESC"]],
+    });
+
+    const porCliente = porClienteRaw.map((c) => ({
+      customer_id: c.customer_id,
+      total_notas: Number(c.total_notas || 0),
+      soma_valor_total: c.soma_valor_total,
+      name: c.customer_name || null,
+    }));
+
+    res.json({
+      empresa,
+      totais,
+      notas,
+      porPeriodo,
+      porCliente,
+    });
+  } catch (err) {
+    console.error("Erro em /api/reports/empresa/:id", err);
+    res.status(500).json({ error: "Erro ao gerar relatório da empresa" });
   }
 });
 

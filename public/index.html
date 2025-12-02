@@ -1,1585 +1,2809 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <title>NF Dashboard - Michele Deiansa</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <head>
+    <meta charset="UTF-8" />
+    <title>NF Sistema - Painel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Bootstrap 5 -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr/npm/chart.js"></script>
 
-  <!-- Icones -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-  />
+    <style>
+      :root {
+        --bg: #f5f5f7;
+        --bg-elevated: #ffffff;
+        --bg-sidebar: #111827;
+        --bg-sidebar-hover: #1f2937;
+        --bg-input: #f9fafb;
 
-  <style>
-    :root {
-      --sidebar-width: 240px;
+        --text: #111827;
+        --text-muted: #6b7280;
+        --primary: #2563eb;
+        --primary-soft: rgba(37, 99, 235, 0.08);
+        --border: #e5e7eb;
+        --danger: #ef4444;
+        --success: #16a34a;
+        --warning: #f59e0b;
 
-      --bg-dark: #0b1120;
-      --bg-darker: #020617;
-      --bg-card: #111827;
-      --accent: #22c55e;
-      --accent-soft: rgba(34, 197, 94, 0.12);
-      --text-main: #e5e7eb;
-      --text-muted: #9ca3af;
-      --border-subtle: #1f2937;
+        --radius: 12px;
+        --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+      }
 
-      --bg-body: var(--bg-dark);
-      --bg-surface: var(--bg-card);
-      --bg-login: radial-gradient(circle at top, #1f2937 0, #020617 55%);
-      --text-color: var(--text-main);
-    }
+      body[data-theme="dark"] {
+        --bg: #020617;
+        --bg-elevated: #020617;
+        --bg-sidebar: #020617;
+        --bg-sidebar-hover: #0f172a;
+        --bg-input: #020617;
 
-    /* Tema claro */
-    body.light-theme {
-      --bg-body: #f3f4f6;
-      --bg-surface: #ffffff;
-      --bg-login: radial-gradient(circle at top, #e5e7eb 0, #d1d5db 55%);
-      --text-color: #111827;
-      --border-subtle: #e5e7eb;
-    }
+        --text: #e5e7eb;
+        --text-muted: #9ca3af;
+        --primary: #3b82f6;
+        --primary-soft: rgba(59, 130, 246, 0.16);
+        --border: #1f2937;
+      }
 
-    body {
-      background-color: var(--bg-body);
-      color: var(--text-color);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
-    }
+      * {
+        box-sizing: border-box;
+      }
 
-    .login-bg {
-      min-height: 100vh;
-      background: var(--bg-login);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
 
-    .login-card {
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      border-radius: 18px;
-      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.8);
-      backdrop-filter: blur(20px);
-      color: #e5e7eb;
-    }
-    body.light-theme .login-card {
-      background: rgba(255, 255, 255, 0.96);
-      color: #111827;
-      border-color: #e5e7eb;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.15);
-    }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
 
-    .brand-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.2rem 0.75rem;
-      border-radius: 999px;
-      background: rgba(148, 163, 184, 0.15);
-      color: var(--text-muted);
-      font-size: 0.8rem;
-    }
-    .brand-pill i { color: var(--accent); }
+      button {
+        cursor: pointer;
+      }
 
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      width: var(--sidebar-width);
-      background: linear-gradient(to bottom, #020617, #020617, #030712);
-      border-right: 1px solid var(--border-subtle);
-      padding: 1.2rem 1.1rem;
-      display: flex;
-      flex-direction: column;
-      z-index: 1000;
-      color: #e5e7eb;
-    }
+      .app-shell {
+        display: flex;
+        min-height: 100vh;
+      }
 
-    .sidebar-brand {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.75rem;
-    }
+      /* SIDEBAR */
 
-    .sidebar-brand-circle {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      background: radial-gradient(circle at 30% 20%, #22c55e, #4ade80 25%, #16a34a 60%, #15803d 90%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ecfdf5;
-      font-weight: 700;
-      font-size: 1.05rem;
-      box-shadow: 0 0 25px rgba(34, 197, 94, 0.7);
-    }
-
-    .sidebar-link {
-      display: flex;
-      align-items: center;
-      gap: 0.7rem;
-      padding: 0.45rem 0.65rem;
-      border-radius: 10px;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      text-decoration: none;
-      transition: all 0.15s ease;
-      cursor: pointer;
-    }
-
-    .sidebar-link:hover {
-      background-color: rgba(55, 65, 81, 0.55);
-      color: #f9fafb;
-    }
-
-    .sidebar-link.active {
-      background-color: var(--accent-soft);
-      color: var(--accent);
-    }
-
-    @media (max-width: 992px) {
       .sidebar {
+        width: 260px;
+        background: var(--bg-sidebar);
+        color: #e5e7eb;
+        display: flex;
+        flex-direction: column;
+        padding: 16px 12px;
+      }
+
+      .sidebar-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 24px;
+        padding: 8px 10px;
+      }
+
+      .sidebar-logo {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #3b82f6, #6366f1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 18px;
+      }
+
+      .sidebar-title {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sidebar-title span:first-child {
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #9ca3af;
+      }
+
+      .sidebar-title span:last-child {
+        font-weight: 600;
+      }
+
+      .sidebar-nav {
+        flex: 1;
+      }
+
+      .sidebar-section-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: #4b5563;
+        padding: 0 10px;
+        margin: 12px 0 6px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 10px;
+        border-radius: 10px;
+        margin: 2px 0;
+        color: #9ca3af;
+        font-size: 14px;
+        transition: background 0.15s ease, color 0.15s ease, transform 0.1s;
+      }
+
+      .nav-item span.icon {
+        font-size: 16px;
+      }
+
+      .nav-item.active {
+        background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+        color: #f9fafb;
+        transform: translateY(-1px);
+      }
+
+      .nav-item:hover {
+        background: var(--bg-sidebar-hover);
+        color: #e5e7eb;
+      }
+
+      .sidebar-footer {
+        padding: 12px 10px 4px;
+        border-top: 1px solid rgba(148, 163, 184, 0.25);
+        margin-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 13px;
+        color: #6b7280;
+      }
+
+      .theme-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(15, 23, 42, 0.8);
+        padding: 8px 11px;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+      }
+
+      .theme-toggle button {
+        border: none;
+        background: transparent;
+        color: #e5e7eb;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .user-tag {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: #6b7280;
+      }
+
+      .btn-logout {
+        border-radius: 999px;
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        background: rgba(127, 29, 29, 0.3);
+        padding: 4px 9px;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: #fecaca;
+      }
+
+      /* TOPBAR & MAIN */
+
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        max-width: 100%;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        backdrop-filter: blur(10px);
+        background: color-mix(in srgb, var(--bg) 80%, transparent 20%);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 18px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .mobile-menu-btn {
+        display: none;
+        border: none;
+        background: var(--bg-elevated);
+        border-radius: 999px;
+        padding: 6px 9px;
+        box-shadow: var(--shadow-soft);
+      }
+
+      .topbar-title {
+        font-weight: 600;
+        font-size: 15px;
+      }
+
+      .topbar-subtitle {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .chip {
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 11px;
+        border: 1px solid rgba(37, 99, 235, 0.24);
+      }
+
+      .content {
+        padding: 16px 18px 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+      }
+
+      /* CARDS & PANELS */
+
+      .card {
+        background: var(--bg-elevated);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-soft);
+        padding: 16px;
+        border: 1px solid var(--border);
+      }
+
+      .card + .card {
+        margin-top: 12px;
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .card-title {
+        font-weight: 600;
+        font-size: 15px;
+      }
+
+      .card-subtitle {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .badge {
+        border-radius: 999px;
+        padding: 3px 7px;
+        font-size: 11px;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+      }
+
+      .grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      @media (max-width: 900px) {
+        .grid-3,
+        .grid-2 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .metric-card {
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: radial-gradient(circle at top left, var(--primary-soft), transparent 55%);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .metric-label {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .metric-value {
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .metric-detail {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      /* FORMS & INPUTS */
+
+      .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 140px;
+      }
+
+      label {
+        font-size: 11px;
+        margin-bottom: 4px;
+        color: var(--text-muted);
+      }
+
+      input,
+      select {
+        padding: 7px 9px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--bg-input);
+        color: var(--text);
+        font-size: 13px;
+      }
+
+      input:focus,
+      select:focus {
+        outline: 2px solid var(--primary-soft);
+        border-color: var(--primary);
+      }
+
+      .btn-primary {
+        border-radius: 8px;
+        border: none;
+        background: var(--primary);
+        color: white;
+        padding: 8px 14px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .btn-secondary {
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        padding: 7px 12px;
+        font-size: 13px;
+      }
+
+      .btn-danger {
+        border-radius: 8px;
+        border: none;
+        background: var(--danger);
+        color: white;
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      .btn-ghost {
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        padding: 6px 8px;
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .toolbar-left,
+      .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .chip-filter {
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        font-size: 11px;
+        cursor: pointer;
+      }
+
+      .chip-filter.active {
+        background: var(--primary-soft);
+        color: var(--primary);
+        border-color: rgba(37, 99, 235, 0.5);
+      }
+
+      /* TABLES */
+
+      .table-wrapper {
+        margin-top: 8px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        overflow: auto;
+        max-height: 480px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      thead {
+        background: color-mix(in srgb, var(--bg-elevated) 80%, var(--border) 20%);
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      th,
+      td {
+        padding: 8px 10px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+
+      tbody tr:hover {
+        background: color-mix(in srgb, var(--bg-elevated) 80%, var(--primary-soft) 20%);
+      }
+
+      .status-pill {
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 11px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .status-emitida {
+        background: rgba(59, 130, 246, 0.08);
+        color: #1d4ed8;
+      }
+
+      .status-paga {
+        background: rgba(22, 163, 74, 0.09);
+        color: #15803d;
+      }
+
+      .status-cancelada {
+        background: rgba(239, 68, 68, 0.09);
+        color: #b91c1c;
+      }
+
+      .tag {
+        font-size: 11px;
+        padding: 3px 7px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+      }
+
+      .tag-success {
+        background: rgba(22, 163, 74, 0.08);
+        color: #16a34a;
+        border-color: rgba(22, 163, 74, 0.5);
+      }
+
+      .tag-muted {
+        color: var(--text-muted);
+      }
+
+      /* INFINITE SCROLL STATE */
+
+      .loader-row {
+        text-align: center;
+        padding: 10px;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      /* LOGIN OVERLAY */
+
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.2), transparent 50%),
+          radial-gradient(circle at bottom right, rgba(251, 191, 36, 0.18), transparent 50%),
+          var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 40;
+      }
+
+      .login-card {
+        width: 100%;
+        max-width: 380px;
+        background: var(--bg-elevated);
+        border-radius: 18px;
+        padding: 20px 18px 18px;
+        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.25);
+        border: 1px solid var(--border);
+      }
+
+      .login-title {
+        font-weight: 600;
+        font-size: 18px;
+        margin-bottom: 4px;
+      }
+
+      .login-subtitle {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 14px;
+      }
+
+      .login-footer {
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      .link {
+        color: var(--primary);
+        cursor: pointer;
+      }
+
+      .error-text {
+        font-size: 12px;
+        color: var(--danger);
+        margin-top: 6px;
+      }
+
+      .success-text {
+        font-size: 12px;
+        color: var(--success);
+        margin-top: 6px;
+      }
+
+      /* SECTIONS VISIBILITY */
+
+      .page-section {
         display: none;
       }
-    }
 
-    .sidebar.mobile-open {
-      display: block !important;
-      position: fixed;
-      left: 0;
-      top: 0;
-      height: 100vh;
-      width: var(--sidebar-width);
-      background: #020617;
-      z-index: 1001;
-      box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
-    }
+      .page-section.active {
+        display: block;
+      }
 
-    #mobile-sidebar-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.45);
-      z-index: 900;
-    }
-    #mobile-sidebar-overlay.visible { display: block; }
+      /* RELATÓRIOS TABS */
 
-    .layout-main {
-      margin-left: var(--sidebar-width);
-      min-height: 100vh;
-      background: radial-gradient(circle at top, #0f172a 0, #020617 55%);
-    }
-    body.light-theme .layout-main {
-      background: #f3f4f6;
-    }
+      .tabs {
+        display: inline-flex;
+        border-radius: 999px;
+        padding: 3px;
+        background: color-mix(in srgb, var(--bg-elevated) 70%, var(--border) 30%);
+        border: 1px solid var(--border);
+        gap: 3px;
+      }
 
-    @media (max-width: 992px) {
-      .layout-main { margin-left: 0; }
-    }
+      .tab-button {
+        border: none;
+        border-radius: 999px;
+        padding: 5px 12px;
+        font-size: 12px;
+        background: transparent;
+        color: var(--text-muted);
+      }
 
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.9rem 1.5rem;
-      border-bottom: 1px solid var(--border-subtle);
-      background: rgba(15, 23, 42, 0.92);
-      backdrop-filter: blur(15px);
-      position: sticky;
-      top: 0;
-      z-index: 900;
-      color: #e5e7eb;
-    }
-    body.light-theme .topbar {
-      background: rgba(255,255,255,0.96);
-      color: #111827;
-    }
+      .tab-button.active {
+        background: var(--bg-elevated);
+        color: var(--primary);
+        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+      }
 
-    .btn-mobile-menu { display: none; }
-    @media (max-width: 992px) {
-      .btn-mobile-menu { display: inline-block; }
-    }
+      .rel-subsection {
+        margin-top: 14px;
+      }
 
-    .content-wrapper {
-      padding: 1.3rem 1.5rem 2.5rem;
-    }
+      .rel-subsection.hidden {
+        display: none;
+      }
 
-    .card-elevated {
-      background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.08) 0, #020617 45%);
-      border-radius: 18px;
-      border: 1px solid rgba(55, 65, 81, 0.7);
-      padding: 1.1rem 1.3rem;
-      margin-bottom: 1.2rem;
-      color: #e5e7eb;
-    }
-    body.light-theme .card-elevated {
-      background: #ffffff;
-      border-color: #e5e7eb;
-      color: #111827;
-    }
+      /* MOBILE SIDEBAR */
 
-    .card-section {
-      background: var(--bg-surface);
-      border-radius: 16px;
-      border: 1px solid var(--border-subtle);
-      padding: 1rem 1.2rem;
-      margin-bottom: 1.1rem;
-    }
+      @media (max-width: 900px) {
+        .sidebar {
+          position: fixed;
+          inset: 0 auto 0 0;
+          transform: translateX(-100%);
+          transition: transform 0.2s ease;
+          z-index: 50;
+        }
 
-    .form-control,
-    .form-select {
-      background-color: #020617;
-      border-color: #1f2937;
-      color: #e5e7eb;
-      font-size: 0.86rem;
-    }
-    .form-control:focus,
-    .form-select:focus {
-      background-color: #020617;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.45);
-      color: #e5e7eb;
-    }
-    body.light-theme .form-control,
-    body.light-theme .form-select {
-      background-color: #ffffff;
-      color: #111827;
-      border-color: #d1d5db;
-    }
+        .sidebar.open {
+          transform: translateX(0);
+        }
 
-    .table-dark {
-      --bs-table-bg: #020617;
-      --bs-table-hover-bg: #030712;
-      --bs-table-border-color: #111827;
-    }
-    body.light-theme .table-dark {
-      --bs-table-bg: #ffffff;
-      --bs-table-hover-bg: #f3f4f6;
-      --bs-table-border-color: #e5e7eb;
-      color: #111827;
-    }
+        .sidebar-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.4);
+          backdrop-filter: blur(4px);
+          z-index: 40;
+          display: none;
+        }
 
-    .badge-status {
-      font-size: 0.7rem;
-      border-radius: 999px;
-      padding: 0.1rem 0.55rem;
-    }
-    .badge-status.active {
-      background: rgba(34, 197, 94, 0.15);
-      color: #16a34a;
-    }
-    .badge-status.inactive {
-      background: rgba(239, 68, 68, 0.12);
-      color: #b91c1c;
-    }
+        .sidebar-backdrop.show {
+          display: block;
+        }
 
-    pre.json-output {
-      max-height: 260px;
-      overflow: auto;
-      background: #020617;
-      border-radius: 10px;
-      border: 1px solid #111827;
-      font-size: 0.78rem;
-      color: #9ca3af;
-    }
-    body.light-theme pre.json-output {
-      background: #f3f4f6;
-      border-color: #e5e7eb;
-      color: #4b5563;
-    }
-
-    .pill-sm {
-      font-size: 0.72rem;
-      border-radius: 999px;
-      padding: 0.05rem 0.5rem;
-      background: rgba(31, 41, 55, 0.9);
-      color: #9ca3af;
-      border: 1px solid #1f2937;
-    }
-    body.light-theme .pill-sm {
-      background: #e5e7eb;
-      color: #374151;
-      border-color: #d1d5db;
-    }
-
-    .btn-accent {
-      background: linear-gradient(to right, #22c55e, #16a34a);
-      border: none;
-      color: #ecfdf5;
-    }
-    .btn-accent:hover {
-      background: linear-gradient(to right, #16a34a, #15803d);
-      color: #ecfdf5;
-    }
-
-  </style>
-</head>
-<body>
-
-<!-- =============== LOGIN =============== -->
-<div id="login-page" class="login-bg">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-5 col-lg-4">
-        <div class="login-card p-4">
-          <div class="mb-3">
-            <span class="brand-pill">
-              <i class="bi bi-shield-check"></i> Painel NF · Admin
-            </span>
+        .mobile-menu-btn {
+          display: inline-flex;
+        }
+      }
+    </style>
+  </head>
+  <body data-theme="light">
+    <!-- LOGIN OVERLAY -->
+    <div id="loginOverlay" class="overlay">
+      <div class="login-card">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px">
+          <div
+            style="
+              width: 32px;
+              height: 32px;
+              border-radius: 999px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: linear-gradient(135deg, #2563eb, #6366f1);
+              color: white;
+              font-weight: 700;
+            "
+          >
+            NF
           </div>
-          <h2 class="h4 mb-1">Bem-vindo(a)</h2>
-          <p class="text-muted mb-3" style="font-size: 0.9rem;">
-            Acesse o painel de gestão de notas fiscais e clientes via WhatsApp.
-          </p>
-
-          <div class="mb-3">
-            <label class="form-label">E-mail</label>
-            <input type="email" id="email" class="form-control" placeholder="seuemail@exemplo.com" />
+          <div>
+            <div class="login-title">NF Sistema</div>
+            <div class="login-subtitle">Acesso ao painel administrativo</div>
           </div>
-
-          <div class="mb-1">
-            <label class="form-label">Senha</label>
-            <input type="password" id="password" class="form-control" placeholder="••••••••" />
-          </div>
-
-          <div class="d-flex justify-content-between mb-3">
-            <small></small>
-            <small><a href="#" class="link-light" onclick="openForgotPasswordModal()">Esqueci minha senha</a></small>
-          </div>
-
-          <button class="btn btn-accent w-100 mb-2" onclick="login()">
-            <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
-          </button>
-
-          <div id="login-error" class="text-danger small mb-1"></div>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- ================= LAYOUT PRINCIPAL ================= -->
-<div id="app-layout" class="d-none">
-
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <div class="sidebar-brand-circle">M</div>
-      <div class="sidebar-brand-text">
-        <small>NFs · Automação</small><br />
-        <span>Michele Deiansa</span>
-      </div>
-    </div>
-
-    <ul class="sidebar-nav">
-      <li>
-        <a class="sidebar-link active"
-           onclick="switchSection('dashboard', this)">
-          <i class="bi bi-grid-1x2-fill"></i> <span>Visão geral</span>
-        </a>
-      </li>
-
-      <li>
-        <a class="sidebar-link"
-           onclick="switchSection('customers', this)">
-          <i class="bi bi-people-fill"></i> <span>Clientes WhatsApp</span>
-        </a>
-      </li>
-
-      <li>
-        <a class="sidebar-link"
-           onclick="switchSection('companies', this)">
-          <i class="bi bi-building"></i> <span>Empresas emissoras</span>
-        </a>
-      </li>
-
-      <li>
-        <a class="sidebar-link"
-           onclick="switchSection('invoices', this)">
-          <i class="bi bi-receipt"></i> <span>Notas fiscais</span>
-        </a>
-      </li>
-
-      <li>
-        <a class="sidebar-link"
-           onclick="switchSection('reports', this)">
-          <i class="bi bi-graph-up"></i> <span>Relatórios</span>
-        </a>
-      </li>
-    </ul>
-
-    <div class="sidebar-footer mt-3 text-muted small">
-      <span class="pill-sm"><i class="bi bi-whatsapp me-1"></i> Integração WhatsApp</span>
-      <div class="mt-1">v1.0 • NF Sistema</div>
-    </div>
-  </aside>
-
-  <!-- Mobile overlay -->
-  <div id="mobile-sidebar-overlay" onclick="toggleMobileMenu()"></div>
-
-  <!-- Main content -->
-  <main class="layout-main">
-    <!-- Topbar -->
-    <header class="topbar">
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-dark btn-mobile-menu me-2" onclick="toggleMobileMenu()">
-          <i class="bi bi-list" style="font-size: 1.4rem;"></i>
-        </button>
-        <div class="topbar-title">
-          Painel <span id="topbar-section-label">· Visão geral</span>
-          <span class="badge-env ms-2 pill-sm">Produção</span>
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" id="loginEmail" placeholder="admin@exemplo.com" />
         </div>
-      </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="loginPassword" placeholder="Sua senha" />
+        </div>
+        <div id="loginError" class="error-text" style="display: none"></div>
 
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-sm btn-outline-light border-0" id="theme-toggle-btn" onclick="toggleTheme()">
-          <i class="bi bi-moon"></i>
+        <button id="btnLogin" class="btn-primary" style="width: 100%; margin-top: 10px">
+          Entrar
         </button>
-        <span class="pill-sm" id="current-user-pill">
-          <i class="bi bi-person-badge"></i>
-          <span id="current-user-email">admin</span>
-        </span>
-        <button class="btn btn-sm btn-outline-light border-0" onclick="logout()">
-          <i class="bi bi-box-arrow-right"></i>
-        </button>
-      </div>
-    </header>
 
-    <div class="content-wrapper">
-      <!-- ========== DASHBOARD ========== -->
-      <section id="section-dashboard">
-        <div class="row g-3">
-          <div class="col-md-4">
-            <div class="card-elevated h-100">
-              <small class="text-muted">Notas (últimos 30 dias)</small>
-              <h4 id="dash-total-notas" class="mt-1 mb-2">–</h4>
-              <div class="text-muted small">
-                Valor total: <span id="dash-soma-valor">–</span><br />
-                Taxas: <span id="dash-soma-taxas">–</span>
+        <div class="login-footer">
+          <span class="link" id="forgotPasswordLink">Esqueci minha senha</span>
+          <span>© NF Sistema</span>
+        </div>
+
+        <div id="forgotInfo" class="success-text" style="display: none"></div>
+      </div>
+    </div>
+
+    <!-- APP SHELL -->
+    <div class="app-shell" id="appShell" style="display: none">
+      <!-- SIDEBAR -->
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-logo">NF</div>
+          <div class="sidebar-title">
+            <span>Painel</span>
+            <span>NF Sistema</span>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <div class="sidebar-section-label">Visão Geral</div>
+          <div class="nav-item active" data-page="dashboard">
+            <span class="icon">📊</span>
+            <span>Dashboard</span>
+          </div>
+
+          <div class="sidebar-section-label">Operações</div>
+          <div class="nav-item" data-page="clientes">
+            <span class="icon">👥</span>
+            <span>Clientes</span>
+          </div>
+          <div class="nav-item" data-page="empresas">
+            <span class="icon">🏢</span>
+            <span>Empresas</span>
+          </div>
+          <div class="nav-item" data-page="notas">
+            <span class="icon">🧾</span>
+            <span>Notas Fiscais</span>
+          </div>
+
+          <div class="sidebar-section-label">Análises</div>
+          <div class="nav-item" data-page="relatorios">
+            <span class="icon">📈</span>
+            <span>Relatórios</span>
+          </div>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="theme-toggle">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 11px; color: #9ca3af">Tema</span>
+              <span style="font-size: 12px">Claro / Escuro</span>
+            </div>
+            <button id="btnThemeToggle">🌓</button>
+          </div>
+
+          <div class="user-info">
+            <div>
+              <div class="user-tag">Usuário logado</div>
+              <div id="currentUserEmail" style="font-size: 12px">—</div>
+            </div>
+            <button class="btn-logout" id="btnLogout">Sair</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="main">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="mobile-menu-btn" id="btnMobileMenu">☰</button>
+            <div>
+              <div class="topbar-title" id="topbarTitle">Dashboard</div>
+              <div class="topbar-subtitle" id="topbarSubtitle">
+                Visão geral das notas fiscais, clientes e empresas
               </div>
-              <button class="btn btn-sm btn-outline-light mt-3"
-                      onclick="loadDashboardSummary()">
-                <i class="bi bi-arrow-clockwise me-1"></i> Atualizar visão
-              </button>
             </div>
           </div>
-
-          <div class="col-md-8">
-            <div class="card-section h-100">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <div>
-                  <h5 class="mb-1">Gráfico de notas por status</h5>
-                  <small class="text-muted">Baseado nos últimos 30 dias</small>
-                </div>
-                <span class="pill-sm"><i class="bi bi-bar-chart"></i> Dashboard</span>
-              </div>
-              <canvas id="chartNotasStatus" height="80"></canvas>
-            </div>
+          <div class="topbar-right">
+            <div class="chip">Produção</div>
           </div>
-        </div>
+        </header>
 
-        <div class="row g-3 mt-1">
-          <div class="col-12">
-            <div class="card-section">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <div>
-                  <h5 class="mb-1">Notas ao longo do tempo</h5>
-                  <small class="text-muted">Gráfico diário (últimos 30 dias)</small>
+        <section class="content">
+          <!-- DASHBOARD -->
+          <section id="page-dashboard" class="page-section active">
+            <div class="grid grid-3">
+              <div class="card metric-card">
+                <div class="metric-label">Total de notas</div>
+                <div class="metric-value" id="dashTotalNotas">—</div>
+                <div class="metric-detail">
+                  Soma de todas as notas emitidas no período selecionado
                 </div>
               </div>
-              <canvas id="chartNotasDia" height="80"></canvas>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ========== CLIENTES ========== -->
-      <section id="section-customers" class="d-none">
-        <div class="card-section">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <div>
-              <h5>Clientes</h5>
-              <small>Usuários identificados pelo WhatsApp</small>
-            </div>
-            <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-dark" onclick="loadCustomers()">
-                <i class="bi bi-arrow-clockwise me-1"></i> Atualizar
-              </button>
-              <button class="btn btn-sm btn-accent" onclick="openCustomerFormModal()">
-                <i class="bi bi-person-plus me-1"></i> Novo cliente
-              </button>
-            </div>
-          </div>
-
-          <!-- Filtros -->
-          <div class="row g-2 mb-3">
-            <div class="col-md-3">
-              <input type="text" id="filter-customer-name" class="form-control"
-                     placeholder="Nome" oninput="loadCustomers()">
-            </div>
-
-            <div class="col-md-3">
-              <input type="text" id="filter-customer-whatsapp" class="form-control"
-                     placeholder="WhatsApp" oninput="loadCustomers()">
-            </div>
-
-            <div class="col-md-3">
-              <select id="filter-customer-active" class="form-select"
-                      onchange="loadCustomers()">
-                <option value="">Status: Todos</option>
-                <option value="true">Ativos</option>
-                <option value="false">Inativos</option>
-              </select>
-            </div>
-
-            <div class="col-md-3">
-              <input type="number" step="0.01" id="filter-customer-fee" class="form-control"
-                     placeholder="Taxa (%)" oninput="loadCustomers()">
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle mb-0">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Nome</th>
-                  <th>WhatsApp</th>
-                  <th>Taxa (%)</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-
-              <tbody id="customers-tbody">
-                <tr>
-                  <td colspan="6" class="text-center text-muted small">
-                    Nenhum cliente carregado.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- ========== EMPRESAS ========== -->
-      <section id="section-companies" class="d-none">
-        <div class="card-section">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <div>
-              <h5>Empresas emissoras</h5>
-              <small>Utilizadas para emissão de notas fiscais</small>
-            </div>
-
-            <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-dark" onclick="loadCompanies()">
-                <i class="bi bi-arrow-clockwise"></i>
-              </button>
-              <button class="btn btn-sm btn-accent" onclick="openCompanyFormModal()">
-                <i class="bi bi-building-add me-1"></i> Nova empresa
-              </button>
-            </div>
-          </div>
-
-          <!-- Filtros -->
-          <div class="row g-2 mb-3">
-            <div class="col-md-4">
-              <input type="text" id="filter-company-name" class="form-control"
-                     placeholder="Nome da empresa" oninput="loadCompanies()">
-            </div>
-
-            <div class="col-md-4">
-              <input type="text" id="filter-company-cnpj" class="form-control"
-                     placeholder="CNPJ" oninput="loadCompanies()">
-            </div>
-
-            <div class="col-md-4">
-              <select id="filter-company-active" class="form-select"
-                      onchange="loadCompanies()">
-                <option value="">Status: Todas</option>
-                <option value="true">Ativas</option>
-                <option value="false">Inativas</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle mb-0">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>CNPJ</th>
-                  <th>Nome</th>
-                  <th>Chave acesso</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-
-              <tbody id="companies-tbody">
-                <tr>
-                  <td colspan="6" class="text-center text-muted small">
-                    Nenhuma empresa carregada.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- ========== NOTAS ========== -->
-      <section id="section-invoices" class="d-none">
-        <div class="card-section mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <div>
-              <h5>Notas fiscais</h5>
-              <small>Registros de todas as notas emitidas</small>
-            </div>
-
-            <button class="btn btn-sm btn-dark" onclick="loadInvoices()">
-              <i class="bi bi-arrow-clockwise me-1"></i> Atualizar
-            </button>
-          </div>
-
-          <!-- Filtros notas -->
-          <div class="row g-2 mb-3">
-            <div class="col-md-3">
-              <input type="number" id="filter-inv-customer" class="form-control"
-                     placeholder="ID Cliente">
-            </div>
-
-            <div class="col-md-3">
-              <input type="number" id="filter-inv-company" class="form-control"
-                     placeholder="ID Empresa">
-            </div>
-
-            <div class="col-md-3">
-              <input type="date" id="filter-inv-start" class="form-control">
-            </div>
-
-            <div class="col-md-3">
-              <input type="date" id="filter-inv-end" class="form-control">
-            </div>
-
-            <div class="col-md-3 mt-2">
-              <input type="number" step="0.01" id="filter-inv-min"
-                     class="form-control" placeholder="Valor mínimo">
-            </div>
-
-            <div class="col-md-3 mt-2">
-              <input type="number" step="0.01" id="filter-inv-max"
-                     class="form-control" placeholder="Valor máximo">
-            </div>
-
-            <div class="col-md-3 mt-2">
-              <select id="filter-inv-status" class="form-select">
-                <option value="">Status: Todos</option>
-                <option value="EMITIDA">Emitida</option>
-                <option value="PAGA">Paga</option>
-                <option value="CANCELADA">Cancelada</option>
-              </select>
-            </div>
-
-            <div class="col-md-3 mt-2">
-              <button class="btn btn-dark w-100" onclick="loadInvoices()">
-                Aplicar filtros
-              </button>
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle mb-0">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Cliente</th>
-                  <th>Empresa</th>
-                  <th>Emitida em</th>
-                  <th>Valor total</th>
-                  <th>Valor pago</th>
-                  <th>Taxa</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody id="invoices-tbody">
-                <tr>
-                  <td colspan="8" class="text-center text-muted small">
-                    Nenhuma nota carregada.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-        </div>
-
-        <div class="card-section">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h5>JSON cru (debug)</h5>
-              <small class="text-muted">Retorno bruto da API</small>
-            </div>
-          </div>
-          <pre class="json-output" id="invoices-json-output">[]</pre>
-        </div>
-      </section>
-
-      <!-- ========== RELATÓRIOS ========== -->
-      <section id="section-reports" class="d-none">
-        <div class="card-section mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <div>
-              <h5>Relatórios financeiros</h5>
-              <small>Totais, períodos e ranking</small>
-            </div>
-            <button class="btn btn-sm btn-accent" onclick="loadSummary()">
-              <i class="bi bi-play-circle me-1"></i> Gerar relatório
-            </button>
-          </div>
-
-          <form class="row g-3 mb-2" onsubmit="event.preventDefault(); loadSummary();">
-            <div class="col-md-3">
-              <label class="form-label">Data inicial</label>
-              <input type="date" id="report-start" class="form-control">
-            </div>
-
-            <div class="col-md-3">
-              <label class="form-label">Data final</label>
-              <input type="date" id="report-end" class="form-control">
-            </div>
-
-            <div class="col-md-2">
-              <label class="form-label">ID Cliente</label>
-              <input type="number" id="report-customer-id" class="form-control" placeholder="Opcional">
-            </div>
-
-            <div class="col-md-2">
-              <label class="form-label">Agrupamento</label>
-              <select id="report-group-by" class="form-select">
-                <option value="day">Diário</option>
-                <option value="month">Mensal</option>
-              </select>
-            </div>
-
-            <div class="col-md-2 d-flex align-items-end">
-              <button class="btn btn-dark w-100" type="submit">
-                <i class="bi bi-arrow-repeat me-1"></i> Atualizar
-              </button>
-            </div>
-          </form>
-
-          <div class="row g-3">
-            <div class="col-md-3">
-              <div class="card-elevated">
-                <small class="text-muted">Total de notas</small>
-                <h4 id="rep-total-notas" class="mt-1 mb-0">–</h4>
+              <div class="card metric-card">
+                <div class="metric-label">Valor total</div>
+                <div class="metric-value" id="dashValorTotal">—</div>
+                <div class="metric-detail">
+                  Considerando notas emitidas (EMITIDA + PAGA)
+                </div>
+              </div>
+              <div class="card metric-card">
+                <div class="metric-label">Total taxas</div>
+                <div class="metric-value" id="dashTaxas">—</div>
+                <div class="metric-detail">Com base na comissão configurada dos clientes</div>
               </div>
             </div>
 
-            <div class="col-md-3">
-              <div class="card-elevated">
-                <small class="text-muted">Soma valores</small>
-                <h4 id="rep-soma-valor" class="mt-1 mb-0">R$ 0,00</h4>
+            <div class="grid grid-2" style="margin-top: 14px">
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <div class="card-title">Notas por dia (últimos 30 dias)</div>
+                    <div class="card-subtitle">Volume diário de emissões</div>
+                  </div>
+                  <span class="badge">Linhas</span>
+                </div>
+                <canvas id="chartNotasDia"></canvas>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <div class="card-title">Status das notas</div>
+                    <div class="card-subtitle">Distribuição por status atual</div>
+                  </div>
+                  <span class="badge">Pizza</span>
+                </div>
+                <canvas id="chartStatus"></canvas>
               </div>
             </div>
+          </section>
 
-            <div class="col-md-3">
-              <div class="card-elevated">
-                <small class="text-muted">Taxas totais</small>
-                <h4 id="rep-soma-taxas" class="mt-1 mb-0">R$ 0,00</h4>
+          <!-- CLIENTES -->
+          <section id="page-clientes" class="page-section">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Clientes</div>
+                  <div class="card-subtitle">
+                    Cadastro de clientes identificados por WhatsApp e taxa de comissão
+                  </div>
+                </div>
+                <button id="btnAddCliente" class="btn-primary">+ Adicionar cliente</button>
+              </div>
+
+              <div class="toolbar">
+                <div class="toolbar-left">
+                  <div class="form-group" style="min-width: 180px">
+                    <label>Buscar por nome ou WhatsApp</label>
+                    <input
+                      type="text"
+                      id="clienteSearch"
+                      placeholder="Digite para filtrar..."
+                    />
+                  </div>
+                  <div class="form-group" style="max-width: 140px">
+                    <label>Comissão mínima (%)</label>
+                    <input type="number" id="clienteFeeMin" step="0.01" />
+                  </div>
+                  <div class="form-group" style="max-width: 140px">
+                    <label>Comissão máxima (%)</label>
+                    <input type="number" id="clienteFeeMax" step="0.01" />
+                  </div>
+                </div>
+                <div class="toolbar-right">
+                  <span class="chip-filter active" data-cliente-ativo="all">Todos</span>
+                  <span class="chip-filter" data-cliente-ativo="true">Ativos</span>
+                  <span class="chip-filter" data-cliente-ativo="false">Inativos</span>
+                </div>
+              </div>
+
+              <!-- FORM CLIENTE -->
+              <div id="clienteFormWrapper" style="display: none; margin-bottom: 10px">
+                <div
+                  style="
+                    padding: 10px;
+                    border-radius: 12px;
+                    border: 1px dashed var(--border);
+                    background: color-mix(
+                      in srgb,
+                      var(--primary-soft) 25%,
+                      var(--bg-elevated) 75%
+                    );
+                  "
+                >
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Nome do cliente</label>
+                      <input type="text" id="clienteNome" />
+                    </div>
+                    <div class="form-group">
+                      <label>WhatsApp</label>
+                      <input type="text" id="clienteWhats" placeholder="+55..." />
+                    </div>
+                    <div class="form-group" style="max-width: 140px">
+                      <label>Taxa (%)</label>
+                      <input type="number" id="clienteTaxa" step="0.01" />
+                    </div>
+                    <div class="form-group" style="max-width: 120px">
+                      <label>Status</label>
+                      <select id="clienteAtivo">
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div style="display: flex; justify-content: flex-end; gap: 8px">
+                    <button id="btnCancelCliente" class="btn-secondary">Cancelar</button>
+                    <button id="btnSaveCliente" class="btn-primary">Salvar</button>
+                  </div>
+                  <div id="clienteFormError" class="error-text" style="display: none"></div>
+                </div>
+              </div>
+
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Nome</th>
+                      <th>WhatsApp</th>
+                      <th>Taxa (%)</th>
+                      <th>Status</th>
+                      <th>Criado em</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="clientesTableBody"></tbody>
+                </table>
               </div>
             </div>
+          </section>
 
-            <div class="col-md-3">
-              <div class="card-elevated">
-                <small class="text-muted">Mais notas (cliente)</small>
-                <h6 id="rep-top-customer" class="mt-1 mb-0 small">–</h6>
-                <small class="text-muted">Maior volume (empresa)</small>
-                <h6 id="rep-top-company" class="mt-1 mb-0 small">–</h6>
+          <!-- EMPRESAS -->
+          <section id="page-empresas" class="page-section">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Empresas emissoras</div>
+                  <div class="card-subtitle">
+                    Cadastro das empresas autorizadas a emitir notas fiscais
+                  </div>
+                </div>
+                <button id="btnAddEmpresa" class="btn-primary">+ Adicionar empresa</button>
+              </div>
+
+              <div class="toolbar">
+                <div class="toolbar-left">
+                  <div class="form-group" style="min-width: 180px">
+                    <label>Nome / CNPJ</label>
+                    <input
+                      type="text"
+                      id="empresaSearch"
+                      placeholder="Digite parte do nome ou CNPJ..."
+                    />
+                  </div>
+                </div>
+                <div class="toolbar-right">
+                  <span class="chip-filter active" data-empresa-ativo="all">Todas</span>
+                  <span class="chip-filter" data-empresa-ativo="true">Ativas</span>
+                  <span class="chip-filter" data-empresa-ativo="false">Inativas</span>
+                </div>
+              </div>
+
+              <!-- FORM EMPRESA -->
+              <div id="empresaFormWrapper" style="display: none; margin-bottom: 10px">
+                <div
+                  style="
+                    padding: 10px;
+                    border-radius: 12px;
+                    border: 1px dashed var(--border);
+                    background: color-mix(
+                      in srgb,
+                      var(--primary-soft) 25%,
+                      var(--bg-elevated) 75%
+                    );
+                  "
+                >
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label>Nome da empresa</label>
+                      <input type="text" id="empresaNome" />
+                    </div>
+                    <div class="form-group">
+                      <label>CNPJ</label>
+                      <input type="text" id="empresaCnpj" />
+                    </div>
+                    <div class="form-group">
+                      <label>Chave de acesso</label>
+                      <input type="text" id="empresaChave" />
+                    </div>
+                    <div class="form-group" style="max-width: 120px">
+                      <label>Status</label>
+                      <select id="empresaAtiva">
+                        <option value="true">Ativa</option>
+                        <option value="false">Inativa</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div style="display: flex; justify-content: flex-end; gap: 8px">
+                    <button id="btnCancelEmpresa" class="btn-secondary">Cancelar</button>
+                    <button id="btnSaveEmpresa" class="btn-primary">Salvar</button>
+                  </div>
+                  <div id="empresaFormError" class="error-text" style="display: none"></div>
+                </div>
+              </div>
+
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Nome</th>
+                      <th>CNPJ</th>
+                      <th>Status</th>
+                      <th>Criada em</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="empresasTableBody"></tbody>
+                </table>
               </div>
             </div>
-          </div>
-        </div>
+          </section>
 
-        <div class="card-section mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <div>
-              <h5>Notas por período</h5>
-              <small class="text-muted">Conforme agrupamento diário/mensal</small>
+          <!-- NOTAS -->
+          <section id="page-notas" class="page-section">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Notas fiscais</div>
+                  <div class="card-subtitle">
+                    Listagem com carregamento automático (scroll infinito)
+                  </div>
+                </div>
+              </div>
+
+              <div class="toolbar">
+                <div class="toolbar-left">
+                  <div class="form-group">
+                    <label>Buscar por cliente / empresa</label>
+                    <input
+                      type="text"
+                      id="notasSearch"
+                      placeholder="Parte do nome do cliente ou empresa"
+                    />
+                  </div>
+                  <div class="form-group" style="max-width: 160px">
+                    <label>Status</label>
+                    <select id="notasStatusFilter">
+                      <option value="all">Todos</option>
+                      <option value="EMITIDA">Emitida</option>
+                      <option value="PAGA">Paga</option>
+                      <option value="CANCELADA">Cancelada</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="toolbar-right">
+                  <div class="form-group" style="max-width: 140px">
+                    <label>Data inicial</label>
+                    <input type="date" id="notasDataIni" />
+                  </div>
+                  <div class="form-group" style="max-width: 140px">
+                    <label>Data final</label>
+                    <input type="date" id="notasDataFim" />
+                  </div>
+                  <button id="notasApplyFilters" class="btn-secondary">Aplicar filtros</button>
+                </div>
+              </div>
+
+              <div class="table-wrapper" id="notasTableWrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Data emissão</th>
+                      <th>Cliente</th>
+                      <th>Empresa</th>
+                      <th>Valor total</th>
+                      <th>Valor pago</th>
+                      <th>Taxa (%)</th>
+                      <th>Taxa (R$)</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="notasTableBody"></tbody>
+                </table>
+                <div id="notasLoaderRow" class="loader-row">
+                  <span id="notasLoaderText">Rolando para carregar mais…</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <canvas id="chartReportPeriodo" height="80"></canvas>
-        </div>
+          </section>
 
-        <div class="card-section">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <div>
-              <h5>Dados completos (debug)</h5>
-              <small class="text-muted">Resumo que veio da API</small>
+          <!-- RELATÓRIOS -->
+          <section id="page-relatorios" class="page-section">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Relatórios</div>
+                  <div class="card-subtitle">
+                    Visão consolidada por período, cliente e empresa
+                  </div>
+                </div>
+                <div class="tabs">
+                  <button
+                    class="tab-button active"
+                    data-rel-tab="geral"
+                    id="tabRelGeral"
+                  >
+                    Visão geral
+                  </button>
+                  <button class="tab-button" data-rel-tab="cliente" id="tabRelCliente">
+                    Por cliente
+                  </button>
+                  <button class="tab-button" data-rel-tab="empresa" id="tabRelEmpresa">
+                    Por empresa
+                  </button>
+                </div>
+              </div>
+
+              <!-- VISÃO GERAL -->
+              <div
+                class="rel-subsection"
+                id="relGeralSection"
+              >
+                <div class="toolbar">
+                  <div class="toolbar-left">
+                    <div class="form-group">
+                      <label>Data inicial</label>
+                      <input type="date" id="relDataIni" />
+                    </div>
+                    <div class="form-group">
+                      <label>Data final</label>
+                      <input type="date" id="relDataFim" />
+                    </div>
+                    <div class="form-group">
+                      <label>Agrupar por</label>
+                      <select id="relGroupBy">
+                        <option value="day">Dia</option>
+                        <option value="month">Mês</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="toolbar-right">
+                    <button id="btnReloadReports" class="btn-secondary">
+                      Atualizar relatórios
+                    </button>
+                  </div>
+                </div>
+
+                <div class="grid grid-3">
+                  <div class="metric-card">
+                    <div class="metric-label">Notas no período</div>
+                    <div class="metric-value" id="relTotalNotas">—</div>
+                    <div class="metric-detail">Quantidade de notas emitidas</div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-label">Valor total (R$)</div>
+                    <div class="metric-value" id="relValorTotal">—</div>
+                    <div class="metric-detail">Soma do valor total das notas</div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-label">Taxas totais (R$)</div>
+                    <div class="metric-value" id="relTaxasTotal">—</div>
+                    <div class="metric-detail">
+                      Somatório das taxas cobradas dos clientes
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-2" style="margin-top: 14px">
+                  <div class="card">
+                    <div class="card-header">
+                      <div>
+                        <div class="card-title">Notas por período</div>
+                        <div class="card-subtitle">Agrupado por dia ou mês</div>
+                      </div>
+                    </div>
+                    <canvas id="chartRelPeriodo"></canvas>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <div>
+                        <div class="card-title">Top cliente / empresa</div>
+                        <div class="card-subtitle">
+                          Maior número de notas e maior volume financeiro
+                        </div>
+                      </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px">
+                      <div>
+                        <span class="tag tag-muted">Cliente com mais notas</span>
+                        <div id="relTopCliente" style="margin-top: 4px">—</div>
+                      </div>
+                      <div>
+                        <span class="tag tag-muted">Empresa com maior volume</span>
+                        <div id="relTopEmpresa" style="margin-top: 4px">—</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- POR CLIENTE -->
+              <div
+                class="rel-subsection hidden"
+                id="relClienteSection"
+              >
+                <div class="toolbar">
+                  <div class="toolbar-left">
+                    <div class="form-group">
+                      <label>Cliente</label>
+                      <select id="relClienteSelect">
+                        <option value="">Selecione um cliente</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>Data inicial</label>
+                      <input type="date" id="relClienteDataIni" />
+                    </div>
+                    <div class="form-group">
+                      <label>Data final</label>
+                      <input type="date" id="relClienteDataFim" />
+                    </div>
+                  </div>
+                  <div class="toolbar-right">
+                    <button id="btnRelClienteGerar" class="btn-secondary">
+                      Gerar relatório por cliente
+                    </button>
+                  </div>
+                </div>
+
+                <div class="grid grid-3">
+                  <div class="metric-card">
+                    <div class="metric-label">Cliente</div>
+                    <div class="metric-value" id="relClienteNome">—</div>
+                    <div class="metric-detail" id="relClienteWhats">WhatsApp: —</div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-label">Notas no período</div>
+                    <div class="metric-value" id="relClienteTotalNotas">—</div>
+                    <div class="metric-detail">Quantidade de notas emitidas</div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-label">Total faturado / Taxas</div>
+                    <div class="metric-detail">
+                      Faturamento: <span id="relClienteValorTotal">—</span>
+                    </div>
+                    <div class="metric-detail">
+                      Taxas: <span id="relClienteTaxasTotal">—</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-2 rel-subsection">
+                  <div class="card">
+                    <div class="card-header">
+                      <div>
+                        <div class="card-title">Notas do cliente por período</div>
+                        <div class="card-subtitle">Volume diário/mensal</div>
+                      </div>
+                    </div>
+                    <canvas id="chartRelClientePeriodo"></canvas>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <div>
+                        <div class="card-title">Notas por empresa</div>
+                        <div class="card-subtitle">
+                          Empresas que mais emitiram para este cliente
+                        </div>
+                      </div>
+                    </div>
+                    <div class="table-wrapper" style="max-height: 260px">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Empresa</th>
+                            <th>Notas</th>
+                            <th>Valor total</th>
+                          </tr>
+                        </thead>
+                        <tbody id="relClienteEmpresasBody"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card rel-subsection">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-title">Notas do cliente</div>
+                      <div class="card-subtitle">
+                        Lista completa das notas dentro do período
+                      </div>
+                    </div>
+                  </div>
+                  <div class="table-wrapper">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Emissão</th>
+                          <th>Empresa</th>
+                          <th>Valor total</th>
+                          <th>Taxa (R$)</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody id="relClienteNotasBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- POR EMPRESA -->
+              <div
+                class="rel-subsection hidden"
+                id="relEmpresaSection"
+              >
+                <div class="toolbar">
+                  <div class="toolbar-left">
+                    <div class="form-group">
+                      <label>Empresa</label>
+                      <select id="relEmpresaSelect">
+                        <option value="">Selecione uma empresa</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>Data inicial</label>
+                      <input type="date" id="relEmpresaDataIni" />
+                    </div>
+                    <div class="form-group">
+                      <label>Data final</label>
+                      <input type="date" id="relEmpresaDataFim" />
+                    </div>
+                  </div>
+                  <div class="toolbar-right">
+                    <button id="btnRelEmpresaGerar" class="btn-secondary">
+                      Gerar relatório por empresa
+                    </button>
+                  </div>
+                </div>
+
+                <div class="grid grid-3">
+                  <div class="metric-card">
+                    <div class="metric-label">Empresa</div>
+                    <div class="metric-value" id="relEmpresaNome">—</div>
+                    <div class="metric-detail" id="relEmpresaCnpj">CNPJ: —</div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-label">Notas no período</div>
+                    <div class="metric-value" id="relEmpresaTotalNotas">—</div>
+                    <div class="metric-detail">Quantidade de notas emitidas</div>
+                  </div>
+                  <div class="metric-card">
+                    <div class="metric-label">Total faturado</div>
+                    <div class="metric-value" id="relEmpresaValorTotal">—</div>
+                    <div class="metric-detail">Somatório das notas da empresa</div>
+                  </div>
+                </div>
+
+                <div class="grid grid-2 rel-subsection">
+                  <div class="card">
+                    <div class="card-header">
+                      <div>
+                        <div class="card-title">Notas da empresa por período</div>
+                        <div class="card-subtitle">Volume diário/mensal</div>
+                      </div>
+                    </div>
+                    <canvas id="chartRelEmpresaPeriodo"></canvas>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-header">
+                      <div>
+                        <div class="card-title">Clientes desta empresa</div>
+                        <div class="card-subtitle">
+                          Clientes que mais emitiram por esta empresa
+                        </div>
+                      </div>
+                    </div>
+                    <div class="table-wrapper" style="max-height: 260px">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Cliente</th>
+                            <th>Notas</th>
+                            <th>Valor total</th>
+                          </tr>
+                        </thead>
+                        <tbody id="relEmpresaClientesBody"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card rel-subsection">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-title">Notas da empresa</div>
+                      <div class="card-subtitle">
+                        Lista completa das notas dentro do período
+                      </div>
+                    </div>
+                  </div>
+                  <div class="table-wrapper">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Emissão</th>
+                          <th>Cliente</th>
+                          <th>Valor total</th>
+                          <th>Taxa (R$)</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody id="relEmpresaNotasBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <pre class="json-output" id="reports-output">[]</pre>
-        </div>
-      </section>
-
+          </section>
+        </section>
+      </main>
     </div>
-  </main>
-</div>
 
-<!-- ========== MODAL CLIENTE ========== -->
-<div class="modal fade" id="customerModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="background:#020617;border-radius:18px;border:1px solid #1f2937;">
-      <div class="modal-header border-secondary">
-        <h5 class="modal-title">Cliente WhatsApp</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-        <form id="customer-form">
-          <input type="hidden" id="customer-id">
-
-          <div class="mb-2">
-            <label class="form-label">Nome</label>
-            <input type="text" id="customer-name" class="form-control" required>
-          </div>
-
-          <div class="mb-2">
-            <label class="form-label">WhatsApp</label>
-            <input type="text" id="customer-whatsapp" class="form-control" required>
-          </div>
-
-          <div class="mb-2">
-            <label class="form-label">Taxa (%)</label>
-            <input type="number" id="customer-fee" step="0.01" class="form-control" required>
-          </div>
-
-          <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" id="customer-active" checked>
-            <label for="customer-active" class="form-check-label">Ativo</label>
-          </div>
-        </form>
-
-        <div id="customer-modal-error" class="text-danger small"></div>
-      </div>
-
-      <div class="modal-footer border-secondary">
-        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-accent btn-sm" onclick="saveCustomer()">Salvar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ========== MODAL EMPRESA ========== -->
-<div class="modal fade" id="companyModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="background:#020617;border-radius:18px;border:1px solid #1f2937;">
-
-      <div class="modal-header border-secondary">
-        <h5 class="modal-title">Empresa emissora</h5>
-        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-        <form id="company-form">
-          <input type="hidden" id="company-id">
-
-          <div class="mb-2">
-            <label class="form-label">CNPJ</label>
-            <input type="text" id="company-cnpj" class="form-control" required>
-          </div>
-
-          <div class="mb-2">
-            <label class="form-label">Nome</label>
-            <input type="text" id="company-name" class="form-control" required>
-          </div>
-
-          <div class="mb-2">
-            <label class="form-label">Chave de acesso</label>
-            <input type="text" id="company-access-key" class="form-control" required>
-          </div>
-
-          <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" id="company-active" checked>
-            <label class="form-check-label" for="company-active">Ativa</label>
-          </div>
-        </form>
-
-        <div id="company-modal-error" class="text-danger small"></div>
-      </div>
-
-      <div class="modal-footer border-secondary">
-        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-accent btn-sm" onclick="saveCompany()">Salvar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ========== MODAL ESQUECI SENHA ========== -->
-<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="background:#020617;border-radius:18px;border:1px solid #1f2937;">
-      <div class="modal-header border-secondary">
-        <h5 class="modal-title">Recuperar senha</h5>
-        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <p class="small text-muted">
-          Informe o e-mail de administrador para receber instruções de redefinição de senha.
-        </p>
-        <div class="mb-2">
-          <label class="form-label">E-mail</label>
-          <input type="email" id="forgot-email" class="form-control" placeholder="seuemail@exemplo.com">
-        </div>
-        <div id="forgot-error" class="text-danger small mt-1"></div>
-        <div id="forgot-success" class="text-success small mt-1"></div>
-      </div>
-      <div class="modal-footer border-secondary">
-        <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-accent btn-sm" onclick="sendPasswordRecovery()">Enviar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-const API_BASE = "/api";
-let customerModalInstance = null;
-let companyModalInstance = null;
-let forgotModalInstance = null;
-
-let chartNotasStatus = null;
-let chartNotasDia = null;
-let chartReportPeriodo = null;
-
-document.addEventListener("DOMContentLoaded", () => {
-  // Tema salvo
-  const theme = localStorage.getItem("nf_theme") || "dark";
-  if (theme === "light") {
-    document.body.classList.add("light-theme");
-    updateThemeIcon();
-  }
-
-  const token = getToken();
-  if (token) {
-    showAppLayout();
-    loadDashboardSummary();
-  }
-
-  customerModalInstance = new bootstrap.Modal(document.getElementById("customerModal"));
-  companyModalInstance = new bootstrap.Modal(document.getElementById("companyModal"));
-  forgotModalInstance = new bootstrap.Modal(document.getElementById("forgotPasswordModal"));
-});
-
-function setToken(t) { localStorage.setItem("token_nf_app", t); }
-function getToken() { return localStorage.getItem("token_nf_app"); }
-function clearToken() { localStorage.removeItem("token_nf_app"); }
-
-async function login() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  const errorEl = document.getElementById("login-error");
-  errorEl.textContent = "";
-
-  if (!email || !password) {
-    errorEl.textContent = "Informe e-mail e senha.";
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      errorEl.textContent = data.error || "Credenciais inválidas";
-      return;
-    }
-
-    setToken(data.token);
-    document.getElementById("current-user-email").textContent = data.user?.email || email;
-    showAppLayout();
-    loadDashboardSummary();
-  } catch (e) {
-    errorEl.textContent = "Erro ao tentar autenticar.";
-  }
-}
-
-function showAppLayout() {
-  document.getElementById("login-page").classList.add("d-none");
-  document.getElementById("app-layout").classList.remove("d-none");
-}
-
-function logout() {
-  clearToken();
-  location.reload();
-}
-
-function toggleMobileMenu() {
-  const sidebar = document.querySelector(".sidebar");
-  const overlay = document.getElementById("mobile-sidebar-overlay");
-
-  if (sidebar.classList.contains("mobile-open")) {
-    sidebar.classList.remove("mobile-open");
-    overlay.classList.remove("visible");
-  } else {
-    sidebar.classList.add("mobile-open");
-    overlay.classList.add("visible");
-  }
-}
-
-function toggleTheme() {
-  document.body.classList.toggle("light-theme");
-  const isLight = document.body.classList.contains("light-theme");
-  localStorage.setItem("nf_theme", isLight ? "light" : "dark");
-  updateThemeIcon();
-}
-
-function updateThemeIcon() {
-  const btn = document.getElementById("theme-toggle-btn");
-  if (!btn) return;
-  const icon = btn.querySelector("i");
-  if (!icon) return;
-  if (document.body.classList.contains("light-theme")) {
-    icon.className = "bi bi-sun";
-  } else {
-    icon.className = "bi bi-moon";
-  }
-}
-
-function openForgotPasswordModal() {
-  document.getElementById("forgot-email").value = "";
-  document.getElementById("forgot-error").textContent = "";
-  document.getElementById("forgot-success").textContent = "";
-  forgotModalInstance.show();
-}
-
-async function sendPasswordRecovery() {
-  const email = document.getElementById("forgot-email").value.trim();
-  const errorEl = document.getElementById("forgot-error");
-  const successEl = document.getElementById("forgot-success");
-  errorEl.textContent = "";
-  successEl.textContent = "";
-
-  if (!email) {
-    errorEl.textContent = "Informe um e-mail válido.";
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/auth/forgot-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      errorEl.textContent = data.error || "Erro ao enviar e-mail de recuperação.";
-      return;
-    }
-
-    successEl.textContent = "Se o e-mail existir, um link de recuperação foi enviado.";
-  } catch (err) {
-    errorEl.textContent = "Erro de rede ao enviar recuperação de senha.";
-  }
-}
-
-async function authorizedFetch(url, options = {}) {
-  const token = getToken();
-  const headers = options.headers || {};
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-  if (!headers["Content-Type"] && options.body) {
-    headers["Content-Type"] = "application/json";
-  }
-  return await fetch(url, { ...options, headers });
-}
-
-function formatCurrency(v) {
-  const n = Number(v || 0);
-  return n.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
-
-function formatDateTime(v) {
-  const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return v;
-  return d.toLocaleString("pt-BR");
-}
-
-function switchSection(sectionId, linkEl) {
-  const sections = ["dashboard", "customers", "companies", "invoices", "reports"];
-  sections.forEach(id => {
-    const sec = document.getElementById(`section-${id}`);
-    if (sec) sec.classList.add("d-none");
-  });
-
-  const target = document.getElementById(`section-${sectionId}`);
-  if (target) target.classList.remove("d-none");
-
-  const labels = {
-    dashboard: "· Visão geral",
-    customers: "· Clientes WhatsApp",
-    companies: "· Empresas emissoras",
-    invoices: "· Notas fiscais",
-    reports: "· Relatórios"
-  };
-  document.getElementById("topbar-section-label").innerText = labels[sectionId];
-
-  document.querySelectorAll(".sidebar-link").forEach(a => a.classList.remove("active"));
-  if (linkEl) linkEl.classList.add("active");
-
-  const sidebar = document.querySelector(".sidebar");
-  const overlay = document.getElementById("mobile-sidebar-overlay");
-  if (sidebar.classList.contains("mobile-open")) {
-    sidebar.classList.remove("mobile-open");
-    overlay.classList.remove("visible");
-  }
-
-  if (sectionId === "customers") loadCustomers();
-  if (sectionId === "companies") loadCompanies();
-  if (sectionId === "invoices") loadInvoices();
-  if (sectionId === "reports") loadSummary();
-}
-
-async function loadDashboardSummary() {
-  try {
-    const end = new Date().toISOString().slice(0, 10);
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 30);
-    const start = startDate.toISOString().slice(0, 10);
-
-    const res = await authorizedFetch(`${API_BASE}/reports/summary?start=${start}&end=${end}`);
-    if (!res.ok) return;
-    const data = await res.json();
-
-    const totals = data.totals || {};
-    document.getElementById("dash-total-notas").textContent = totals.total_notas || 0;
-    document.getElementById("dash-soma-valor").textContent =
-      formatCurrency(totals.soma_valor_total || 0);
-    document.getElementById("dash-soma-taxas").textContent =
-      formatCurrency(totals.soma_taxas || 0);
-
-    const porStatus = data.porStatus || [];
-    const labelsStatus = porStatus.map(s => s.status);
-    const valuesStatus = porStatus.map(s => s.total_notas);
-
-    const ctx1 = document.getElementById("chartNotasStatus").getContext("2d");
-    if (chartNotasStatus) chartNotasStatus.destroy();
-    chartNotasStatus = new Chart(ctx1, {
-      type: "bar",
-      data: {
-        labels: labelsStatus,
-        datasets: [{
-          label: "Quantidade de notas",
-          data: valuesStatus
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } }
+    <script>
+      // ==========================
+      // THEME
+      // ==========================
+      function applyTheme(theme) {
+        document.body.setAttribute("data-theme", theme);
+        localStorage.setItem("nf_theme", theme);
       }
-    });
 
-    const porDia = data.porDia || [];
-    const labelsDia = porDia.map(d => d.label || d.date);
-    const valuesDia = porDia.map(d => d.total_notas);
+      const savedTheme = localStorage.getItem("nf_theme") || "light";
+      applyTheme(savedTheme);
 
-    const ctx2 = document.getElementById("chartNotasDia").getContext("2d");
-    if (chartNotasDia) chartNotasDia.destroy();
-    chartNotasDia = new Chart(ctx2, {
-      type: "line",
-      data: {
-        labels: labelsDia,
-        datasets: [{
-          label: "Notas por dia",
-          data: valuesDia,
-          tension: 0.3
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } }
+      // ==========================
+      // AUTH / API
+      // ==========================
+      let authToken = localStorage.getItem("nf_token") || null;
+      let currentUser = null;
+
+      async function apiFetch(path, options = {}) {
+        const headers = options.headers || {};
+        headers["Content-Type"] = "application/json";
+        if (authToken) {
+          headers["Authorization"] = "Bearer " + authToken;
+        }
+
+        const res = await fetch(path, {
+          ...options,
+          headers,
+        });
+
+        if (res.status === 401) {
+          showLogin();
+          throw new Error("Não autorizado");
+        }
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "Erro na API");
+        }
+
+        return res.json();
       }
-    });
-  } catch (err) {
-    console.error("Erro dashboard:", err);
-  }
-}
 
-async function loadCustomers() {
-  const tbody = document.getElementById("customers-tbody");
-  tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted small">Carregando...</td></tr>`;
+      function showLogin() {
+        document.getElementById("loginOverlay").style.display = "flex";
+        document.getElementById("appShell").style.display = "none";
+      }
 
-  const res = await authorizedFetch(`${API_BASE}/customers`);
-  if (!res.ok) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-danger text-center small">Erro ao carregar.</td></tr>`;
-    return;
-  }
+      function showApp() {
+        document.getElementById("loginOverlay").style.display = "none";
+        document.getElementById("appShell").style.display = "flex";
+      }
 
-  let data = await res.json();
+      async function doLogin() {
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value.trim();
+        const errorEl = document.getElementById("loginError");
+        errorEl.style.display = "none";
 
-  const fName = document.getElementById("filter-customer-name").value.toLowerCase();
-  const fWpp  = document.getElementById("filter-customer-whatsapp").value.toLowerCase();
-  const fAct  = document.getElementById("filter-customer-active").value;
-  const fFee  = document.getElementById("filter-customer-fee").value;
+        try {
+          const data = await apiFetch("/api/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ email, password }),
+            headers: { "Content-Type": "application/json" },
+          });
 
-  data = data.filter(c => {
-    if (fName && !c.name.toLowerCase().includes(fName)) return false;
-    if (fWpp && !c.whatsapp_number.toLowerCase().includes(fWpp)) return false;
-    if (fAct && String(c.is_active) !== fAct) return false;
-    if (fFee && Number(c.fee_percent) !== Number(fFee)) return false;
-    return true;
-  });
+          authToken = data.token;
+          currentUser = data.user;
+          localStorage.setItem("nf_token", authToken);
+          localStorage.setItem("nf_user_email", currentUser.email);
 
-  if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted small">Nenhum registro.</td></tr>`;
-    return;
-  }
+          document.getElementById("currentUserEmail").textContent = currentUser.email;
 
-  tbody.innerHTML = "";
-  for (const c of data) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${c.id}</td>
-      <td>${c.name}</td>
-      <td>${c.whatsapp_number}</td>
-      <td>${Number(c.fee_percent).toFixed(2)}%</td>
-      <td><span class="badge-status ${c.is_active ? 'active':'inactive'}">${c.is_active ? "Ativo":"Inativo"}</span></td>
-      <td>
-        <button class="btn btn-sm btn-outline-light me-1" onclick='editCustomer(${JSON.stringify(c)})'>
-          <i class="bi bi-pencil"></i>
-        </button>
-        <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(${c.id})">
-          <i class="bi bi-trash"></i>
-        </button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  }
-}
+          showApp();
+          selectPage("dashboard");
+          loadDashboard();
+          loadClientes().then(populateRelatorioSelects);
+          loadEmpresas().then(populateRelatorioSelects);
+          resetNotasInfiniteScroll();
+          loadNotasPage(true);
+          loadRelatorios();
+        } catch (err) {
+          console.error(err);
+          errorEl.textContent = "Credenciais inválidas.";
+          errorEl.style.display = "block";
+        }
+      }
 
-function openCustomerFormModal() {
-  document.getElementById("customer-id").value = "";
-  document.getElementById("customer-form").reset();
-  document.getElementById("customer-modal-error").textContent = "";
-  customerModalInstance.show();
-}
+      function logout() {
+        authToken = null;
+        currentUser = null;
+        localStorage.removeItem("nf_token");
+        showLogin();
+      }
 
-function editCustomer(c) {
-  document.getElementById("customer-id").value = c.id;
-  document.getElementById("customer-name").value = c.name;
-  document.getElementById("customer-whatsapp").value = c.whatsapp_number;
-  document.getElementById("customer-fee").value = c.fee_percent;
-  document.getElementById("customer-active").checked = c.is_active;
-  document.getElementById("customer-modal-error").textContent = "";
-  customerModalInstance.show();
-}
+      async function sendForgotPassword() {
+        const email = document.getElementById("loginEmail").value.trim();
+        const infoEl = document.getElementById("forgotInfo");
+        const errorEl = document.getElementById("loginError");
+        errorEl.style.display = "none";
+        infoEl.style.display = "none";
 
-async function saveCustomer() {
-  const id = document.getElementById("customer-id").value;
-  const payload = {
-    name: document.getElementById("customer-name").value,
-    whatsapp_number: document.getElementById("customer-whatsapp").value,
-    fee_percent: Number(document.getElementById("customer-fee").value),
-    is_active: document.getElementById("customer-active").checked
-  };
+        if (!email) {
+          errorEl.textContent = "Informe seu e-mail para recuperar a senha.";
+          errorEl.style.display = "block";
+          return;
+        }
 
-  const errorEl = document.getElementById("customer-modal-error");
+        try {
+          await fetch("/api/auth/forgot-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+          infoEl.textContent =
+            "Se o e-mail estiver cadastrado, um link de recuperação foi enviado.";
+          infoEl.style.display = "block";
+        } catch (err) {
+          console.error(err);
+          errorEl.textContent = "Erro ao solicitar recuperação de senha.";
+          errorEl.style.display = "block";
+        }
+      }
 
-  let res;
-  if (id) {
-    res = await authorizedFetch(`${API_BASE}/customers/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(payload)
-    });
-  } else {
-    res = await authorizedFetch(`${API_BASE}/customers`, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-  }
+      // ==========================
+      // NAV / PAGES
+      // ==========================
+      function selectPage(page) {
+        document
+          .querySelectorAll(".page-section")
+          .forEach((sec) => sec.classList.remove("active"));
+        document.getElementById("page-" + page).classList.add("active");
 
-  if (!res.ok) {
-    const err = await res.json().catch(()=>({}));
-    errorEl.textContent = err.error || "Erro ao salvar.";
-    return;
-  }
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((item) => item.classList.remove("active"));
+        document
+          .querySelector(`.nav-item[data-page="${page}"]`)
+          ?.classList.add("active");
 
-  customerModalInstance.hide();
-  loadCustomers();
-}
+        const topbarTitle = document.getElementById("topbarTitle");
+        const topbarSubtitle = document.getElementById("topbarSubtitle");
 
-async function deleteCustomer(id) {
-  if (!confirm("Excluir cliente?")) return;
-  const res = await authorizedFetch(`${API_BASE}/customers/${id}`, { method: "DELETE" });
-  if (res.ok) loadCustomers();
-}
+        if (page === "dashboard") {
+          topbarTitle.textContent = "Dashboard";
+          topbarSubtitle.textContent =
+            "Visão geral das notas fiscais, clientes e empresas";
+        } else if (page === "clientes") {
+          topbarTitle.textContent = "Clientes";
+          topbarSubtitle.textContent =
+            "Gestão de clientes identificados por WhatsApp";
+        } else if (page === "empresas") {
+          topbarTitle.textContent = "Empresas emissoras";
+          topbarSubtitle.textContent =
+            "Configuração das empresas que podem emitir notas";
+        } else if (page === "notas") {
+          topbarTitle.textContent = "Notas fiscais";
+          topbarSubtitle.textContent =
+            "Listagem das notas emitidas com carregamento automático";
+        } else if (page === "relatorios") {
+          topbarTitle.textContent = "Relatórios";
+          topbarSubtitle.textContent =
+            "Análises consolidadas por período, cliente e empresa";
 
-async function loadCompanies() {
-  const tbody = document.getElementById("companies-tbody");
-  tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted small">Carregando...</td></tr>`;
+          // Ao entrar em relatórios, garantir selects populados
+          populateRelatorioSelects();
+          loadRelatorios();
+        }
 
-  const res = await authorizedFetch(`${API_BASE}/companies`);
-  if (!res.ok) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-danger text-center small">Erro ao carregar.</td></tr>`;
-    return;
-  }
+        if (page === "notas") {
+          resetNotasInfiniteScroll();
+          loadNotasPage(true);
+        }
+      }
 
-  let data = await res.json();
+      // ==========================
+      // DASHBOARD / REPORTS
+      // ==========================
+      let chartNotasDia = null;
+      let chartStatus = null;
+      let chartRelPeriodo = null;
+      let chartRelClientePeriodo = null;
+      let chartRelEmpresaPeriodo = null;
 
-  const fName = document.getElementById("filter-company-name").value.toLowerCase();
-  const fCnpj = document.getElementById("filter-company-cnpj").value.toLowerCase();
-  const fAct  = document.getElementById("filter-company-active").value;
+      function formatCurrencyBRL(value) {
+        return (
+          "R$ " +
+          Number(value || 0)
+            .toFixed(2)
+            .replace(".", ",")
+        );
+      }
 
-  data = data.filter(c => {
-    if (fName && !c.name.toLowerCase().includes(fName)) return false;
-    if (fCnpj && !c.cnpj.toLowerCase().includes(fCnpj)) return false;
-    if (fAct && String(c.is_active) !== fAct) return false;
-    return true;
-  });
+      async function loadDashboard() {
+        try {
+          const data = await apiFetch("/api/reports/summary");
 
-  if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted small">Nenhum registro.</td></tr>`;
-    return;
-  }
+          const totals = data.totals || {};
+          document.getElementById("dashTotalNotas").textContent =
+            totals.total_notas || 0;
+          document.getElementById("dashValorTotal").textContent =
+            formatCurrencyBRL(totals.soma_valor_total || 0);
+          document.getElementById("dashTaxas").textContent = formatCurrencyBRL(
+            totals.soma_taxas || 0
+          );
 
-  tbody.innerHTML = "";
-  for (const c of data) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${c.id}</td>
-      <td>${c.cnpj}</td>
-      <td>${c.name}</td>
-      <td class="text-muted small">${(c.access_key || "").slice(0, 18)}...</td>
-      <td><span class="badge-status ${c.is_active ? "active":"inactive"}">${c.is_active?"Ativa":"Inativa"}</span></td>
-      <td>
-        <button class="btn btn-sm btn-outline-light me-1" onclick='editCompany(${JSON.stringify(c)})'>
-          <i class="bi bi-pencil"></i>
-        </button>
-        <button class="btn btn-sm btn-outline-danger" onclick="deleteCompany(${c.id})">
-          <i class="bi bi-trash"></i>
-        </button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  }
-}
+          const porDia = data.porDia || [];
+          const labelsDia = porDia.map((d) => d.label);
+          const valoresDia = porDia.map((d) => d.total_notas);
 
-function openCompanyFormModal() {
-  document.getElementById("company-id").value = "";
-  document.getElementById("company-form").reset();
-  document.getElementById("company-modal-error").textContent = "";
-  companyModalInstance.show();
-}
+          if (chartNotasDia) chartNotasDia.destroy();
+          const ctxDia = document.getElementById("chartNotasDia").getContext("2d");
+          chartNotasDia = new Chart(ctxDia, {
+            type: "line",
+            data: {
+              labels: labelsDia,
+              datasets: [
+                {
+                  label: "Notas",
+                  data: valoresDia,
+                  borderWidth: 2,
+                  tension: 0.25,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+              },
+              scales: {
+                y: { beginAtZero: true },
+              },
+            },
+          });
 
-function editCompany(c) {
-  document.getElementById("company-id").value = c.id;
-  document.getElementById("company-cnpj").value = c.cnpj;
-  document.getElementById("company-name").value = c.name;
-  document.getElementById("company-access-key").value = c.access_key;
-  document.getElementById("company-active").checked = c.is_active;
-  document.getElementById("company-modal-error").textContent = "";
-  companyModalInstance.show();
-}
+          const porStatus = data.porStatus || [];
+          if (chartStatus) chartStatus.destroy();
+          const ctxStatus = document.getElementById("chartStatus").getContext("2d");
+          chartStatus = new Chart(ctxStatus, {
+            type: "doughnut",
+            data: {
+              labels: porStatus.map((s) => s.status),
+              datasets: [
+                {
+                  data: porStatus.map((s) => s.total_notas),
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { position: "bottom" },
+              },
+            },
+          });
+        } catch (err) {
+          console.error("Erro ao carregar dashboard:", err);
+        }
+      }
 
-async function saveCompany() {
-  const id = document.getElementById("company-id").value;
-  const payload = {
-    cnpj: document.getElementById("company-cnpj").value,
-    name: document.getElementById("company-name").value,
-    access_key: document.getElementById("company-access-key").value,
-    is_active: document.getElementById("company-active").checked
-  };
+      async function loadRelatorios() {
+        try {
+          const start = document.getElementById("relDataIni").value;
+          const end = document.getElementById("relDataFim").value;
+          const group_by = document.getElementById("relGroupBy").value;
 
-  const errorEl = document.getElementById("company-modal-error");
+          const params = new URLSearchParams();
+          if (start) params.append("start", start);
+          if (end) params.append("end", end);
+          params.append("group_by", group_by);
 
-  let res;
-  if (id) {
-    res = await authorizedFetch(`${API_BASE}/companies/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(payload)
-    });
-  } else {
-    res = await authorizedFetch(`${API_BASE}/companies`, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-  }
+          const data = await apiFetch("/api/reports/summary?" + params.toString());
 
-  if (!res.ok) {
-    const err = await res.json().catch(()=>({}));
-    errorEl.textContent = err.error || "Erro ao salvar.";
-    return;
-  }
+          const totals = data.totals || {};
+          document.getElementById("relTotalNotas").textContent =
+            totals.total_notas || 0;
+          document.getElementById("relValorTotal").textContent =
+            formatCurrencyBRL(totals.soma_valor_total || 0);
+          document.getElementById("relTaxasTotal").textContent =
+            formatCurrencyBRL(totals.soma_taxas || 0);
 
-  companyModalInstance.hide();
-  loadCompanies();
-}
+          const porPeriodo = data.porPeriodo || [];
+          if (chartRelPeriodo) chartRelPeriodo.destroy();
+          const ctx = document.getElementById("chartRelPeriodo").getContext("2d");
+          chartRelPeriodo = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: porPeriodo.map((p) => p.label),
+              datasets: [
+                {
+                  label: "Notas",
+                  data: porPeriodo.map((p) => p.total_notas),
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+              },
+              scales: {
+                y: { beginAtZero: true },
+              },
+            },
+          });
 
-async function deleteCompany(id) {
-  if (!confirm("Excluir empresa?")) return;
-  const res = await authorizedFetch(`${API_BASE}/companies/${id}`, { method:"DELETE" });
-  if (res.ok) loadCompanies();
-}
+          const porCliente = data.porCliente || [];
+          if (porCliente.length > 0) {
+            const topCliente = [...porCliente].sort(
+              (a, b) => Number(b.total_notas) - Number(a.total_notas)
+            )[0];
+            document.getElementById(
+              "relTopCliente"
+            ).textContent = `${topCliente.name} — ${topCliente.total_notas} notas, ${formatCurrencyBRL(
+              topCliente.soma_valor_total
+            )}`;
+          } else {
+            document.getElementById("relTopCliente").textContent = "—";
+          }
 
-async function loadInvoices() {
-  const tbody = document.getElementById("invoices-tbody");
-  const jsonOut = document.getElementById("invoices-json-output");
+          const porEmpresa = data.porEmpresa || [];
+          if (porEmpresa.length > 0) {
+            const topEmpresa = [...porEmpresa].sort(
+              (a, b) => Number(b.soma_valor_total) - Number(a.soma_valor_total)
+            )[0];
+            document.getElementById(
+              "relTopEmpresa"
+            ).textContent = `${topEmpresa.name} — ${formatCurrencyBRL(
+              topEmpresa.soma_valor_total
+            )} em notas`;
+          } else {
+            document.getElementById("relTopEmpresa").textContent = "—";
+          }
+        } catch (err) {
+          console.error("Erro ao carregar relatórios:", err);
+        }
+      }
 
-  tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted small">Carregando...</td></tr>`;
-  jsonOut.textContent = "[]";
+      // Helpers para agrupar notas por data no front
+      function groupByDateForChart(notas) {
+        const map = new Map();
+        notas.forEach((n) => {
+          if (!n.issued_at) return;
+          const d = new Date(n.issued_at);
+          const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
+          const current = map.get(key) || { total: 0, count: 0 };
+          current.total += Number(n.total_amount || 0);
+          current.count += 1;
+          map.set(key, current);
+        });
+        const entries = Array.from(map.entries()).sort((a, b) =>
+          a[0] < b[0] ? -1 : 1
+        );
+        const labels = entries.map(([k]) => {
+          const d = new Date(k + "T00:00:00");
+          return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+        });
+        const counts = entries.map(([, v]) => v.count);
+        return { labels, counts };
+      }
 
-  const res = await authorizedFetch(`${API_BASE}/invoices`);
-  if (!res.ok) {
-    tbody.innerHTML = `<tr><td colspan="8" class="text-danger text-center small">Erro ao carregar.</td></tr>`;
-    return;
-  }
+      // RELATÓRIO POR CLIENTE
+      async function loadRelatorioPorCliente() {
+        const select = document.getElementById("relClienteSelect");
+        const id = select.value;
+        if (!id) {
+          alert("Selecione um cliente");
+          return;
+        }
+        const start = document.getElementById("relClienteDataIni").value;
+        const end = document.getElementById("relClienteDataFim").value;
 
-  let data = await res.json();
-  jsonOut.textContent = JSON.stringify(data, null, 2);
+        const params = new URLSearchParams();
+        if (start) params.append("start", start);
+        if (end) params.append("end", end);
 
-  const fCust = document.getElementById("filter-inv-customer").value;
-  const fComp = document.getElementById("filter-inv-company").value;
-  const fStart = document.getElementById("filter-inv-start").value;
-  const fEnd = document.getElementById("filter-inv-end").value;
-  const fMin = document.getElementById("filter-inv-min").value;
-  const fMax = document.getElementById("filter-inv-max").value;
-  const fStatus = document.getElementById("filter-inv-status").value;
+        try {
+          const data = await apiFetch(
+            `/api/reports/por-cliente/${id}?` + params.toString()
+          );
 
-  data = data.filter(inv => {
-    if (fCust && inv.customer_id != fCust) return false;
-    if (fComp && inv.company_id != fComp) return false;
-    if (fStatus && inv.status !== fStatus) return false;
+          const cliente = data.cliente;
+          const totais = data.totais || {};
+          const notas = data.notas || [];
 
-    const dt = new Date(inv.issued_at);
-    if (fStart && dt < new Date(fStart)) return false;
-    if (fEnd && dt > new Date(fEnd + "T23:59:59")) return false;
+          document.getElementById("relClienteNome").textContent =
+            cliente?.name || "—";
+          document.getElementById(
+            "relClienteWhats"
+          ).textContent = `WhatsApp: ${cliente?.whatsapp_number || "—"}`;
+          document.getElementById("relClienteTotalNotas").textContent =
+            totais.total_notas || 0;
+          document.getElementById("relClienteValorTotal").textContent =
+            formatCurrencyBRL(totais.soma_valor_total || 0);
+          document.getElementById("relClienteTaxasTotal").textContent =
+            formatCurrencyBRL(totais.soma_taxas || 0);
 
-    if (fMin && inv.total_amount < Number(fMin)) return false;
-    if (fMax && inv.total_amount > Number(fMax)) return false;
+          // Gráfico por período
+          const { labels, counts } = groupByDateForChart(notas);
+          if (chartRelClientePeriodo) chartRelClientePeriodo.destroy();
+          const ctx = document
+            .getElementById("chartRelClientePeriodo")
+            .getContext("2d");
+          chartRelClientePeriodo = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels,
+              datasets: [
+                {
+                  label: "Notas",
+                  data: counts,
+                  borderWidth: 2,
+                  tension: 0.25,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+              },
+              scales: {
+                y: { beginAtZero: true },
+              },
+            },
+          });
 
-    return true;
-  });
+          // Tabela de empresas x cliente
+          const empMap = new Map();
+          notas.forEach((n) => {
+            const nome = n.Company?.name || "—";
+            const current = empMap.get(nome) || {
+              empresa: nome,
+              total_notas: 0,
+              soma_valor_total: 0,
+            };
+            current.total_notas += 1;
+            current.soma_valor_total += Number(n.total_amount || 0);
+            empMap.set(nome, current);
+          });
 
-  if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted small">Nenhuma nota encontrada.</td></tr>`;
-    return;
-  }
+          const empBody = document.getElementById("relClienteEmpresasBody");
+          empBody.innerHTML = "";
+          Array.from(empMap.values())
+            .sort((a, b) => b.soma_valor_total - a.soma_valor_total)
+            .forEach((e) => {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td>${e.empresa}</td>
+                <td>${e.total_notas}</td>
+                <td>${formatCurrencyBRL(e.soma_valor_total)}</td>
+              `;
+              empBody.appendChild(tr);
+            });
 
-  tbody.innerHTML = "";
-  for (const inv of data) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${inv.id}</td>
-      <td>${inv.Customer ? inv.Customer.name : inv.customer_id}</td>
-      <td>${inv.Company ? inv.Company.name : inv.company_id}</td>
-      <td>${formatDateTime(inv.issued_at)}</td>
-      <td>${formatCurrency(inv.total_amount)}</td>
-      <td>${inv.paid_amount ? formatCurrency(inv.paid_amount) : "-"}</td>
-      <td>${Number(inv.fee_percent).toFixed(2)}% (${formatCurrency(inv.fee_value)})</td>
-      <td><span class="badge-status ${inv.status === "EMITIDA"?"active":"inactive"}">${inv.status}</span></td>
-    `;
-    tbody.appendChild(tr);
-  }
-}
+          // Tabela de notas
+          const notasBody = document.getElementById("relClienteNotasBody");
+          notasBody.innerHTML = "";
+          notas.forEach((n) => {
+            const tr = document.createElement("tr");
+            const dt = n.issued_at
+              ? new Date(n.issued_at).toLocaleString("pt-BR")
+              : "—";
+            tr.innerHTML = `
+              <td>${n.id}</td>
+              <td>${dt}</td>
+              <td>${n.Company?.name || "—"}</td>
+              <td>${formatCurrencyBRL(n.total_amount)}</td>
+              <td>${formatCurrencyBRL(n.fee_value)}</td>
+              <td>${n.status}</td>
+            `;
+            notasBody.appendChild(tr);
+          });
+        } catch (err) {
+          console.error("Erro relatório por cliente:", err);
+          alert("Erro ao gerar relatório por cliente.");
+        }
+      }
 
-async function loadSummary() {
-  const params = new URLSearchParams();
-  const start = document.getElementById("report-start").value;
-  const end   = document.getElementById("report-end").value;
-  const cust  = document.getElementById("report-customer-id").value;
-  const group = document.getElementById("report-group-by").value;
+      // RELATÓRIO POR EMPRESA
+      async function loadRelatorioPorEmpresa() {
+        const select = document.getElementById("relEmpresaSelect");
+        const id = select.value;
+        if (!id) {
+          alert("Selecione uma empresa");
+          return;
+        }
+        const start = document.getElementById("relEmpresaDataIni").value;
+        const end = document.getElementById("relEmpresaDataFim").value;
 
-  if (start) params.append("start", start);
-  if (end) params.append("end", end);
-  if (cust) params.append("customer_id", cust);
-  if (group) params.append("group_by", group);
+        const params = new URLSearchParams();
+        if (start) params.append("start", start);
+        if (end) params.append("end", end);
 
-  const res = await authorizedFetch(`${API_BASE}/reports/summary?${params.toString()}`);
-  if (!res.ok) {
-    alert("Erro ao gerar relatório.");
-    return;
-  }
+        try {
+          const data = await apiFetch(
+            `/api/reports/por-empresa/${id}?` + params.toString()
+          );
 
-  const data = await res.json();
-  document.getElementById("reports-output").textContent = JSON.stringify(data, null, 2);
+          const empresa = data.empresa;
+          const totais = data.totais || {};
+          const notas = data.notas || [];
 
-  const totals = data.totals || {};
-  document.getElementById("rep-total-notas").textContent = totals.total_notas || 0;
-  document.getElementById("rep-soma-valor").textContent = formatCurrency(totals.soma_valor_total || 0);
-  document.getElementById("rep-soma-taxas").textContent = formatCurrency(totals.soma_taxas || 0);
+          document.getElementById("relEmpresaNome").textContent =
+            empresa?.name || "—";
+          document.getElementById(
+            "relEmpresaCnpj"
+          ).textContent = `CNPJ: ${empresa?.cnpj || "—"}`;
+          document.getElementById("relEmpresaTotalNotas").textContent =
+            totais.total_notas || 0;
+          document.getElementById("relEmpresaValorTotal").textContent =
+            formatCurrencyBRL(totais.soma_valor_total || 0);
 
-  const porCliente = data.porCliente || [];
-  if (porCliente.length) {
-    porCliente.sort((a,b)=> (b.total_notas || 0) - (a.total_notas || 0));
-    const top = porCliente[0];
-    document.getElementById("rep-top-customer").textContent =
-      `${top.name || ("ID " + top.customer_id)} (${top.total_notas} notas)`;
-  } else {
-    document.getElementById("rep-top-customer").textContent = "–";
-  }
+          const { labels, counts } = groupByDateForChart(notas);
+          if (chartRelEmpresaPeriodo) chartRelEmpresaPeriodo.destroy();
+          const ctx = document
+            .getElementById("chartRelEmpresaPeriodo")
+            .getContext("2d");
+          chartRelEmpresaPeriodo = new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels,
+              datasets: [
+                {
+                  label: "Notas",
+                  data: counts,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+              },
+              scales: {
+                y: { beginAtZero: true },
+              },
+            },
+          });
 
-  const porEmpresa = data.porEmpresa || [];
-  if (porEmpresa.length) {
-    porEmpresa.sort((a,b)=> (b.soma_valor_total || 0) - (a.soma_valor_total || 0));
-    const topE = porEmpresa[0];
-    document.getElementById("rep-top-company").textContent =
-      `${topE.name || ("Empresa " + topE.company_id)} (${formatCurrency(topE.soma_valor_total || 0)})`;
-  } else {
-    document.getElementById("rep-top-company").textContent = "–";
-  }
+          // Tabela de clientes x empresa
+          const cliMap = new Map();
+          notas.forEach((n) => {
+            const nome = n.Customer?.name || "—";
+            const current = cliMap.get(nome) || {
+              cliente: nome,
+              total_notas: 0,
+              soma_valor_total: 0,
+            };
+            current.total_notas += 1;
+            current.soma_valor_total += Number(n.total_amount || 0);
+            cliMap.set(nome, current);
+          });
 
-  const porPeriodo = data.porPeriodo || [];
-  const labels = porPeriodo.map(p => p.label);
-  const values = porPeriodo.map(p => p.total_notas);
-  const ctx = document.getElementById("chartReportPeriodo").getContext("2d");
-  if (chartReportPeriodo) chartReportPeriodo.destroy();
-  chartReportPeriodo = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [{ label: "Notas", data: values, tension: 0.25 }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } }
-    }
-  });
-}
-</script>
+          const cliBody = document.getElementById("relEmpresaClientesBody");
+          cliBody.innerHTML = "";
+          Array.from(cliMap.values())
+            .sort((a, b) => b.soma_valor_total - a.soma_valor_total)
+            .forEach((c) => {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td>${c.cliente}</td>
+                <td>${c.total_notas}</td>
+                <td>${formatCurrencyBRL(c.soma_valor_total)}</td>
+              `;
+              cliBody.appendChild(tr);
+            });
 
-</body>
+          // Tabela de notas
+          const notasBody = document.getElementById("relEmpresaNotasBody");
+          notasBody.innerHTML = "";
+          notas.forEach((n) => {
+            const tr = document.createElement("tr");
+            const dt = n.issued_at
+              ? new Date(n.issued_at).toLocaleString("pt-BR")
+              : "—";
+            tr.innerHTML = `
+              <td>${n.id}</td>
+              <td>${dt}</td>
+              <td>${n.Customer?.name || "—"}</td>
+              <td>${formatCurrencyBRL(n.total_amount)}</td>
+              <td>${formatCurrencyBRL(n.fee_value)}</td>
+              <td>${n.status}</td>
+            `;
+            notasBody.appendChild(tr);
+          });
+        } catch (err) {
+          console.error("Erro relatório por empresa:", err);
+          alert("Erro ao gerar relatório por empresa.");
+        }
+      }
+
+      // ==========================
+      // CLIENTES
+      // ==========================
+      let clientes = [];
+      let editingClienteId = null;
+
+      async function loadClientes() {
+        try {
+          clientes = await apiFetch("/api/customers");
+          renderClientes();
+          return clientes;
+        } catch (err) {
+          console.error("Erro ao carregar clientes:", err);
+          return [];
+        }
+      }
+
+      function renderClientes() {
+        const tbody = document.getElementById("clientesTableBody");
+        tbody.innerHTML = "";
+
+        const search = document
+          .getElementById("clienteSearch")
+          .value.toLowerCase();
+        const feeMin = parseFloat(
+          document.getElementById("clienteFeeMin").value
+        );
+        const feeMax = parseFloat(
+          document.getElementById("clienteFeeMax").value
+        );
+        const ativoChip = document.querySelector(
+          '.chip-filter[data-cliente-ativo].active'
+        );
+        const ativoFilter = ativoChip ? ativoChip.dataset.clienteAtivo : "all";
+
+        clientes
+          .filter((c) => {
+            if (
+              search &&
+              !(
+                c.name.toLowerCase().includes(search) ||
+                c.whatsapp_number.toLowerCase().includes(search)
+              )
+            )
+              return false;
+
+            if (!isNaN(feeMin) && parseFloat(c.fee_percent) < feeMin) return false;
+            if (!isNaN(feeMax) && parseFloat(c.fee_percent) > feeMax) return false;
+
+            if (ativoFilter === "true" && !c.is_active) return false;
+            if (ativoFilter === "false" && c.is_active) return false;
+
+            return true;
+          })
+          .forEach((c) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${c.id}</td>
+              <td>${c.name}</td>
+              <td>${c.whatsapp_number}</td>
+              <td>${Number(c.fee_percent).toFixed(2)}%</td>
+              <td>
+                <span class="tag ${
+                  c.is_active ? "tag-success" : "tag-muted"
+                }">${c.is_active ? "Ativo" : "Inativo"}</span>
+              </td>
+              <td>${c.created_at ? new Date(c.created_at).toLocaleString("pt-BR") : "—"}</td>
+              <td>
+                <button class="btn-ghost" data-edit-cliente="${c.id}">Editar</button>
+                <button class="btn-danger" data-del-cliente="${c.id}">Excluir</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+      }
+
+      function openClienteForm(cliente) {
+        document.getElementById("clienteFormWrapper").style.display = "block";
+        document.getElementById("clienteFormError").style.display = "none";
+
+        if (cliente) {
+          editingClienteId = cliente.id;
+          document.getElementById("clienteNome").value = cliente.name;
+          document.getElementById("clienteWhats").value =
+            cliente.whatsapp_number;
+          document.getElementById("clienteTaxa").value = cliente.fee_percent;
+          document.getElementById("clienteAtivo").value = cliente.is_active
+            ? "true"
+            : "false";
+        } else {
+          editingClienteId = null;
+          document.getElementById("clienteNome").value = "";
+          document.getElementById("clienteWhats").value = "";
+          document.getElementById("clienteTaxa").value = "";
+          document.getElementById("clienteAtivo").value = "true";
+        }
+      }
+
+      function closeClienteForm() {
+        document.getElementById("clienteFormWrapper").style.display = "none";
+        editingClienteId = null;
+      }
+
+      async function saveCliente() {
+        const nome = document.getElementById("clienteNome").value.trim();
+        const whats = document.getElementById("clienteWhats").value.trim();
+        const taxa = document.getElementById("clienteTaxa").value.trim();
+        const ativo = document.getElementById("clienteAtivo").value === "true";
+        const errEl = document.getElementById("clienteFormError");
+
+        errEl.style.display = "none";
+
+        if (!nome || !whats || taxa === "") {
+          errEl.textContent = "Preencha todos os campos obrigatórios.";
+          errEl.style.display = "block";
+          return;
+        }
+
+        const payload = {
+          name: nome,
+          whatsapp_number: whats,
+          fee_percent: parseFloat(taxa),
+          is_active: ativo,
+        };
+
+        try {
+          if (editingClienteId) {
+            await apiFetch("/api/customers/" + editingClienteId, {
+              method: "PUT",
+              body: JSON.stringify(payload),
+            });
+          } else {
+            await apiFetch("/api/customers", {
+              method: "POST",
+              body: JSON.stringify(payload),
+            });
+          }
+          closeClienteForm();
+          const list = await loadClientes();
+          populateRelatorioSelects(list, empresas);
+        } catch (err) {
+          console.error(err);
+          errEl.textContent = "Erro ao salvar cliente.";
+          if (String(err.message).includes("WhatsApp")) {
+            errEl.textContent =
+              "Já existe um cliente com esse número de WhatsApp.";
+          }
+          errEl.style.display = "block";
+        }
+      }
+
+      async function deleteCliente(id) {
+        if (!confirm("Deseja realmente excluir este cliente?")) return;
+        try {
+          await apiFetch("/api/customers/" + id, { method: "DELETE" });
+          const list = await loadClientes();
+          populateRelatorioSelects(list, empresas);
+        } catch (err) {
+          console.error(err);
+          alert("Erro ao excluir cliente.");
+        }
+      }
+
+      // ==========================
+      // EMPRESAS
+      // ==========================
+      let empresas = [];
+      let editingEmpresaId = null;
+
+      async function loadEmpresas() {
+        try {
+          empresas = await apiFetch("/api/companies");
+          renderEmpresas();
+          return empresas;
+        } catch (err) {
+          console.error("Erro ao carregar empresas:", err);
+          return [];
+        }
+      }
+
+      function renderEmpresas() {
+        const tbody = document.getElementById("empresasTableBody");
+        tbody.innerHTML = "";
+
+        const search = document.getElementById("empresaSearch").value.toLowerCase();
+        const ativoChip = document.querySelector(
+          '.chip-filter[data-empresa-ativo].active'
+        );
+        const ativoFilter = ativoChip ? ativoChip.dataset.empresaAtivo : "all";
+
+        empresas
+          .filter((e) => {
+            if (
+              search &&
+              !(
+                e.name.toLowerCase().includes(search) ||
+                e.cnpj.toLowerCase().includes(search)
+              )
+            )
+              return false;
+            if (ativoFilter === "true" && !e.is_active) return false;
+            if (ativoFilter === "false" && e.is_active) return false;
+            return true;
+          })
+          .forEach((e) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${e.id}</td>
+              <td>${e.name}</td>
+              <td>${e.cnpj}</td>
+              <td>
+                <span class="tag ${
+                  e.is_active ? "tag-success" : "tag-muted"
+                }">${e.is_active ? "Ativa" : "Inativa"}</span>
+              </td>
+              <td>${e.created_at ? new Date(e.created_at).toLocaleString("pt-BR") : "—"}</td>
+              <td>
+                <button class="btn-ghost" data-edit-empresa="${e.id}">Editar</button>
+                <button class="btn-danger" data-del-empresa="${e.id}">Excluir</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+      }
+
+      function openEmpresaForm(empresa) {
+        document.getElementById("empresaFormWrapper").style.display = "block";
+        document.getElementById("empresaFormError").style.display = "none";
+
+        if (empresa) {
+          editingEmpresaId = empresa.id;
+          document.getElementById("empresaNome").value = empresa.name;
+          document.getElementById("empresaCnpj").value = empresa.cnpj;
+          document.getElementById("empresaChave").value = empresa.access_key;
+          document.getElementById("empresaAtiva").value = empresa.is_active
+            ? "true"
+            : "false";
+        } else {
+          editingEmpresaId = null;
+          document.getElementById("empresaNome").value = "";
+          document.getElementById("empresaCnpj").value = "";
+          document.getElementById("empresaChave").value = "";
+          document.getElementById("empresaAtiva").value = "true";
+        }
+      }
+
+      function closeEmpresaForm() {
+        document.getElementById("empresaFormWrapper").style.display = "none";
+        editingEmpresaId = null;
+      }
+
+      async function saveEmpresa() {
+        const nome = document.getElementById("empresaNome").value.trim();
+        const cnpj = document.getElementById("empresaCnpj").value.trim();
+        const chave = document.getElementById("empresaChave").value.trim();
+        const ativa = document.getElementById("empresaAtiva").value === "true";
+        const errEl = document.getElementById("empresaFormError");
+
+        errEl.style.display = "none";
+
+        if (!nome || !cnpj || !chave) {
+          errEl.textContent = "Preencha todos os campos obrigatórios.";
+          errEl.style.display = "block";
+          return;
+        }
+
+        const payload = {
+          name: nome,
+          cnpj,
+          access_key: chave,
+          is_active: ativa,
+        };
+
+        try {
+          if (editingEmpresaId) {
+            await apiFetch("/api/companies/" + editingEmpresaId, {
+              method: "PUT",
+              body: JSON.stringify(payload),
+            });
+          } else {
+            await apiFetch("/api/companies", {
+              method: "POST",
+              body: JSON.stringify(payload),
+            });
+          }
+          closeEmpresaForm();
+          const list = await loadEmpresas();
+          populateRelatorioSelects(clientes, list);
+        } catch (err) {
+          console.error(err);
+          errEl.textContent = "Erro ao salvar empresa.";
+          if (String(err.message).includes("CNPJ")) {
+            errEl.textContent = "Já existe uma empresa com esse CNPJ.";
+          }
+          errEl.style.display = "block";
+        }
+      }
+
+      async function deleteEmpresa(id) {
+        if (!confirm("Deseja realmente excluir esta empresa?")) return;
+        try {
+          await apiFetch("/api/companies/" + id, { method: "DELETE" });
+          const list = await loadEmpresas();
+          populateRelatorioSelects(clientes, list);
+        } catch (err) {
+          console.error(err);
+          alert("Erro ao excluir empresa.");
+        }
+      }
+
+      // ==========================
+      // NOTAS - SCROLL INFINITO
+      // ==========================
+      const notasState = {
+        page: 1,
+        limit: 50,
+        loading: false,
+        hasMore: true,
+        observer: null,
+        lastFiltersKey: "",
+        allLoaded: [],
+      };
+
+      function resetNotasInfiniteScroll() {
+        notasState.page = 1;
+        notasState.loading = false;
+        notasState.hasMore = true;
+        notasState.allLoaded = [];
+        document.getElementById("notasTableBody").innerHTML = "";
+        document.getElementById("notasLoaderText").textContent =
+          "Rolando para carregar mais…";
+      }
+
+      function getNotasFiltersKey() {
+        const search = document.getElementById("notasSearch").value.trim();
+        const status = document.getElementById("notasStatusFilter").value;
+        const d1 = document.getElementById("notasDataIni").value;
+        const d2 = document.getElementById("notasDataFim").value;
+        return JSON.stringify({ search, status, d1, d2 });
+      }
+
+      async function loadNotasPage(resetIfFiltersChanged) {
+        if (notasState.loading || !notasState.hasMore) return;
+
+        const currentKey = getNotasFiltersKey();
+        if (resetIfFiltersChanged && notasState.lastFiltersKey !== currentKey) {
+          resetNotasInfiniteScroll();
+          notasState.lastFiltersKey = currentKey;
+        }
+
+        notasState.loading = true;
+        document.getElementById("notasLoaderText").textContent =
+          "Carregando notas...";
+
+        try {
+          const params = new URLSearchParams();
+          params.append("page", notasState.page.toString());
+          params.append("limit", notasState.limit.toString());
+
+          const res = await apiFetch("/api/invoices?" + params.toString());
+          const { data, pagination } = res;
+
+          notasState.allLoaded = notasState.allLoaded.concat(data || []);
+          renderNotas();
+
+          notasState.page += 1;
+          notasState.hasMore =
+            pagination && notasState.page <= pagination.pages;
+
+          if (!notasState.hasMore) {
+            document.getElementById("notasLoaderText").textContent =
+              "Não há mais notas para carregar.";
+          } else {
+            document.getElementById("notasLoaderText").textContent =
+              "Rolando para carregar mais…";
+          }
+        } catch (err) {
+          console.error("Erro ao carregar notas:", err);
+          document.getElementById("notasLoaderText").textContent =
+            "Erro ao carregar notas.";
+        } finally {
+          notasState.loading = false;
+        }
+      }
+
+      function renderNotas() {
+        const tbody = document.getElementById("notasTableBody");
+        tbody.innerHTML = "";
+
+        const search = document.getElementById("notasSearch").value
+          .toLowerCase();
+        const statusFilter = document.getElementById("notasStatusFilter").value;
+        const dIni = document.getElementById("notasDataIni").value;
+        const dFim = document.getElementById("notasDataFim").value;
+
+        notasState.allLoaded
+          .filter((n) => {
+            const cliente = n.Customer?.name?.toLowerCase() || "";
+            const empresa = n.Company?.name?.toLowerCase() || "";
+
+            if (
+              search &&
+              !(
+                cliente.includes(search) ||
+                empresa.includes(search)
+              )
+            )
+              return false;
+
+            if (statusFilter !== "all" && n.status !== statusFilter)
+              return false;
+
+            if (dIni) {
+              if (
+                !n.issued_at ||
+                new Date(n.issued_at) < new Date(dIni + "T00:00:00")
+              )
+                return false;
+            }
+
+            if (dFim) {
+              if (
+                !n.issued_at ||
+                new Date(n.issued_at) > new Date(dFim + "T23:59:59")
+              )
+                return false;
+            }
+
+            return true;
+          })
+          .forEach((n) => {
+            const tr = document.createElement("tr");
+            const dt = n.issued_at
+              ? new Date(n.issued_at).toLocaleString("pt-BR")
+              : "—";
+            const statusClass =
+              n.status === "PAGA"
+                ? "status-paga"
+                : n.status === "CANCELADA"
+                ? "status-cancelada"
+                : "status-emitida";
+
+            tr.innerHTML = `
+              <td>${n.id}</td>
+              <td>${dt}</td>
+              <td>${n.Customer?.name || "—"}</td>
+              <td>${n.Company?.name || "—"}</td>
+              <td>${formatCurrencyBRL(n.total_amount)}</td>
+              <td>${n.paid_amount ? formatCurrencyBRL(n.paid_amount) : "—"}</td>
+              <td>${Number(n.fee_percent).toFixed(2)}%</td>
+              <td>${formatCurrencyBRL(n.fee_value)}</td>
+              <td><span class="status-pill ${statusClass}">${n.status}</span></td>
+            `;
+            tbody.appendChild(tr);
+          });
+      }
+
+      function setupNotasInfiniteScroll() {
+        const sentinel = document.getElementById("notasLoaderRow");
+        if (!sentinel) return;
+
+        if (notasState.observer) {
+          notasState.observer.disconnect();
+        }
+
+        notasState.observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (
+              entry.isIntersecting &&
+              document
+                .getElementById("page-notas")
+                .classList.contains("active")
+            ) {
+              loadNotasPage(false);
+            }
+          });
+        });
+
+        notasState.observer.observe(sentinel);
+      }
+
+      // ==========================
+      // RELATÓRIOS - SELECTS
+      // ==========================
+      function populateRelatorioSelects(clis = clientes, emps = empresas) {
+        const selCli = document.getElementById("relClienteSelect");
+        const selEmp = document.getElementById("relEmpresaSelect");
+        if (!selCli || !selEmp) return;
+
+        const currentCli = selCli.value;
+        const currentEmp = selEmp.value;
+
+        selCli.innerHTML = '<option value="">Selecione um cliente</option>';
+        (clis || []).forEach((c) => {
+          const opt = document.createElement("option");
+          opt.value = c.id;
+          opt.textContent = `${c.name} (${c.whatsapp_number})`;
+          selCli.appendChild(opt);
+        });
+        if (currentCli) selCli.value = currentCli;
+
+        selEmp.innerHTML = '<option value="">Selecione uma empresa</option>';
+        (emps || []).forEach((e) => {
+          const opt = document.createElement("option");
+          opt.value = e.id;
+          opt.textContent = `${e.name} (${e.cnpj})`;
+          selEmp.appendChild(opt);
+        });
+        if (currentEmp) selEmp.value = currentEmp;
+      }
+
+      // ==========================
+      // EVENTOS GERAIS
+      // ==========================
+      document.addEventListener("DOMContentLoaded", () => {
+        // Theme
+        document
+          .getElementById("btnThemeToggle")
+          .addEventListener("click", () => {
+            const current = document.body.getAttribute("data-theme");
+            applyTheme(current === "dark" ? "light" : "dark");
+          });
+
+        // Login
+        document.getElementById("btnLogin").addEventListener("click", doLogin);
+        document
+          .getElementById("loginPassword")
+          .addEventListener("keydown", (e) => {
+            if (e.key === "Enter") doLogin();
+          });
+        document
+          .getElementById("forgotPasswordLink")
+          .addEventListener("click", sendForgotPassword);
+
+        // Logout
+        document
+          .getElementById("btnLogout")
+          .addEventListener("click", logout);
+
+        // Sidebar nav
+        document.querySelectorAll(".nav-item[data-page]").forEach((item) => {
+          item.addEventListener("click", () => {
+            selectPage(item.dataset.page);
+            if (window.innerWidth <= 900) {
+              document.getElementById("sidebar").classList.remove("open");
+              document
+                .getElementById("sidebarBackdrop")
+                .classList.remove("show");
+            }
+          });
+        });
+
+        // Mobile sidebar
+        document
+          .getElementById("btnMobileMenu")
+          .addEventListener("click", () => {
+            document.getElementById("sidebar").classList.add("open");
+            document
+              .getElementById("sidebarBackdrop")
+              .classList.add("show");
+          });
+        document
+          .getElementById("sidebarBackdrop")
+          .addEventListener("click", () => {
+            document.getElementById("sidebar").classList.remove("open");
+            document
+              .getElementById("sidebarBackdrop")
+              .classList.remove("show");
+          });
+
+        // Clientes
+        document
+          .getElementById("btnAddCliente")
+          .addEventListener("click", () => openClienteForm(null));
+        document
+          .getElementById("btnCancelCliente")
+          .addEventListener("click", closeClienteForm);
+        document
+          .getElementById("btnSaveCliente")
+          .addEventListener("click", saveCliente);
+
+        document
+          .getElementById("clienteSearch")
+          .addEventListener("input", renderClientes);
+        document
+          .getElementById("clienteFeeMin")
+          .addEventListener("input", renderClientes);
+        document
+          .getElementById("clienteFeeMax")
+          .addEventListener("input", renderClientes);
+        document
+          .querySelectorAll(".chip-filter[data-cliente-ativo]")
+          .forEach((el) => {
+            el.addEventListener("click", () => {
+              document
+                .querySelectorAll(".chip-filter[data-cliente-ativo]")
+                .forEach((c) => c.classList.remove("active"));
+              el.classList.add("active");
+              renderClientes();
+            });
+          });
+
+        document
+          .getElementById("clientesTableBody")
+          .addEventListener("click", (e) => {
+            const editId = e.target.getAttribute("data-edit-cliente");
+            const delId = e.target.getAttribute("data-del-cliente");
+            if (editId) {
+              const c = clientes.find((x) => x.id == editId);
+              if (c) openClienteForm(c);
+            } else if (delId) {
+              deleteCliente(delId);
+            }
+          });
+
+        // Empresas
+        document
+          .getElementById("btnAddEmpresa")
+          .addEventListener("click", () => openEmpresaForm(null));
+        document
+          .getElementById("btnCancelEmpresa")
+          .addEventListener("click", closeEmpresaForm);
+        document
+          .getElementById("btnSaveEmpresa")
+          .addEventListener("click", saveEmpresa);
+
+        document
+          .getElementById("empresaSearch")
+          .addEventListener("input", renderEmpresas);
+        document
+          .querySelectorAll(".chip-filter[data-empresa-ativo]")
+          .forEach((el) => {
+            el.addEventListener("click", () => {
+              document
+                .querySelectorAll(".chip-filter[data-empresa-ativo]")
+                .forEach((c) => c.classList.remove("active"));
+              el.classList.add("active");
+              renderEmpresas();
+            });
+          });
+
+        document
+          .getElementById("empresasTableBody")
+          .addEventListener("click", (e) => {
+            const editId = e.target.getAttribute("data-edit-empresa");
+            const delId = e.target.getAttribute("data-del-empresa");
+            if (editId) {
+              const emp = empresas.find((x) => x.id == editId);
+              if (emp) openEmpresaForm(emp);
+            } else if (delId) {
+              deleteEmpresa(delId);
+            }
+          });
+
+        // Notas
+        setupNotasInfiniteScroll();
+        document
+          .getElementById("notasSearch")
+          .addEventListener("input", () => renderNotas());
+        document
+          .getElementById("notasStatusFilter")
+          .addEventListener("change", () => renderNotas());
+        document
+          .getElementById("notasApplyFilters")
+          .addEventListener("click", () => {
+            resetNotasInfiniteScroll();
+            notasState.lastFiltersKey = getNotasFiltersKey();
+            loadNotasPage(false);
+          });
+
+        // Relatórios - tabs
+        function setRelTab(tab) {
+          document
+            .querySelectorAll(".tab-button")
+            .forEach((b) => b.classList.remove("active"));
+          document
+            .querySelectorAll(".rel-subsection")
+            .forEach((s) => s.classList.add("hidden"));
+
+          if (tab === "geral") {
+            document.getElementById("tabRelGeral").classList.add("active");
+            document.getElementById("relGeralSection").classList.remove("hidden");
+            loadRelatorios();
+          } else if (tab === "cliente") {
+            document.getElementById("tabRelCliente").classList.add("active");
+            document
+              .getElementById("relClienteSection")
+              .classList.remove("hidden");
+            populateRelatorioSelects();
+          } else if (tab === "empresa") {
+            document.getElementById("tabRelEmpresa").classList.add("active");
+            document
+              .getElementById("relEmpresaSection")
+              .classList.remove("hidden");
+            populateRelatorioSelects();
+          }
+        }
+
+        document
+          .getElementById("tabRelGeral")
+          .addEventListener("click", () => setRelTab("geral"));
+        document
+          .getElementById("tabRelCliente")
+          .addEventListener("click", () => setRelTab("cliente"));
+        document
+          .getElementById("tabRelEmpresa")
+          .addEventListener("click", () => setRelTab("empresa"));
+
+        document
+          .getElementById("btnReloadReports")
+          .addEventListener("click", loadRelatorios);
+        document
+          .getElementById("btnRelClienteGerar")
+          .addEventListener("click", loadRelatorioPorCliente);
+        document
+          .getElementById("btnRelEmpresaGerar")
+          .addEventListener("click", loadRelatorioPorEmpresa);
+
+        // Se já tiver token salvo, tenta usar
+        if (authToken) {
+          showApp();
+          const userEmail = localStorage.getItem("nf_user_email") || "Administrador";
+          document.getElementById("currentUserEmail").textContent = userEmail;
+          selectPage("dashboard");
+          loadDashboard();
+          loadClientes().then(populateRelatorioSelects);
+          loadEmpresas().then(populateRelatorioSelects);
+          resetNotasInfiniteScroll();
+          loadNotasPage(true);
+          loadRelatorios();
+        } else {
+          showLogin();
+        }
+      });
+    </script>
+  </body>
 </html>
