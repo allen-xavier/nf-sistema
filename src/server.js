@@ -75,20 +75,20 @@ async function start() {
     // ---------------------------------------------
     // 2) SEED automático (opcional)
     // ---------------------------------------------
-    if (process.env.SEED_ON_START === "1") {
-      const { runSeed } = require("./seed");
+    //if (process.env.SEED_ON_START === "1") {
+    //  const { runSeed } = require("./seed");
 
-      const quantidade =
-        Number(process.env.SEED_INVOICES || 1000);
+    //  const quantidade =
+    //    Number(process.env.SEED_INVOICES || 1000);
 
-      console.log(
-        `Executando SEED automático com ${quantidade} notas...`
-      );
+    //  console.log(
+    //    `Executando SEED automático com ${quantidade} notas...`
+    //  );
 
-      await runSeed();
+    //  await runSeed();
 
-      console.log("Seed finalizado.");
-    }
+    //  console.log("Seed finalizado.");
+    //}
 
     // ---------------------------------------------
     // 3) Iniciar servidor

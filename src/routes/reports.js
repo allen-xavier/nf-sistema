@@ -10,9 +10,17 @@ router.use(adminOnly);
 
 /**
  * -------------------------------------------------------------
- * DASHBOARD PRINCIPAL
+ * DASHBOARD / VISÃO GERAL
  * GET /api/reports/summary
  * -------------------------------------------------------------
+ *
+ * Frontend espera:
+ *  - totals
+ *  - porDia      (para gráfico do dashboard)
+ *  - porStatus   (para gráfico de pizza do dashboard)
+ *  - porPeriodo  (para tela de Relatórios / Visão geral)
+ *  - porCliente  (top clientes)
+ *  - porEmpresa  (top empresas)
  */
 router.get("/summary", async (req, res) => {
   try {
@@ -36,7 +44,22 @@ router.get("/summary", async (req, res) => {
       raw: true,
     });
 
-    // 2️⃣ Agrupado por período (dia ou mês)
+    // 2️⃣ Dados por DIA (para o dashboard: gráfico "Notas por dia (últimos 30 dias)")
+    //    Aqui vamos sempre agrupar por dia (DD/MM), independente do group_by.
+    //    Opcionalmente você poderia limitar aos últimos 30 dias. Vou deixar sem limite
+    //    de datas, respeitando o filtro start/end se vierem da query.
+    const porDia = await Invoice.findAll({
+      where,
+      attributes: [
+        [literal("TO_CHAR(issued_at, 'DD/MM')"), "label"],
+        [fn("COUNT", col("id")), "total_notas"],
+      ],
+      group: ["label"],
+      raw: true,
+      order: [literal("MIN(issued_at)")],
+    });
+
+    // 3️⃣ Agrupado por período (dia ou mês) – usado na aba "Relatórios / Visão geral"
     const dateFormat =
       group_by === "month"
         ? "TO_CHAR(issued_at, 'MM/YYYY')"
@@ -54,7 +77,18 @@ router.get("/summary", async (req, res) => {
       order: [literal("MIN(issued_at)")],
     });
 
-    // 3️⃣ Top clientes (sem subselect, usando include + col)
+    // 4️⃣ Por status – usado no gráfico de pizza do dashboard
+    const porStatus = await Invoice.findAll({
+      where,
+      attributes: [
+        "status",
+        [fn("COUNT", col("id")), "total_notas"],
+      ],
+      group: ["status"],
+      raw: true,
+    });
+
+    // 5️⃣ Top clientes (para relatórios)
     const topClientesRaw = await Invoice.findAll({
       where,
       include: [{ model: Customer, as: "Customer", attributes: [] }],
@@ -76,7 +110,7 @@ router.get("/summary", async (req, res) => {
       name: c.customer_name || null,
     }));
 
-    // 4️⃣ Top empresas
+    // 6️⃣ Top empresas (para relatórios)
     const topEmpresasRaw = await Invoice.findAll({
       where,
       include: [{ model: Company, as: "Company", attributes: [] }],
@@ -100,7 +134,9 @@ router.get("/summary", async (req, res) => {
 
     res.json({
       totals,
-      porPeriodo,
+      porDia,      // 👈 para o dashboard
+      porStatus,   // 👈 para o dashboard (pizza)
+      porPeriodo,  // 👈 para aba Relatórios / Visão geral
       porCliente,
       porEmpresa,
     });

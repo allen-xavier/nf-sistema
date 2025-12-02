@@ -1661,12 +1661,10 @@
       let chartRelEmpresaPeriodo = null;
 
       function formatCurrencyBRL(value) {
-        return (
-          "R$ " +
-          Number(value || 0)
-            .toFixed(2)
-            .replace(".", ",")
-        );
+        return Number(value || 0).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL"
+        });
       }
 
       async function loadDashboard() {
@@ -1682,9 +1680,10 @@
             totals.soma_taxas || 0
           );
 
-          const porDia = data.porDia || [];
-          const labelsDia = porDia.map((d) => d.label);
-          const valoresDia = porDia.map((d) => d.total_notas);
+          const porPeriodo = data.porPeriodo || [];
+          const labelsDia = porPeriodo.map((d) => d.label);
+          const valoresDia = porPeriodo.map((d) => d.total_notas);
+
 
           if (chartNotasDia) chartNotasDia.destroy();
           const ctxDia = document.getElementById("chartNotasDia").getContext("2d");
@@ -1712,7 +1711,7 @@
             },
           });
 
-          const porStatus = data.porStatus || [];
+          //const porStatus = data.porStatus || [];
           if (chartStatus) chartStatus.destroy();
           const ctxStatus = document.getElementById("chartStatus").getContext("2d");
           chartStatus = new Chart(ctxStatus, {
@@ -1751,14 +1750,23 @@
 
           const data = await apiFetch("/api/reports/summary?" + params.toString());
 
+          // Função segura para converter valores que vêm com vírgula
+          const toNumber = (val) => {
+            if (!val) return 0;
+            if (typeof val === "number") return val;
+            return Number(String(val).replace(/\./g, "").replace(",", ".")) || 0;
+          };
+
+          // ------ TOTAL GERAL ------
           const totals = data.totals || {};
           document.getElementById("relTotalNotas").textContent =
             totals.total_notas || 0;
           document.getElementById("relValorTotal").textContent =
-            formatCurrencyBRL(totals.soma_valor_total || 0);
+            formatCurrencyBRL(toNumber(totals.soma_valor_total));
           document.getElementById("relTaxasTotal").textContent =
-            formatCurrencyBRL(totals.soma_taxas || 0);
+            formatCurrencyBRL(toNumber(totals.soma_taxas));
 
+          // ------ GRÁFICO POR PERÍODO ------
           const porPeriodo = data.porPeriodo || [];
           if (chartRelPeriodo) chartRelPeriodo.destroy();
           const ctx = document.getElementById("chartRelPeriodo").getContext("2d");
@@ -1769,7 +1777,7 @@
               datasets: [
                 {
                   label: "Notas",
-                  data: porPeriodo.map((p) => p.total_notas),
+                  data: porPeriodo.map((p) => Number(p.total_notas || 0)),
                 },
               ],
             },
@@ -1784,33 +1792,32 @@
             },
           });
 
+          // ------ TOP CLIENTE ------
           const porCliente = data.porCliente || [];
           if (porCliente.length > 0) {
             const topCliente = [...porCliente].sort(
               (a, b) => Number(b.total_notas) - Number(a.total_notas)
             )[0];
-            document.getElementById(
-              "relTopCliente"
-            ).textContent = `${topCliente.name} — ${topCliente.total_notas} notas, ${formatCurrencyBRL(
-              topCliente.soma_valor_total
-            )}`;
+
+            document.getElementById("relTopCliente").textContent =
+              `${topCliente.name || "—"} — ${topCliente.total_notas} notas, ${formatCurrencyBRL(toNumber(topCliente.soma_valor_total))}`;
           } else {
             document.getElementById("relTopCliente").textContent = "—";
           }
 
+          // ------ TOP EMPRESA ------
           const porEmpresa = data.porEmpresa || [];
           if (porEmpresa.length > 0) {
             const topEmpresa = [...porEmpresa].sort(
-              (a, b) => Number(b.soma_valor_total) - Number(a.soma_valor_total)
+              (a, b) => toNumber(b.soma_valor_total) - toNumber(a.soma_valor_total)
             )[0];
-            document.getElementById(
-              "relTopEmpresa"
-            ).textContent = `${topEmpresa.name} — ${formatCurrencyBRL(
-              topEmpresa.soma_valor_total
-            )} em notas`;
+
+            document.getElementById("relTopEmpresa").textContent =
+              `${topEmpresa.name || "—"} — ${formatCurrencyBRL(toNumber(topEmpresa.soma_valor_total))} em notas`;
           } else {
             document.getElementById("relTopEmpresa").textContent = "—";
           }
+
         } catch (err) {
           console.error("Erro ao carregar relatórios:", err);
         }
@@ -1840,13 +1847,14 @@
       }
 
       // RELATÓRIO POR CLIENTE
+      // RELATÓRIO POR CLIENTE
       async function loadRelatorioPorCliente() {
         const select = document.getElementById("relClienteSelect");
         const id = select.value;
-        if (!id) {
-          alert("Selecione um cliente");
-          return;
-        }
+
+        // Se não tiver cliente selecionado, apenas sai silenciosamente
+        if (!id) return;
+
         const start = document.getElementById("relClienteDataIni").value;
         const end = document.getElementById("relClienteDataFim").value;
 
@@ -1855,9 +1863,7 @@
         if (end) params.append("end", end);
 
         try {
-          const data = await apiFetch(
-            `/api/reports/por-cliente/${id}?` + params.toString()
-          );
+          const data = await apiFetch(`/api/reports/cliente/${id}?` + params.toString());
 
           const cliente = data.cliente;
           const totais = data.totais || {};
@@ -1865,9 +1871,8 @@
 
           document.getElementById("relClienteNome").textContent =
             cliente?.name || "—";
-          document.getElementById(
-            "relClienteWhats"
-          ).textContent = `WhatsApp: ${cliente?.whatsapp_number || "—"}`;
+          document.getElementById("relClienteWhats").textContent =
+            `WhatsApp: ${cliente?.whatsapp_number || "—"}`;
           document.getElementById("relClienteTotalNotas").textContent =
             totais.total_notas || 0;
           document.getElementById("relClienteValorTotal").textContent =
@@ -1875,48 +1880,24 @@
           document.getElementById("relClienteTaxasTotal").textContent =
             formatCurrencyBRL(totais.soma_taxas || 0);
 
-          // Gráfico por período
+          // gráfico
           const { labels, counts } = groupByDateForChart(notas);
           if (chartRelClientePeriodo) chartRelClientePeriodo.destroy();
-          const ctx = document
-            .getElementById("chartRelClientePeriodo")
-            .getContext("2d");
+          const ctx = document.getElementById("chartRelClientePeriodo").getContext("2d");
           chartRelClientePeriodo = new Chart(ctx, {
             type: "line",
-            data: {
-              labels,
-              datasets: [
-                {
-                  label: "Notas",
-                  data: counts,
-                  borderWidth: 2,
-                  tension: 0.25,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              plugins: {
-                legend: { display: false },
-              },
-              scales: {
-                y: { beginAtZero: true },
-              },
-            },
+            data: { labels, datasets: [{ label: "Notas", data: counts, tension: 0.25 }] },
+            options: { responsive: true, plugins: { legend: { display: false } } },
           });
 
-          // Tabela de empresas x cliente
+          // tabela empresas
           const empMap = new Map();
           notas.forEach((n) => {
             const nome = n.Company?.name || "—";
-            const current = empMap.get(nome) || {
-              empresa: nome,
-              total_notas: 0,
-              soma_valor_total: 0,
-            };
-            current.total_notas += 1;
-            current.soma_valor_total += Number(n.total_amount || 0);
-            empMap.set(nome, current);
+            const obj = empMap.get(nome) || { empresa: nome, total_notas: 0, soma_valor_total: 0 };
+            obj.total_notas++;
+            obj.soma_valor_total += Number(n.total_amount || 0);
+            empMap.set(nome, obj);
           });
 
           const empBody = document.getElementById("relClienteEmpresasBody");
@@ -1924,47 +1905,47 @@
           Array.from(empMap.values())
             .sort((a, b) => b.soma_valor_total - a.soma_valor_total)
             .forEach((e) => {
-              const tr = document.createElement("tr");
-              tr.innerHTML = `
-                <td>${e.empresa}</td>
-                <td>${e.total_notas}</td>
-                <td>${formatCurrencyBRL(e.soma_valor_total)}</td>
-              `;
-              empBody.appendChild(tr);
+              empBody.innerHTML += `
+                <tr>
+                  <td>${e.empresa}</td>
+                  <td>${e.total_notas}</td>
+                  <td>${formatCurrencyBRL(e.soma_valor_total)}</td>
+                </tr>`;
             });
 
-          // Tabela de notas
+          // tabela notas
           const notasBody = document.getElementById("relClienteNotasBody");
           notasBody.innerHTML = "";
           notas.forEach((n) => {
-            const tr = document.createElement("tr");
-            const dt = n.issued_at
-              ? new Date(n.issued_at).toLocaleString("pt-BR")
-              : "—";
-            tr.innerHTML = `
-              <td>${n.id}</td>
-              <td>${dt}</td>
-              <td>${n.Company?.name || "—"}</td>
-              <td>${formatCurrencyBRL(n.total_amount)}</td>
-              <td>${formatCurrencyBRL(n.fee_value)}</td>
-              <td>${n.status}</td>
-            `;
-            notasBody.appendChild(tr);
+            notasBody.innerHTML += `
+              <tr>
+                <td>${n.id}</td>
+                <td>${n.issued_at ? new Date(n.issued_at).toLocaleString("pt-BR") : "—"}</td>
+                <td>${n.Company?.name || "—"}</td>
+                <td>${formatCurrencyBRL(n.total_amount)}</td>
+                <td>${formatCurrencyBRL(n.fee_value)}</td>
+                <td>${n.status}</td>
+              </tr>`;
           });
+
         } catch (err) {
           console.error("Erro relatório por cliente:", err);
-          alert("Erro ao gerar relatório por cliente.");
+          // NÃO MOSTRA ALERTA — só loga
         }
       }
 
+
+
+
       // RELATÓRIO POR EMPRESA
+      // RELATÓRIO POR EMPRESA (versão corrigida)
       async function loadRelatorioPorEmpresa() {
         const select = document.getElementById("relEmpresaSelect");
         const id = select.value;
-        if (!id) {
-          alert("Selecione uma empresa");
-          return;
-        }
+
+        // Se nenhuma empresa foi selecionada, apenas sai
+        if (!id) return;
+
         const start = document.getElementById("relEmpresaDataIni").value;
         const end = document.getElementById("relEmpresaDataFim").value;
 
@@ -1973,9 +1954,7 @@
         if (end) params.append("end", end);
 
         try {
-          const data = await apiFetch(
-            `/api/reports/por-empresa/${id}?` + params.toString()
-          );
+          const data = await apiFetch(`/api/reports/empresa/${id}?` + params.toString());
 
           const empresa = data.empresa;
           const totais = data.totais || {};
@@ -1983,19 +1962,22 @@
 
           document.getElementById("relEmpresaNome").textContent =
             empresa?.name || "—";
-          document.getElementById(
-            "relEmpresaCnpj"
-          ).textContent = `CNPJ: ${empresa?.cnpj || "—"}`;
+          document.getElementById("relEmpresaCnpj").textContent =
+            `CNPJ: ${empresa?.cnpj || "—"}`;
+
           document.getElementById("relEmpresaTotalNotas").textContent =
             totais.total_notas || 0;
           document.getElementById("relEmpresaValorTotal").textContent =
             formatCurrencyBRL(totais.soma_valor_total || 0);
 
+          // Gráfico da empresa
           const { labels, counts } = groupByDateForChart(notas);
           if (chartRelEmpresaPeriodo) chartRelEmpresaPeriodo.destroy();
+
           const ctx = document
             .getElementById("chartRelEmpresaPeriodo")
             .getContext("2d");
+
           chartRelEmpresaPeriodo = new Chart(ctx, {
             type: "bar",
             data: {
@@ -2018,57 +2000,59 @@
             },
           });
 
-          // Tabela de clientes x empresa
+          // Tabela de clientes atendidos pela empresa
           const cliMap = new Map();
           notas.forEach((n) => {
             const nome = n.Customer?.name || "—";
-            const current = cliMap.get(nome) || {
+            const obj = cliMap.get(nome) || {
               cliente: nome,
               total_notas: 0,
               soma_valor_total: 0,
             };
-            current.total_notas += 1;
-            current.soma_valor_total += Number(n.total_amount || 0);
-            cliMap.set(nome, current);
+            obj.total_notas++;
+            obj.soma_valor_total += Number(n.total_amount || 0);
+            cliMap.set(nome, obj);
           });
 
           const cliBody = document.getElementById("relEmpresaClientesBody");
           cliBody.innerHTML = "";
+
           Array.from(cliMap.values())
             .sort((a, b) => b.soma_valor_total - a.soma_valor_total)
             .forEach((c) => {
-              const tr = document.createElement("tr");
-              tr.innerHTML = `
-                <td>${c.cliente}</td>
-                <td>${c.total_notas}</td>
-                <td>${formatCurrencyBRL(c.soma_valor_total)}</td>
+              cliBody.innerHTML += `
+                <tr>
+                  <td>${c.cliente}</td>
+                  <td>${c.total_notas}</td>
+                  <td>${formatCurrencyBRL(c.soma_valor_total)}</td>
+                </tr>
               `;
-              cliBody.appendChild(tr);
             });
 
-          // Tabela de notas
+          // Tabela de notas da empresa
           const notasBody = document.getElementById("relEmpresaNotasBody");
           notasBody.innerHTML = "";
+
           notas.forEach((n) => {
-            const tr = document.createElement("tr");
-            const dt = n.issued_at
-              ? new Date(n.issued_at).toLocaleString("pt-BR")
-              : "—";
-            tr.innerHTML = `
-              <td>${n.id}</td>
-              <td>${dt}</td>
-              <td>${n.Customer?.name || "—"}</td>
-              <td>${formatCurrencyBRL(n.total_amount)}</td>
-              <td>${formatCurrencyBRL(n.fee_value)}</td>
-              <td>${n.status}</td>
+            notasBody.innerHTML += `
+              <tr>
+                <td>${n.id}</td>
+                <td>${n.issued_at ? new Date(n.issued_at).toLocaleString("pt-BR") : "—"}</td>
+                <td>${n.Customer?.name || "—"}</td>
+                <td>${formatCurrencyBRL(n.total_amount)}</td>
+                <td>${formatCurrencyBRL(n.fee_value)}</td>
+                <td>${n.status}</td>
+              </tr>
             `;
-            notasBody.appendChild(tr);
           });
+
         } catch (err) {
           console.error("Erro relatório por empresa:", err);
-          alert("Erro ao gerar relatório por empresa.");
+          // Não usamos alert(), para não causar erro visual
         }
       }
+
+
 
       // ==========================
       // CLIENTES
@@ -2783,10 +2767,11 @@
           .addEventListener("click", loadRelatorios);
         document
           .getElementById("btnRelClienteGerar")
-          .addEventListener("click", loadRelatorioPorCliente);
+          .addEventListener("click", () => loadRelatorioPorCliente(true));
         document
           .getElementById("btnRelEmpresaGerar")
-          .addEventListener("click", loadRelatorioPorEmpresa);
+          .addEventListener("click", () => loadRelatorioPorEmpresa(true));
+
 
         // Se já tiver token salvo, tenta usar
         if (authToken) {
