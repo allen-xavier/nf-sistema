@@ -1667,6 +1667,13 @@
         });
       }
 
+      // Converte valores que podem vir como string com vírgula/ponto
+      function toNumber(val) {
+        if (!val) return 0;
+        if (typeof val === "number") return val;
+        return Number(String(val).replace(/\./g, "").replace(",", ".")) || 0;
+      }
+
       async function loadDashboard() {
         try {
           const data = await apiFetch("/api/reports/summary");
@@ -1749,13 +1756,6 @@
           params.append("group_by", group_by);
 
           const data = await apiFetch("/api/reports/summary?" + params.toString());
-
-          // Função segura para converter valores que vêm com vírgula
-          const toNumber = (val) => {
-            if (!val) return 0;
-            if (typeof val === "number") return val;
-            return Number(String(val).replace(/\./g, "").replace(",", ".")) || 0;
-          };
 
           // ------ TOTAL GERAL ------
           const totals = data.totals || {};
