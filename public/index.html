@@ -1137,7 +1137,8 @@
                       <th>Taxa (%)</th>
                       <th>Taxa (R$)</th>
                       <th>Origem</th>
-                      <th>Terminal / NSU</th>
+                      <th>Terminal</th>
+                      <th>NSU</th>
                       <th>NF-e</th>
                       <th>Status</th>
                     </tr>
@@ -2548,10 +2549,6 @@
               ? new Date(n.issued_at).toLocaleString("pt-BR")
               : "—";
             const origem = n.is_terminal_sale ? "Maquininha" : "Manual";
-            const terminalInfo =
-              n.terminal_id || n.nsu
-                ? `${n.terminal_id || "—"} / ${n.nsu || "—"}`
-                : "—";
             const nfLink = n.nf_link
               ? `<a href="${n.nf_link}" target="_blank" rel="noopener noreferrer">Download</a>`
               : "—";
@@ -2574,7 +2571,8 @@
               <td>${Number(n.fee_percent).toFixed(2)}%</td>
               <td>${formatCurrencyBRL(n.fee_value)}</td>
               <td>${origem}</td>
-              <td>${terminalInfo}</td>
+              <td>${n.terminal_id || "—"}</td>
+              <td>${n.nsu || "—"}</td>
               <td>${nfLink}</td>
               <td><span class="status-pill ${statusClass}">${n.status}</span></td>
             `;
