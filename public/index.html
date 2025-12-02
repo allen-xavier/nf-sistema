@@ -1257,6 +1257,14 @@
                 <div class="toolbar">
                   <div class="toolbar-left">
                     <div class="form-group">
+                      <label>Buscar cliente</label>
+                      <input
+                        type="text"
+                        id="relClienteSearch"
+                        placeholder="Nome ou WhatsApp"
+                      />
+                    </div>
+                    <div class="form-group">
                       <label>Cliente</label>
                       <select id="relClienteSelect">
                         <option value="">Selecione um cliente</option>
@@ -1370,9 +1378,25 @@
                 <div class="toolbar">
                   <div class="toolbar-left">
                     <div class="form-group">
+                      <label>Buscar empresa</label>
+                      <input
+                        type="text"
+                        id="relEmpresaSearch"
+                        placeholder="Nome ou CNPJ"
+                      />
+                    </div>
+                    <div class="form-group">
                       <label>Empresa</label>
                       <select id="relEmpresaSelect">
                         <option value="">Selecione uma empresa</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>Status</label>
+                      <select id="relEmpresaAtivo">
+                        <option value="all">Todas</option>
+                        <option value="true">Ativas</option>
+                        <option value="false">Inativas</option>
                       </select>
                     </div>
                     <div class="form-group">
@@ -2546,23 +2570,54 @@
         const currentCli = selCli.value;
         const currentEmp = selEmp.value;
 
+        const cliSearch =
+          (document.getElementById("relClienteSearch")?.value || "")
+            .toLowerCase()
+            .trim();
+        const empSearch =
+          (document.getElementById("relEmpresaSearch")?.value || "")
+            .toLowerCase()
+            .trim();
+        const empStatus =
+          document.getElementById("relEmpresaAtivo")?.value || "all";
+
+        const filteredClis = (clis || []).filter((c) => {
+          if (!cliSearch) return true;
+          const name = (c.name || "").toLowerCase();
+          const phone = (c.whatsapp_number || "").toLowerCase();
+          return name.includes(cliSearch) || phone.includes(cliSearch);
+        });
+
+        const filteredEmps = (emps || []).filter((e) => {
+          if (empStatus === "true" && !e.is_active) return false;
+          if (empStatus === "false" && e.is_active) return false;
+          if (!empSearch) return true;
+          const name = (e.name || "").toLowerCase();
+          const cnpj = (e.cnpj || "").toLowerCase();
+          return name.includes(empSearch) || cnpj.includes(empSearch);
+        });
+
         selCli.innerHTML = '<option value="">Selecione um cliente</option>';
-        (clis || []).forEach((c) => {
+        filteredClis.forEach((c) => {
           const opt = document.createElement("option");
           opt.value = c.id;
           opt.textContent = `${c.name} (${c.whatsapp_number})`;
           selCli.appendChild(opt);
         });
-        if (currentCli) selCli.value = currentCli;
+        if (currentCli && filteredClis.some((c) => String(c.id) === currentCli)) {
+          selCli.value = currentCli;
+        }
 
         selEmp.innerHTML = '<option value="">Selecione uma empresa</option>';
-        (emps || []).forEach((e) => {
+        filteredEmps.forEach((e) => {
           const opt = document.createElement("option");
           opt.value = e.id;
           opt.textContent = `${e.name} (${e.cnpj})`;
           selEmp.appendChild(opt);
         });
-        if (currentEmp) selEmp.value = currentEmp;
+        if (currentEmp && filteredEmps.some((e) => String(e.id) === currentEmp)) {
+          selEmp.value = currentEmp;
+        }
       }
 
       // ==========================
@@ -2683,6 +2738,15 @@
         document
           .getElementById("empresaSearch")
           .addEventListener("input", renderEmpresas);
+        document
+          .getElementById("relClienteSearch")
+          ?.addEventListener("input", () => populateRelatorioSelects());
+        document
+          .getElementById("relEmpresaSearch")
+          ?.addEventListener("input", () => populateRelatorioSelects());
+        document
+          .getElementById("relEmpresaAtivo")
+          ?.addEventListener("change", () => populateRelatorioSelects());
         document
           .querySelectorAll(".chip-filter[data-empresa-ativo]")
           .forEach((el) => {
