@@ -334,6 +334,11 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      /* Para quando mostrar um único bloco POS ocupar largura total */
+      .pos-single {
+        grid-column: 1 / -1;
+      }
+
       @media (max-width: 900px) {
         .grid-3,
         .grid-2 {
@@ -1870,9 +1875,13 @@
           if (anchor) {
             blocks.forEach((b) => {
               b.style.display = b.id === anchor ? "block" : "none";
+              b.classList.toggle("pos-single", b.id === anchor);
             });
           } else {
-            blocks.forEach((b) => (b.style.display = "block"));
+            blocks.forEach((b) => {
+              b.style.display = "block";
+              b.classList.remove("pos-single");
+            });
           }
           if (anchor) {
             const el = document.getElementById(anchor);
