@@ -761,32 +761,47 @@
           </div>
         </div>
 
-        <nav class="sidebar-nav">
-          <div class="sidebar-section-label">Visão Geral</div>
-          <div class="nav-item active" data-page="dashboard">
-            <span class="icon">📊</span>
+                                <nav class="sidebar-nav">
+          <div class="sidebar-section-label">Visao Geral</div>
+          <div class="nav-item" data-page="dashboard">
+            <span class="icon">*</span>
             <span>Dashboard</span>
           </div>
 
-          <div class="sidebar-section-label">Operações</div>
+          <div class="sidebar-section-label">Nota Fiscal</div>
           <div class="nav-item" data-page="clientes">
-            <span class="icon">👥</span>
+            <span class="icon">*</span>
             <span>Clientes</span>
           </div>
           <div class="nav-item" data-page="empresas">
-            <span class="icon">🏢</span>
+            <span class="icon">*</span>
             <span>Empresas</span>
           </div>
           <div class="nav-item" data-page="notas">
-            <span class="icon">🧾</span>
+            <span class="icon">*</span>
             <span>Notas Fiscais</span>
           </div>
-          <div class="nav-item" data-page="pos">`r`n            <span class="icon">?</span>\n            <span>Maquininhas</span>\n          </div>
-
-          <div class="sidebar-section-label">Análises</div>
           <div class="nav-item" data-page="relatorios">
-            <span class="icon">📈</span>
-            <span>Relatórios</span>
+            <span class="icon">*</span>
+            <span>Relatorios</span>
+          </div>
+
+          <div class="sidebar-section-label">Maquininha</div>
+          <div class="nav-item" data-page="pos" data-anchor="pos-companies">
+            <span class="icon">*</span>
+            <span>Empresas POS</span>
+          </div>
+          <div class="nav-item" data-page="pos" data-anchor="pos-terminals">
+            <span class="icon">*</span>
+            <span>Terminais</span>
+          </div>
+          <div class="nav-item" data-page="pos" data-anchor="pos-vendas">
+            <span class="icon">*</span>
+            <span>Vendas/Taxas</span>
+          </div>
+          <div class="nav-item" data-page="pos" data-anchor="pos-resumo">
+            <span class="icon">*</span>
+            <span>Resumo POS</span>
           </div>
         </nav>
 
@@ -810,7 +825,7 @@
       </aside>
 
       <!-- MAIN -->
-      <main class="main">
+      <main class="main" id="main">
         <header class="topbar">
           <div class="topbar-left">
             <button class="mobile-menu-btn" id="btnMobileMenu">☰</button>
@@ -1152,7 +1167,7 @@
               </div>
             </div>
           </section>          <!-- MAQUININHAS -->
-          <section id="page-pos" class="page-section">
+          <section id="page-pos" class="page-section" data-page-pos>
             <div class="card">
               <div class="card-header">
                 <div>
@@ -1197,7 +1212,7 @@
                   </div>
                 </div>
 
-                <div class="card">
+                <div class="card" id="pos-terminals">
                   <div class="card-header">
                     <div>
                       <div class="card-title">Terminais</div>
@@ -1258,7 +1273,7 @@
                   <button class="btn-primary" id="btnPosSalvarTaxas">Salvar taxas</button>
                 </div>
 
-                <div class="card">
+                <div class="card" id="pos-vendas">
                   <div class="card-header"><div><div class="card-title">Registrar venda</div><div class="card-subtitle">Terminal, data/hora, valor, forma, NSU</div></div></div>
                   <div class="form-row">
                     <div class="form-group"><label>Terminal</label><select id="posVendaTerminal"></select></div>
@@ -1275,7 +1290,7 @@
               </div>
 
               <div class="grid grid-2" style="margin-top: 14px">
-                <div class="card">
+                <div class="card" id="pos-vendas-recentes">
                   <div class="card-header"><div><div class="card-title">Vendas recentes</div><div class="card-subtitle">�ltimas 50 vendas</div></div></div>
                   <div class="table-wrapper" style="max-height: 220px">
                     <table>
@@ -1284,7 +1299,7 @@
                     </table>
                   </div>
                 </div>
-                <div class="card">
+                <div class="card" id="pos-resumo">
                   <div class="card-header"><div><div class="card-title">Resumo</div><div class="card-subtitle">Bruto, l�quido, taxas</div></div><button class="btn-secondary" id="btnPosCarregarResumo">Atualizar</button></div>
                   <div class="grid grid-2">
                     <div class="metric-card"><div class="metric-label">Bruto</div><div class="metric-value" id="posResumoBruto">�</div></div>
@@ -3290,6 +3305,7 @@
     </script>
   </body>
 </html>
+
 
 
 
