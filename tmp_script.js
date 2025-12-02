@@ -90,7 +90,6 @@
           errorEl.textContent = "Credenciais inválidas.";
           errorEl.style.display = "block";
         }
-      }
 
       function logout() {
         authToken = null;
@@ -197,8 +196,6 @@
           loadPosTerminals();
           loadPosVendasRecentes();
           loadPosResumo();
-        }
-        }
       }
 
       // ==========================
@@ -1917,5 +1914,7 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
         } else {
           showLogin();
         }
+      }
+      }
       });
     
