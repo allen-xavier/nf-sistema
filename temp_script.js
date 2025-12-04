@@ -1238,24 +1238,25 @@
       // ==========================
       // MAQUININHAS (POS)
       // ==========================
-      let posCompanies = [];
-      let posTerminals = [];
-      let posVendasRecentes = [];
-      let posClientes = [];
-      let editingPosCompanyId = null;
+  let posCompanies = [];
+  let posTerminals = [];
+  let posVendasRecentes = [];
+  let posClientes = [];
+  let editingPosCompanyId = null;
       let editingPosTerminalId = null;
       let editingPosClienteId = null;
       let editingPosVendaId = null;
       let posResumoList = [];
-      let posResumoTotals = {
-        bruto: 0,
-        taxas: 0,
-        liquido: 0,
-        bruto_pago: 0,
-        liquido_pago: 0,
-        bruto_a_pagar: 0,
-        liquido_a_pagar: 0,
-      };
+  let posResumoTotals = {
+    bruto: 0,
+    taxas: 0,
+    liquido: 0,
+    bruto_pago: 0,
+    liquido_pago: 0,
+    bruto_a_pagar: 0,
+    liquido_a_pagar: 0,
+  };
+  let posSaleModalData = null;
 
       async function loadPosCompanies() {
         try {
@@ -1673,6 +1674,7 @@
             ${s.paid ? "Pago" : "A pagar"}
           </span>
         </td>
+        <td><button class="btn-ghost" data-view-sale="${s.id}">Ver</button></td>
       </tr>`
       )
       .join("");
@@ -1688,6 +1690,7 @@
     );
     const selectedSales = posResumoList.filter((s) => checks.includes(s.id));
     const uniqueTerminals = new Set(selectedSales.map((s) => s.pos_terminal_id));
+    const uniqueCustomers = new Set(selectedSales.map((s) => s.customer_id));
     const btn = document.getElementById("btnPosMarcarPago");
     const msg = document.getElementById("posResumoSelectMsg");
     const totalEl = document.getElementById("posResumoTotalSelecionado");
@@ -1696,15 +1699,13 @@
     const total = selectedSales.reduce((acc, s) => acc + Number(s.net_amount || 0), 0);
     if (totalEl) totalEl.textContent = formatCurrencyBRL(total);
 
-    if (uniqueTerminals.size > 1) {
-      if (btn) btn.disabled = true;
-      if (msg) msg.textContent = "Selecione vendas de um único terminal para pagar.";
-      if (pixEl) pixEl.textContent = "—";
-      return;
+    if (uniqueCustomers.size > 1) {
+      if (btn) btn.disabled = false;
+      if (msg) msg.textContent = "Clientes diferentes selecionados: confirme antes de pagar.";
+    } else {
+      if (btn) btn.disabled = false;
+      if (msg) msg.textContent = "";
     }
-
-    if (btn) btn.disabled = false;
-    if (msg) msg.textContent = "";
 
     const first = selectedSales[0];
     if (first) {
@@ -1727,12 +1728,11 @@
     const pos_terminal_id = document.getElementById("posResumoTerminal").value;
     const payment_batch =
       document.getElementById("posResumoBatch").value.trim() || `fechamento-${Date.now()}`;
-    const uniqueTerminals = new Set(
-      posResumoList.filter((s) => checks.includes(String(s.id))).map((s) => s.pos_terminal_id)
-    );
-    if (uniqueTerminals.size > 1) {
-      alert("Selecione vendas de apenas um terminal por vez para pagar.");
-      return;
+    const selectedSales = posResumoList.filter((s) => checks.includes(String(s.id)));
+    const uniqueCustomers = new Set(selectedSales.map((s) => s.customer_id));
+    if (uniqueCustomers.size > 1) {
+      const sure = confirm("Existem clientes diferentes selecionados. Confirmar pagamento assim mesmo?");
+      if (!sure) return;
     }
     try {
       await apiFetch("/api/pos/reports/payouts/mark-paid", {
@@ -1753,11 +1753,11 @@
     }
   }
 
-      function renderPosVendas() {
-        const tbody = document.getElementById("posVendasTableBody");
-        if (!tbody) return;
-        const searchRaw = document.getElementById("posVendaTerminalSearch")?.value || "";
-        const term = normalizeText(searchRaw);
+  function renderPosVendas() {
+    const tbody = document.getElementById("posVendasTableBody");
+    if (!tbody) return;
+    const searchRaw = document.getElementById("posVendaTerminalSearch")?.value || "";
+    const term = normalizeText(searchRaw);
         const digits = onlyDigits(searchRaw);
         const list = (posVendasRecentes || []).filter((v) => {
           if (!term && !digits) return true;
@@ -1766,31 +1766,33 @@
           const nsu = normalizeText(v.nsu);
           const termDigits = onlyDigits(v.PosTerminal?.terminal_code);
           return (
-            cliente.includes(term) ||
-            terminal.includes(term) ||
-            nsu.includes(term) ||
-            (digits && (termDigits.includes(digits) || onlyDigits(v.nsu).includes(digits)))
-          );
-        });
+        cliente.includes(term) ||
+        terminal.includes(term) ||
+        nsu.includes(term) ||
+        (digits && (termDigits.includes(digits) || onlyDigits(v.nsu).includes(digits)))
+      );
+    });
 
-        tbody.innerHTML = list
-          .map((v) => {
-            const dt = v.sale_datetime ? new Date(v.sale_datetime).toLocaleString("pt-BR") : "—";
-            return `
-              <tr>
-                <td>${dt}</td>
-                <td>${v.Customer?.name || "—"}</td>
-                <td>${v.PosTerminal?.terminal_code || "—"}</td>
-                <td>${v.payment_type}</td>
-                <td>${Number(v.fee_percent || 0).toFixed(2)}%</td>
-                <td>${formatCurrencyBRL(v.amount)}</td>
-                <td>${formatCurrencyBRL(v.fee_value)}</td>
-                <td>${formatCurrencyBRL(v.net_amount)}</td>
-                <td>
-                  <button class="btn-ghost" data-edit-pos-sale="${v.id}">Editar</button>
-                  <button class="btn-danger" data-del-pos-sale="${v.id}">Excluir</button>
-                </td>
-              </tr>`;
+    tbody.innerHTML = list
+      .map((v) => {
+        const dt = v.sale_datetime ? new Date(v.sale_datetime).toLocaleString("pt-BR") : "—";
+        return `
+          <tr>
+            <td>${dt}</td>
+            <td>${v.Customer?.name || "—"}</td>
+            <td>${v.PosTerminal?.terminal_code || "—"}</td>
+            <td>${v.payment_type}</td>
+            <td>${Number(v.fee_percent || 0).toFixed(2)}%</td>
+            <td>${formatCurrencyBRL(v.amount)}</td>
+            <td>${formatCurrencyBRL(v.fee_value)}</td>
+            <td>${formatCurrencyBRL(v.net_amount)}</td>
+            <td><span class="tag ${v.paid ? "tag-success" : "tag-danger"}">${v.paid ? "Pago" : "A pagar"}</span></td>
+            <td>
+              <button class="btn-ghost" data-view-sale="${v.id}">Ver</button>
+              <button class="btn-ghost" data-edit-pos-sale="${v.id}">Editar</button>
+              <button class="btn-danger" data-del-pos-sale="${v.id}">Excluir</button>
+            </td>
+          </tr>`;
       })
       .join("");
   }
@@ -1840,6 +1842,44 @@
       msg.textContent = "";
       msg.style.display = "none";
     }
+  }
+
+  function openPosSaleModal(id) {
+    const sale =
+      posResumoList.find((s) => s.id == id) || posVendasRecentes.find((s) => s.id == id);
+    if (!sale) return;
+    posSaleModalData = sale;
+    const modal = document.getElementById("posSaleModal");
+    const set = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    };
+    set("posSaleModalTitle", `Venda #${sale.id}`);
+    const tag = document.getElementById("posSaleModalStatus");
+    if (tag) {
+      tag.className = `tag ${sale.paid ? "tag-success" : "tag-danger"}`;
+      tag.textContent = sale.paid ? "Pago" : "A pagar";
+    }
+    set("posSaleModalData", sale.sale_datetime ? new Date(sale.sale_datetime).toLocaleString("pt-BR") : "—");
+    set("posSaleModalTerminal", sale.PosTerminal?.terminal_code || "—");
+    set("posSaleModalCliente", sale.Customer?.name || "—");
+    set("posSaleModalEmpresa", sale.PosCompany?.name || "—");
+    set("posSaleModalForma", sale.payment_type || "—");
+    set("posSaleModalNsu", sale.nsu || "—");
+    set("posSaleModalBruto", formatCurrencyBRL(sale.amount));
+    set("posSaleModalTaxa", `${Number(sale.fee_percent || 0).toFixed(2)}% / ${formatCurrencyBRL(sale.fee_value)}`);
+    set("posSaleModalLiquido", formatCurrencyBRL(sale.net_amount));
+    set("posSaleModalPagoEm", sale.paid_at ? new Date(sale.paid_at).toLocaleString("pt-BR") : "—");
+    set("posSaleModalLote", sale.payment_batch || "—");
+    const cli = posClientes.find((c) => c.id === sale.customer_id);
+    set("posSaleModalPix", cli?.PosRate?.pix_key || "—");
+    if (modal) modal.style.display = "flex";
+  }
+
+  function closePosSaleModal() {
+    const modal = document.getElementById("posSaleModal");
+    if (modal) modal.style.display = "none";
+    posSaleModalData = null;
   }
 
       async function loadPosClientes() {
@@ -2081,12 +2121,30 @@
         document.getElementById("posResumoTabela")?.addEventListener("change", (e) => {
           if (e.target.classList.contains("posResumoCheck")) updateResumoSelecionados();
         });
+        document.getElementById("posResumoTabela")?.addEventListener("click", (e) => {
+          const viewId = e.target.getAttribute("data-view-sale");
+          if (viewId) {
+            openPosSaleModal(viewId);
+          }
+        });
         document.getElementById("posResumoSelectAll")?.addEventListener("change", (e) => {
           const checked = e.target.checked;
           document.querySelectorAll(".posResumoCheck").forEach((c) => {
             if (!c.disabled) c.checked = checked;
           });
           updateResumoSelecionados();
+        });
+        document.getElementById("btnPosLimparResumo")?.addEventListener("click", (e) => {
+          e.preventDefault();
+          document.getElementById("posResumoIni").value = "";
+          document.getElementById("posResumoFim").value = "";
+          document.getElementById("posResumoTerminal").value = "";
+          document.getElementById("posResumoOnlyUnpaid").checked = false;
+          document.querySelectorAll(".posResumoCheck").forEach((c) => {
+            if (!c.disabled) c.checked = false;
+          });
+          updateResumoSelecionados();
+          loadPosResumo();
         });
         document.getElementById("btnPosMarcarPago")?.addEventListener("click", (e) => {
           e.preventDefault();
@@ -2144,11 +2202,18 @@
         document.getElementById("posVendasTableBody")?.addEventListener("click", (e) => {
           const editId = e.target.getAttribute("data-edit-pos-sale");
           const delId = e.target.getAttribute("data-del-pos-sale");
+          const viewId = e.target.getAttribute("data-view-sale");
           if (editId) {
             startEditPosVenda(editId);
+          } else if (viewId) {
+            openPosSaleModal(viewId);
           } else if (delId && confirm("Excluir venda?")) {
             deletePosVenda(delId);
           }
+        });
+        document.getElementById("posSaleModalClose")?.addEventListener("click", closePosSaleModal);
+        document.getElementById("posSaleModal")?.addEventListener("click", (e) => {
+          if (e.target.id === "posSaleModal") closePosSaleModal();
         });
 
         // Clientes
