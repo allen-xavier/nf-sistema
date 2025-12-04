@@ -1339,6 +1339,7 @@
                 <div class="form-group"><label>Buscar terminal/cliente</label><input id="posVendaTerminalSearch" placeholder="Filtrar" /></div>
                 <div class="form-group"><label>Terminal</label><select id="posVendaTerminal"></select></div>
                 <div class="form-group"><label>Data/hora</label><input id="posVendaData" type="datetime-local" /></div>
+                <div class="form-group" style="max-width:180px"><label>Status</label><select id="posVendaStatusFilter"><option value="all">Todos</option><option value="paid">Pagos</option><option value="unpaid">A pagar</option></select></div>
               </div>
               <div class="form-row">
                 <div class="form-group"><label>Valor</label><input id="posVendaValor" type="number" step="0.01" /></div>
@@ -1353,16 +1354,6 @@
             </div>
               <div class="card pos-block" style="margin-top: 12px">
               <div class="card-header"><div><div class="card-title">Vendas recentes</div><div class="card-subtitle">Ultimas 50 vendas</div></div></div>
-              <div class="form-row" style="margin-top:4px">
-                <div class="form-group" style="max-width:200px">
-                  <label>Status</label>
-                  <select id="posVendaStatusFilter">
-                    <option value="all">Todos</option>
-                    <option value="paid">Pagos</option>
-                    <option value="unpaid">A pagar</option>
-                  </select>
-                </div>
-              </div>
               <div class="table-wrapper" style="max-height: 360px">
                 <table>
                   <thead><tr><th>Data</th><th>Cliente</th><th>Terminal</th><th>Forma</th><th>%</th><th>Bruto</th><th>Taxa</th><th>Liquido</th><th>Status</th><th>Acoes</th></tr></thead>
@@ -4263,6 +4254,7 @@
     </div>
   </body>
 </html>
+
 
 
 
