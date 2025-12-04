@@ -69,21 +69,7 @@
           localStorage.setItem("nf_token", authToken);
           localStorage.setItem("nf_user_email", currentUser.email);
 
-          document.getElementById("currentUserEmail").textContent = currentUser.email;
-
-          showApp();
-          selectPage("dashboard");
-          loadDashboard();
-          loadClientes().then(populateRelatorioSelects);
-          loadEmpresas().then(populateRelatorioSelects);
-          loadPosClientes();
-          loadPosCompanies();
-          loadPosTerminals();
-          loadPosVendasRecentes();
-          loadPosResumo();
-          resetNotasInfiniteScroll();
-          loadNotasPage(true);
-          loadRelatorios();
+          await startAppAfterAuth();
         } catch (err) {
           console.error(err);
           errorEl.textContent = "Credenciais inválidas.";
@@ -91,11 +77,49 @@
         }
       }
 
+      async function startAppAfterAuth() {
+        document.getElementById("currentUserEmail").textContent =
+          currentUser?.email || localStorage.getItem("nf_user_email") || "Administrador";
+
+        showApp();
+        selectPage("dashboard");
+        loadDashboard();
+        loadClientes().then(populateRelatorioSelects);
+        loadEmpresas().then(populateRelatorioSelects);
+        loadPosClientes();
+        loadPosCompanies();
+        loadPosTerminals();
+        loadPosVendasRecentes();
+        loadPosResumo();
+        resetNotasInfiniteScroll();
+        loadNotasPage(true);
+        loadRelatorios();
+      }
+
       function logout() {
         authToken = null;
         currentUser = null;
         localStorage.removeItem("nf_token");
+        localStorage.removeItem("nf_user_email");
         showLogin();
+      }
+
+      async function tryRestoreSession() {
+        if (!authToken) {
+          showLogin();
+          return;
+        }
+        try {
+          currentUser = await apiFetch("/api/auth/me");
+          localStorage.setItem(
+            "nf_user_email",
+            currentUser?.email || localStorage.getItem("nf_user_email") || "Administrador"
+          );
+          await startAppAfterAuth();
+        } catch (err) {
+          console.error("Falha ao restaurar sessao:", err);
+          logout();
+        }
       }
 
       async function sendForgotPassword() {
@@ -1654,26 +1678,6 @@
           .getElementById("btnRelEmpresaGerar")
           .addEventListener("click", () => loadRelatorioPorEmpresa(true));
 
-
-        // Se já tiver token salvo, tenta usar
-        if (authToken) {
-          showApp();
-          const userEmail = localStorage.getItem("nf_user_email") || "Administrador";
-          document.getElementById("currentUserEmail").textContent = userEmail;
-          selectPage("dashboard");
-          loadDashboard();
-          loadClientes().then(populateRelatorioSelects);
-          loadEmpresas().then(populateRelatorioSelects);
-          loadPosClientes();
-          loadPosCompanies();
-          loadPosTerminals();
-          loadPosVendasRecentes();
-          loadPosResumo();
-          resetNotasInfiniteScroll();
-          loadNotasPage(true);
-          loadRelatorios();
-        } else {
-          showLogin();
-        }
+        // Se ja tiver token salvo, tenta restaurar a sessao
+        tryRestoreSession();
       });
-    
