@@ -1229,7 +1229,7 @@
               </div>
               <button class="btn-primary" id="btnPosAddTerminal">Salvar terminal</button>
               <div class="table-wrapper" style="max-height:200px; margin-top:10px">
-                <table><thead><tr><th>ID</th><th>Terminal</th><th>Empresa</th><th>Cliente</th><th>Status</th><th>Acoes</th></tr></thead><tbody id="posTerminalsTableBody"></tbody></table>
+                <table><thead><tr><th>ID</th><th>Terminal</th><th>Empresa</th><th>Cliente</th><th>Status</th><th>Déb</th><th>Cr av</th><th>2-6x</th><th>7-12x</th><th>PIX</th><th>Ações</th></tr></thead><tbody id="posTerminalsTableBody"></tbody></table>
               </div>
             </div>
           </section>
@@ -1293,7 +1293,7 @@
               <div class="card-header"><div><div class="card-title">Vendas recentes</div><div class="card-subtitle">Ultimas 50 vendas</div></div></div>
               <div class="table-wrapper" style="max-height: 220px">
                 <table>
-                  <thead><tr><th>Data</th><th>Cliente</th><th>Terminal</th><th>Forma</th><th>Bruto</th><th>Taxa</th><th>Liquido</th><th>Acoes</th></tr></thead>
+                  <thead><tr><th>Data</th><th>Cliente</th><th>Terminal</th><th>Forma</th><th>%</th><th>Bruto</th><th>Taxa</th><th>Liquido</th><th>Acoes</th></tr></thead>
                   <tbody id="posVendasTableBody"></tbody>
                 </table>
               </div>
@@ -1939,7 +1939,13 @@
         const searchCli = normalizeText(
           document.getElementById("relClienteSearch")?.value || ""
         );
+        const searchCliDigits = onlyDigits(
+          document.getElementById("relClienteSearch")?.value || ""
+        );
         const searchEmp = normalizeText(
+          document.getElementById("relEmpresaSearch")?.value || ""
+        );
+        const searchEmpDigits = onlyDigits(
           document.getElementById("relEmpresaSearch")?.value || ""
         );
         const empStatus = document.getElementById("relEmpresaAtivo")?.value || "all";
@@ -1950,10 +1956,11 @@
             const term = searchCli;
             const name = normalizeText(c.name);
             const whats = normalizeText(c.whatsapp_number);
+            const whatsDigits = onlyDigits(c.whatsapp_number);
             return (
               name.includes(term) ||
               whats.includes(term) ||
-              whats.replace(/\D/g, "").includes(term.replace(/\D/g, ""))
+              (searchCliDigits && whatsDigits.includes(searchCliDigits))
             );
           });
 
@@ -1981,7 +1988,10 @@
             const term = searchEmp;
             const name = normalizeText(e.name);
             const cnpj = (e.cnpj || "").replace(/\D/g, "");
-            return name.includes(term) || cnpj.includes(term.replace(/\D/g, ""));
+            return (
+              name.includes(term) ||
+              (searchEmpDigits && cnpj.includes(searchEmpDigits))
+            );
           });
 
         if (selEmp) {
@@ -3113,19 +3123,27 @@
         });
 
         tbody.innerHTML = list
-          .map((t) => `
+          .map((t) => {
+            const rate = posClientes.find((c) => c.id === t.customer_id)?.PosRate || {};
+            return `
             <tr>
               <td>${t.id}</td>
               <td>${t.terminal_code}</td>
               <td>${t.PosCompany?.name || "—"}</td>
               <td>${t.Customer?.name || "—"}</td>
               <td>${t.is_active ? "Ativo" : "Inativo"}</td>
+              <td>${Number(rate.debit_percent || 0).toFixed(2)}%</td>
+              <td>${Number(rate.credit_avista_percent || 0).toFixed(2)}%</td>
+              <td>${Number(rate.credit_2a6_percent || 0).toFixed(2)}%</td>
+              <td>${Number(rate.credit_7a12_percent || 0).toFixed(2)}%</td>
+              <td>${rate.pix_key || "—"}</td>
               <td>
                 <button class="btn-ghost" data-edit-pos-terminal="${t.id}">Editar</button>
                 <button class="btn-danger" data-del-pos-terminal="${t.id}">Excluir</button>
               </td>
             </tr>
-          `)
+          `;
+          })
           .join("");
       }
 
@@ -3145,7 +3163,7 @@
           selCli.innerHTML =
             '<option value="">Selecione</option>' +
             (posClientes || [])
-              .map((c) => `<option value="${c.id}">${c.name}</option>`)
+              .map((c) => `<option value="${c.id}">${c.name}${c.whatsapp_number ? " (" + c.whatsapp_number + ")" : ""}</option>`)
               .join("");
         }
         if (selRateCli) selRateCli.innerHTML = selCli ? selCli.innerHTML : "";
@@ -3260,28 +3278,28 @@
         }
       }
 
-  function renderPosVendas() {
-    const tbody = document.getElementById("posVendasTableBody");
-    if (!tbody) return;
-    const searchRaw = document.getElementById("posVendaTerminalSearch")?.value || "";
-    const term = normalizeText(searchRaw);
-    const digits = onlyDigits(searchRaw);
-    const list = (posVendasRecentes || []).filter((v) => {
-      if (!term && !digits) return true;
-      const cliente = normalizeText(v.Customer?.name);
-      const terminal = normalizeText(v.PosTerminal?.terminal_code);
-      const nsu = normalizeText(v.nsu);
-      const termDigits = onlyDigits(v.PosTerminal?.terminal_code);
-      return (
-        cliente.includes(term) ||
-        terminal.includes(term) ||
-        nsu.includes(term) ||
-        (digits && (termDigits.includes(digits) || onlyDigits(v.nsu).includes(digits)))
-      );
-    });
+      function renderPosVendas() {
+        const tbody = document.getElementById("posVendasTableBody");
+        if (!tbody) return;
+        const searchRaw = document.getElementById("posVendaTerminalSearch")?.value || "";
+        const term = normalizeText(searchRaw);
+        const digits = onlyDigits(searchRaw);
+        const list = (posVendasRecentes || []).filter((v) => {
+          if (!term && !digits) return true;
+          const cliente = normalizeText(v.Customer?.name);
+          const terminal = normalizeText(v.PosTerminal?.terminal_code);
+          const nsu = normalizeText(v.nsu);
+          const termDigits = onlyDigits(v.PosTerminal?.terminal_code);
+          return (
+            cliente.includes(term) ||
+            terminal.includes(term) ||
+            nsu.includes(term) ||
+            (digits && (termDigits.includes(digits) || onlyDigits(v.nsu).includes(digits)))
+          );
+        });
 
-    tbody.innerHTML = list
-      .map((v) => {
+        tbody.innerHTML = list
+          .map((v) => {
             const dt = v.sale_datetime ? new Date(v.sale_datetime).toLocaleString("pt-BR") : "—";
             return `
               <tr>
@@ -3289,6 +3307,7 @@
                 <td>${v.Customer?.name || "—"}</td>
                 <td>${v.PosTerminal?.terminal_code || "—"}</td>
                 <td>${v.payment_type}</td>
+                <td>${Number(v.fee_percent || 0).toFixed(2)}%</td>
                 <td>${formatCurrencyBRL(v.amount)}</td>
                 <td>${formatCurrencyBRL(v.fee_value)}</td>
                 <td>${formatCurrencyBRL(v.net_amount)}</td>
@@ -3351,7 +3370,23 @@
       async function loadPosClientes() {
         try {
           const all = await apiFetch("/api/customers");
-          posClientes = (all || []).filter((c) => c.uses_pos !== false);
+          const onlyPos = (all || []).filter((c) => c.uses_pos !== false);
+          // Busca taxas de cada cliente POS
+          const rates = await Promise.all(
+            onlyPos.map(async (c) => {
+              try {
+                const r = await apiFetch(`/api/pos/rates/${c.id}`);
+                return [c.id, r];
+              } catch {
+                return [c.id, null];
+              }
+            })
+          );
+          const rateMap = new Map(rates);
+          posClientes = onlyPos.map((c) => ({
+            ...c,
+            PosRate: rateMap.get(c.id) || {},
+          }));
           renderPosClientes();
           fillPosSelects();
         } catch (err) {
@@ -3802,5 +3837,6 @@
 </script>
   </body>
 </html>
+
 
 
