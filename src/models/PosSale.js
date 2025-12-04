@@ -55,6 +55,19 @@ const PosSale = sequelize.define(
       type: DataTypes.DECIMAL(12, 2),
       allowNull: false,
     },
+    paid: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    paid_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    payment_batch: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,

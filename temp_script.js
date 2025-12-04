@@ -1246,6 +1246,16 @@
       let editingPosTerminalId = null;
       let editingPosClienteId = null;
       let editingPosVendaId = null;
+      let posResumoList = [];
+      let posResumoTotals = {
+        bruto: 0,
+        taxas: 0,
+        liquido: 0,
+        bruto_pago: 0,
+        liquido_pago: 0,
+        bruto_a_pagar: 0,
+        liquido_a_pagar: 0,
+      };
 
       async function loadPosCompanies() {
         try {
@@ -1464,6 +1474,7 @@
         const selCli = document.getElementById("posTerminalCliente");
         const selRateCli = document.getElementById("posRateCliente");
         const selVendaTerm = document.getElementById("posVendaTerminal");
+        const selResumoTerm = document.getElementById("posResumoTerminal");
         if (selEmp) {
           selEmp.innerHTML =
             '<option value="">Selecione</option>' +
@@ -1486,6 +1497,13 @@
               .map(
                 (t) => `<option value="${t.id}">${t.terminal_code} - ${t.Customer?.name || "Cliente"}</option>`
               )
+              .join("");
+        }
+        if (selResumoTerm) {
+          selResumoTerm.innerHTML =
+            '<option value="">Todos</option>' +
+            (posTerminals || [])
+              .map((t) => `<option value="${t.id}">${t.terminal_code} - ${t.Customer?.name || "Cliente"}</option>`)
               .join("");
         }
       }
@@ -1570,25 +1588,109 @@
 
   async function loadPosResumo() {
     try {
-      const res = await apiFetch("/api/pos/reports/summary");
-      const bruto = Number(res?.totals?.bruto || 0);
-      const liquido = Number(res?.totals?.liquido || 0);
-          const taxas = Number(res?.totals?.taxas || 0);
-          document.getElementById("posResumoBruto").textContent = formatCurrencyBRL(bruto);
-          document.getElementById("posResumoLiquido").textContent = formatCurrencyBRL(liquido);
-          document.getElementById("posResumoTaxas").textContent = formatCurrencyBRL(taxas);
-          document.getElementById("posResumoTopCliente").textContent =
-            res?.topCliente?.Customer?.name || "—";
-          document.getElementById("posResumoTopDia").textContent =
-            res?.topDia?.Customer?.name || "—";
-          const mv = res?.maiorVenda;
-          document.getElementById("posResumoMaiorVenda").textContent = mv
-            ? `${mv.Customer?.name || "—"} - ${formatCurrencyBRL(mv.amount)}`
-            : "—";
-        } catch (err) {
-          console.error("Erro ao carregar resumo POS:", err);
-        }
-      }
+      const start = document.getElementById("posResumoIni").value;
+      const end = document.getElementById("posResumoFim").value;
+      const pos_terminal_id = document.getElementById("posResumoTerminal").value;
+      const only_unpaid = document.getElementById("posResumoOnlyUnpaid").checked;
+
+      const params = new URLSearchParams();
+      if (start) params.append("start", start);
+      if (end) params.append("end", end);
+      if (pos_terminal_id) params.append("pos_terminal_id", pos_terminal_id);
+      if (only_unpaid) params.append("only_unpaid", "true");
+
+      const res = await apiFetch(`/api/pos/reports/payouts?${params.toString()}`);
+      posResumoList = res.list || [];
+      posResumoTotals = res.totals || posResumoTotals;
+
+      document.getElementById("posResumoBruto").textContent = formatCurrencyBRL(posResumoTotals.bruto);
+      document.getElementById("posResumoTaxas").textContent = formatCurrencyBRL(posResumoTotals.taxas);
+      document.getElementById("posResumoLiquido").textContent = formatCurrencyBRL(posResumoTotals.liquido);
+      document.getElementById("posResumoAPagar").textContent = formatCurrencyBRL(posResumoTotals.liquido_a_pagar);
+      document.getElementById("posResumoPago").textContent = formatCurrencyBRL(posResumoTotals.liquido_pago);
+
+      const top = res.topTerminal;
+      const topSum = top?.get ? top.get("soma") : top?.dataValues?.soma;
+      document.getElementById("posResumoTopTerminal").textContent = top
+        ? `${top.PosTerminal?.terminal_code || "?"} - ${formatCurrencyBRL(topSum || 0)}`
+        : "—";
+      document.getElementById("posResumoTopTerminalOwner").textContent = top
+        ? `Proprietário: ${top.PosTerminal?.Customer?.name || "—"}`
+        : "";
+
+      const mv = res.maiorVendaPeriodo;
+      document.getElementById("posResumoMaiorVenda").textContent = mv
+        ? formatCurrencyBRL(mv.amount)
+        : "—";
+      document.getElementById("posResumoMaiorVendaInfo").textContent = mv
+        ? `${mv.PosTerminal?.terminal_code || "?"} - ${mv.Customer?.name || "?"}`
+        : "";
+
+      renderPosResumoTabela();
+    } catch (err) {
+      console.error("Erro ao carregar resumo POS:", err);
+    }
+  }
+
+  function renderPosResumoTabela() {
+    const tbody = document.getElementById("posResumoTabela");
+    if (!tbody) return;
+    const only_unpaid = document.getElementById("posResumoOnlyUnpaid").checked;
+    const rows = posResumoList
+      .filter((s) => (!only_unpaid ? true : !s.paid))
+      .map(
+        (s) => `
+      <tr>
+        <td><input type="checkbox" data-sale-id="${s.id}" class="posResumoCheck" ${s.paid ? "disabled" : ""}></td>
+        <td>${s.sale_datetime ? new Date(s.sale_datetime).toLocaleString("pt-BR") : "—"}</td>
+        <td>${s.PosTerminal?.terminal_code || "—"}</td>
+        <td>${s.Customer?.name || "—"}</td>
+        <td>${formatCurrencyBRL(s.amount)}</td>
+        <td>${formatCurrencyBRL(s.fee_value)}</td>
+        <td>${formatCurrencyBRL(s.net_amount)}</td>
+        <td>
+          <span class="tag ${s.paid ? "tag-success" : "tag-danger"}">
+            ${s.paid ? "Pago" : "A pagar"}
+          </span>
+        </td>
+      </tr>`
+      )
+      .join("");
+    tbody.innerHTML = rows;
+    const selectAll = document.getElementById("posResumoSelectAll");
+    if (selectAll) selectAll.checked = false;
+  }
+
+  async function marcarPosPagas() {
+    const checks = Array.from(document.querySelectorAll(".posResumoCheck:checked"))
+      .map((c) => c.getAttribute("data-sale-id"));
+    if (!checks.length) {
+      alert("Selecione pelo menos uma venda a pagar.");
+      return;
+    }
+    const start = document.getElementById("posResumoIni").value;
+    const end = document.getElementById("posResumoFim").value;
+    const pos_terminal_id = document.getElementById("posResumoTerminal").value;
+    const payment_batch =
+      document.getElementById("posResumoBatch").value.trim() || `fechamento-${Date.now()}`;
+    try {
+      await apiFetch("/api/pos/reports/payouts/mark-paid", {
+        method: "POST",
+        body: JSON.stringify({
+          sale_ids: checks,
+          start,
+          end,
+          pos_terminal_id,
+          payment_batch,
+        }),
+      });
+      await loadPosResumo();
+      alert(`Vendas marcadas como pagas. Lote: ${payment_batch}`);
+    } catch (err) {
+      alert("Erro ao marcar como pago");
+      console.error(err);
+    }
+  }
 
       function renderPosVendas() {
         const tbody = document.getElementById("posVendasTableBody");
@@ -1915,6 +2017,18 @@
         document.getElementById("btnPosRegistrarVenda")?.addEventListener("click", registrarVendaPos);
         document.getElementById("btnPosCarregarResumo")?.addEventListener("click", loadPosResumo);
         document.getElementById("posRateCliente")?.addEventListener("change", loadPosRateForSelected);
+        document.getElementById("posResumoSelectAll")?.addEventListener("change", (e) => {
+          const checked = e.target.checked;
+          document.querySelectorAll(".posResumoCheck").forEach((c) => {
+            if (!c.disabled) c.checked = checked;
+          });
+        });
+        document.getElementById("btnPosMarcarPago")?.addEventListener("click", (e) => {
+          e.preventDefault();
+          marcarPosPagas();
+        });
+        document.getElementById("posResumoOnlyUnpaid")?.addEventListener("change", loadPosResumo);
+        document.getElementById("posResumoTerminal")?.addEventListener("change", loadPosResumo);
         document.getElementById("posCompanySearch")?.addEventListener("input", renderPosCompanies);
         document.getElementById("posTerminalSearch")?.addEventListener("input", renderPosTerminals);
         document.getElementById("posCliSearch")?.addEventListener("input", renderPosClientes);
