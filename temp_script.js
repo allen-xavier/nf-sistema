@@ -131,31 +131,6 @@
       }
 
       
-      async function tryRestoreSession() {
-        if (!authToken) {
-          showLogin();
-          return;
-        }
-        try {
-          currentUser = await apiFetch("/api/auth/me");
-          localStorage.setItem(
-            "nf_user_email",
-            currentUser?.email || localStorage.getItem("nf_user_email") || "Administrador"
-          );
-          await startAppAfterAuth();
-        } catch (err) {
-          console.warn("Falha ao validar token; tentando continuar com cache:", err);
-          currentUser = {
-            email: localStorage.getItem("nf_user_email") || "Administrador",
-          };
-          try {
-            await startAppAfterAuth();
-          } catch {
-            logout();
-          }
-        }
-      }
-
       async function sendForgotPassword() {
         const email = document.getElementById("loginEmail").value.trim();
         const infoEl = document.getElementById("forgotInfo");
