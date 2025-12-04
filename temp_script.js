@@ -1496,7 +1496,7 @@
             '<option value="">Selecione</option>' +
             (posTerminals || [])
               .map(
-                (t) => `<option value="${t.id}">${t.terminal_code} - ${t.Customer?.name || "Cliente"}</option>`
+                (t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`
               )
               .join("");
         }
@@ -1504,7 +1504,7 @@
           selResumoTerm.innerHTML =
             '<option value="">Todos</option>' +
             (posTerminals || [])
-              .map((t) => `<option value="${t.id}">${t.terminal_code} - ${t.Customer?.name || "Cliente"}</option>`)
+              .map((t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`)
               .join("");
         }
       }
@@ -1640,7 +1640,7 @@
           '<option value="">Todos</option>' +
           posTerminals
             .filter((t) => idsSet.includes(t.id))
-            .map((t) => `<option value="${t.id}">${t.terminal_code} - ${t.Customer?.name || "Cliente"}</option>`)
+            .map((t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`)
             .join("");
         if (idsSet.includes(Number(current))) {
           selResumoTerm.value = current;
@@ -1772,6 +1772,7 @@
         (digits && (termDigits.includes(digits) || onlyDigits(v.nsu).includes(digits)))
       );
     });
+    updateVendaTerminalOptions(searchRaw);
 
     tbody.innerHTML = list
       .map((v) => {
@@ -2133,6 +2134,18 @@
             if (!c.disabled) c.checked = checked;
           });
           updateResumoSelecionados();
+        });
+        document.getElementById("btnPosLimparResumo")?.addEventListener("click", (e) => {
+          e.preventDefault();
+          document.getElementById("posResumoIni").value = "";
+          document.getElementById("posResumoFim").value = "";
+          document.getElementById("posResumoTerminal").value = "";
+          document.getElementById("posResumoOnlyUnpaid").checked = false;
+          document.querySelectorAll(".posResumoCheck").forEach((c) => {
+            if (!c.disabled) c.checked = false;
+          });
+          updateResumoSelecionados();
+          loadPosResumo();
         });
         document.getElementById("btnPosLimparResumo")?.addEventListener("click", (e) => {
           e.preventDefault();

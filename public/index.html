@@ -4121,35 +4121,33 @@
         tryRestoreSession();
       });
 
-
-
-</script>
-  </body>
-  <div id="posSaleModal" class="modal" style="display:none">
-    <div class="modal-content" style="max-width:520px">
-      <div class="modal-header">
-        <div>
-          <h3 id="posSaleModalTitle">Venda</h3>
-          <div id="posSaleModalStatus" class="tag"></div>
+      </script>
+    <div id="posSaleModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:9999">
+      <div class="modal-content" style="max-width:520px; width:90%; background:#0f172a; padding:16px; border-radius:12px; color:#fff">
+        <div class="modal-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px">
+          <div>
+            <h3 id="posSaleModalTitle" style="margin:0">Venda</h3>
+            <div id="posSaleModalStatus" class="tag" style="margin-top:4px"></div>
+          </div>
+          <button class="btn-ghost" id="posSaleModalClose">Fechar</button>
         </div>
-        <button class="btn-ghost" id="posSaleModalClose">Fechar</button>
-      </div>
-      <div class="modal-body" style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
-        <div><strong>Data</strong><div id="posSaleModalData">—</div></div>
-        <div><strong>Terminal</strong><div id="posSaleModalTerminal">—</div></div>
-        <div><strong>Cliente</strong><div id="posSaleModalCliente">—</div></div>
-        <div><strong>Empresa</strong><div id="posSaleModalEmpresa">—</div></div>
-        <div><strong>Forma</strong><div id="posSaleModalForma">—</div></div>
-        <div><strong>NSU</strong><div id="posSaleModalNsu">—</div></div>
-        <div><strong>Bruto</strong><div id="posSaleModalBruto">—</div></div>
-        <div><strong>Taxa (%/R$)</strong><div id="posSaleModalTaxa">—</div></div>
-        <div><strong>Líquido</strong><div id="posSaleModalLiquido">—</div></div>
-        <div><strong>Pago em</strong><div id="posSaleModalPagoEm">—</div></div>
-        <div><strong>Lote pagamento</strong><div id="posSaleModalLote">—</div></div>
-        <div><strong>PIX do cliente</strong><div id="posSaleModalPix">—</div></div>
+        <div class="modal-body" style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
+          <div><strong>Data</strong><div id="posSaleModalData">—</div></div>
+          <div><strong>Terminal</strong><div id="posSaleModalTerminal">—</div></div>
+          <div><strong>Cliente</strong><div id="posSaleModalCliente">—</div></div>
+          <div><strong>Empresa</strong><div id="posSaleModalEmpresa">—</div></div>
+          <div><strong>Forma</strong><div id="posSaleModalForma">—</div></div>
+          <div><strong>NSU</strong><div id="posSaleModalNsu">—</div></div>
+          <div><strong>Bruto</strong><div id="posSaleModalBruto">—</div></div>
+          <div><strong>Taxa (%/R$)</strong><div id="posSaleModalTaxa">—</div></div>
+          <div><strong>Líquido</strong><div id="posSaleModalLiquido">—</div></div>
+          <div><strong>Pago em</strong><div id="posSaleModalPagoEm">—</div></div>
+          <div><strong>Lote pagamento</strong><div id="posSaleModalLote">—</div></div>
+          <div><strong>PIX do cliente</strong><div id="posSaleModalPix">—</div></div>
+        </div>
       </div>
     </div>
-  </div>
+  </body>
 </html>
 
 
