@@ -799,12 +799,16 @@
           document.getElementById("clienteAtivo").value = cliente.is_active
             ? "true"
             : "false";
+          document.getElementById("clienteUsaNF").checked = cliente.uses_nf !== false;
+          document.getElementById("clienteUsaPOS").checked = cliente.uses_pos !== false;
         } else {
           editingClienteId = null;
           document.getElementById("clienteNome").value = "";
           document.getElementById("clienteWhats").value = "";
           document.getElementById("clienteTaxa").value = "";
           document.getElementById("clienteAtivo").value = "true";
+          document.getElementById("clienteUsaNF").checked = true;
+          document.getElementById("clienteUsaPOS").checked = false;
         }
       }
 
@@ -818,6 +822,8 @@
         const whats = document.getElementById("clienteWhats").value.trim();
         const taxa = document.getElementById("clienteTaxa").value.trim();
         const ativo = document.getElementById("clienteAtivo").value === "true";
+        const usaNF = document.getElementById("clienteUsaNF").checked;
+        const usaPOS = document.getElementById("clienteUsaPOS").checked;
         const errEl = document.getElementById("clienteFormError");
 
         errEl.style.display = "none";
@@ -833,6 +839,8 @@
           whatsapp_number: whats,
           fee_percent: parseFloat(taxa),
           is_active: ativo,
+          uses_nf: usaNF,
+          uses_pos: usaPOS,
         };
 
         try {
@@ -849,6 +857,7 @@
           }
           closeClienteForm();
           const list = await loadClientes();
+          await loadPosClientes();
           populateRelatorioSelects(list, empresas);
         } catch (err) {
           console.error(err);
@@ -866,6 +875,7 @@
         try {
           await apiFetch("/api/customers/" + id, { method: "DELETE" });
           const list = await loadClientes();
+          await loadPosClientes();
           populateRelatorioSelects(list, empresas);
         } catch (err) {
           console.error(err);
