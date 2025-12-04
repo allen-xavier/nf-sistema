@@ -117,8 +117,15 @@
           );
           await startAppAfterAuth();
         } catch (err) {
-          console.error("Falha ao restaurar sessao:", err);
-          logout();
+          console.warn("Falha ao validar token; tentando continuar com cache:", err);
+          currentUser = {
+            email: localStorage.getItem("nf_user_email") || "Administrador",
+          };
+          try {
+            await startAppAfterAuth();
+          } catch {
+            logout();
+          }
         }
       }
 
