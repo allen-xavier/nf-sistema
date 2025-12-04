@@ -1759,12 +1759,16 @@
     const searchRaw = document.getElementById("posVendaTerminalSearch")?.value || "";
     const term = normalizeText(searchRaw);
         const digits = onlyDigits(searchRaw);
-        const list = (posVendasRecentes || []).filter((v) => {
-          if (!term && !digits) return true;
-          const cliente = normalizeText(v.Customer?.name);
-          const terminal = normalizeText(v.PosTerminal?.terminal_code);
-          const nsu = normalizeText(v.nsu);
-          const termDigits = onlyDigits(v.PosTerminal?.terminal_code);
+    const list = (posVendasRecentes || []).filter((v) => {
+      const statusFilter = document.getElementById("posVendaStatusFilter")?.value || "all";
+      if (statusFilter === "paid" && !v.paid) return false;
+      if (statusFilter === "unpaid" && v.paid) return false;
+
+      if (!term && !digits) return true;
+      const cliente = normalizeText(v.Customer?.name);
+      const terminal = normalizeText(v.PosTerminal?.terminal_code);
+      const nsu = normalizeText(v.nsu);
+      const termDigits = onlyDigits(v.PosTerminal?.terminal_code);
           return (
         cliente.includes(term) ||
         terminal.includes(term) ||
@@ -2191,6 +2195,7 @@
         document.getElementById("posTerminalSearch")?.addEventListener("input", renderPosTerminals);
         document.getElementById("posCliSearch")?.addEventListener("input", renderPosClientes);
         document.getElementById("posVendaTerminalSearch")?.addEventListener("input", renderPosVendas);
+        document.getElementById("posVendaStatusFilter")?.addEventListener("change", renderPosVendas);
         document.getElementById("btnPosLimparCompany")?.addEventListener("click", (e) => {
           e.preventDefault();
           resetPosCompanyForm();

@@ -409,6 +409,13 @@
         border-color: var(--primary);
       }
 
+      /* Ajusta o ícone do calendar picker para ficar visível em fundo escuro/claro */
+      input[type="date"]::-webkit-calendar-picker-indicator,
+      input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+        opacity: 0.8;
+      }
+
       .btn-primary {
         border-radius: 8px;
         border: none;
@@ -1344,8 +1351,18 @@
               <button class="btn-primary" id="btnPosRegistrarVenda">Salvar venda</button>
               <div id="posVendaMsg" class="success-text" style="display:none; margin-top:8px"></div>
             </div>
-            <div class="card pos-block" style="margin-top: 12px">
+              <div class="card pos-block" style="margin-top: 12px">
               <div class="card-header"><div><div class="card-title">Vendas recentes</div><div class="card-subtitle">Ultimas 50 vendas</div></div></div>
+              <div class="form-row" style="margin-top:4px">
+                <div class="form-group" style="max-width:200px">
+                  <label>Status</label>
+                  <select id="posVendaStatusFilter">
+                    <option value="all">Todos</option>
+                    <option value="paid">Pagos</option>
+                    <option value="unpaid">A pagar</option>
+                  </select>
+                </div>
+              </div>
               <div class="table-wrapper" style="max-height: 360px">
                 <table>
                   <thead><tr><th>Data</th><th>Cliente</th><th>Terminal</th><th>Forma</th><th>%</th><th>Bruto</th><th>Taxa</th><th>Liquido</th><th>Status</th><th>Acoes</th></tr></thead>
@@ -3547,12 +3564,16 @@
     const searchRaw = document.getElementById("posVendaTerminalSearch")?.value || "";
     const term = normalizeText(searchRaw);
         const digits = onlyDigits(searchRaw);
-        const list = (posVendasRecentes || []).filter((v) => {
-          if (!term && !digits) return true;
-          const cliente = normalizeText(v.Customer?.name);
-          const terminal = normalizeText(v.PosTerminal?.terminal_code);
-          const nsu = normalizeText(v.nsu);
-          const termDigits = onlyDigits(v.PosTerminal?.terminal_code);
+    const list = (posVendasRecentes || []).filter((v) => {
+      const statusFilter = document.getElementById("posVendaStatusFilter")?.value || "all";
+      if (statusFilter === "paid" && !v.paid) return false;
+      if (statusFilter === "unpaid" && v.paid) return false;
+
+      if (!term && !digits) return true;
+      const cliente = normalizeText(v.Customer?.name);
+      const terminal = normalizeText(v.PosTerminal?.terminal_code);
+      const nsu = normalizeText(v.nsu);
+      const termDigits = onlyDigits(v.PosTerminal?.terminal_code);
           return (
         cliente.includes(term) ||
         terminal.includes(term) ||
@@ -3979,6 +4000,7 @@
         document.getElementById("posTerminalSearch")?.addEventListener("input", renderPosTerminals);
         document.getElementById("posCliSearch")?.addEventListener("input", renderPosClientes);
         document.getElementById("posVendaTerminalSearch")?.addEventListener("input", renderPosVendas);
+        document.getElementById("posVendaStatusFilter")?.addEventListener("change", renderPosVendas);
         document.getElementById("btnPosLimparCompany")?.addEventListener("click", (e) => {
           e.preventDefault();
           resetPosCompanyForm();
@@ -4241,6 +4263,7 @@
     </div>
   </body>
 </html>
+
 
 
 
