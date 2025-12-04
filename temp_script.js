@@ -72,7 +72,7 @@
           await startAppAfterAuth();
         } catch (err) {
           console.error(err);
-          errorEl.textContent = "Credenciais invalidas.";
+          errorEl.textContent = "Credenciais inválidas.";
           errorEl.style.display = "block";
         }
       }
@@ -84,13 +84,16 @@
         showApp();
         selectPage("dashboard");
         loadDashboard();
-        loadClientes().then(populateRelatorioSelects);
-        loadEmpresas().then(populateRelatorioSelects);
-        loadPosClientes();
-        loadPosCompanies();
-        loadPosTerminals();
-        loadPosVendasRecentes();
-        loadPosResumo();
+        const loadedClientes = await loadClientes();
+        const loadedEmpresas = await loadEmpresas();
+        if (typeof populateRelatorioSelects === "function") {
+          populateRelatorioSelects(loadedClientes, loadedEmpresas);
+        }
+        await loadPosClientes();
+        await loadPosCompanies();
+        await loadPosTerminals();
+        await loadPosVendasRecentes();
+        await loadPosResumo();
         resetNotasInfiniteScroll();
         loadNotasPage(true);
         loadRelatorios();
