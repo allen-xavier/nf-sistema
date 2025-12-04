@@ -1686,7 +1686,6 @@
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
       // ==========================
       // THEME
       // ==========================
@@ -1757,26 +1756,60 @@
           localStorage.setItem("nf_token", authToken);
           localStorage.setItem("nf_user_email", currentUser.email);
 
-          document.getElementById("currentUserEmail").textContent = currentUser.email;
-
-          showApp();
-          selectPage("dashboard");
-          loadDashboard();
-          loadClientes();
-          loadEmpresas();
+          await startAppAfterAuth();
         } catch (err) {
           console.error(err);
-          errorEl.textContent = "Credenciais inválidas.";
+          errorEl.textContent = "Credenciais invalidas.";
           errorEl.style.display = "block";
         }
+      }
+
+      async function startAppAfterAuth() {
+        document.getElementById("currentUserEmail").textContent =
+          currentUser?.email || localStorage.getItem("nf_user_email") || "Administrador";
+
+        showApp();
+        selectPage("dashboard");
+        loadDashboard();
+        loadClientes().then(populateRelatorioSelects);
+        loadEmpresas().then(populateRelatorioSelects);
+        loadPosClientes();
+        loadPosCompanies();
+        loadPosTerminals();
+        loadPosVendasRecentes();
+        loadPosResumo();
+        resetNotasInfiniteScroll();
+        loadNotasPage(true);
+        loadRelatorios();
+      }
 
       function logout() {
         authToken = null;
         currentUser = null;
         localStorage.removeItem("nf_token");
+        localStorage.removeItem("nf_user_email");
         showLogin();
       }
 
+      async function tryRestoreSession() {
+        if (!authToken) {
+          showLogin();
+          return;
+        }
+        try {
+          currentUser = await apiFetch("/api/auth/me");
+          localStorage.setItem(
+            "nf_user_email",
+            currentUser?.email || localStorage.getItem("nf_user_email") || "Administrador"
+          );
+          await startAppAfterAuth();
+        } catch (err) {
+          console.error("Falha ao restaurar sessao:", err);
+          logout();
+        }
+      }
+
+      
       async function sendForgotPassword() {
         const email = document.getElementById("loginEmail").value.trim();
         const infoEl = document.getElementById("forgotInfo");
@@ -1809,14 +1842,6 @@
       // ==========================
       // NAV / PAGES
       // ==========================
-
-      document.querySelectorAll('.nav-item').forEach((item) => {
-        item.addEventListener('click', (e) => {
-          e.preventDefault();
-          const page = item.getAttribute('data-page');
-          if (page) selectPage(page);
-        });
-      });
       function selectPage(page, anchor) {
         // mostra apenas a seção selecionada
         document.querySelectorAll(".page-section").forEach((sec) => sec.classList.remove("active"));
@@ -1849,29 +1874,17 @@
         } else if (page === "relatorios") {
           topbarTitle.textContent = "Relatorios";
           topbarSubtitle.textContent = "Analises consolidadas por periodo, cliente e empresa";
-          loadClientes().then(populateRelatorioSelects);
-          loadEmpresas().then(populateRelatorioSelects);
+          populateRelatorioSelects?.();
           loadRelatorios?.();
         }
 
-        // a??es ao entrar em p?ginas
+        // ações ao entrar em páginas
         if (page === "notas") {
           resetNotasInfiniteScroll();
           loadNotasPage(true);
         }
-        if (page === "clientes") {
-          loadClientes();
-        }
-        if (page === "empresas") {
-          loadEmpresas();
-        }
-        if (page === "relatorios") {
-          loadClientes().then(populateRelatorioSelects);
-          loadEmpresas().then(populateRelatorioSelects);
-        }
         if (page.startsWith("pos")) {
-          // p?ginas POS independentes
-          loadPosClientes();
+          // páginas POS independentes
           loadPosCompanies();
           loadPosTerminals();
           loadPosVendasRecentes();
@@ -1887,72 +1900,6 @@
       let chartRelPeriodo = null;
       let chartRelClientePeriodo = null;
       let chartRelEmpresaPeriodo = null;
-
-      function populateRelatorioSelects(clis = clientes, emps = empresas) {
-        const selCli = document.getElementById("relClienteSelect");
-        const selEmp = document.getElementById("relEmpresaSelect");
-        const norm = (str) =>
-          (str || "")
-            .toString()
-            .trim()
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/\p{Diacritic}/gu, "");
-        const searchCli =
-          norm(document.getElementById("relClienteSearch")?.value || "");
-        const searchEmp =
-          norm(document.getElementById("relEmpresaSearch")?.value || "");
-        const empStatus = document.getElementById("relEmpresaAtivo")?.value || "all";
-
-        const filteredClientes = (clis || [])
-          .filter((c) => c.uses_nf !== false)
-          .filter((c) => {
-            if (!searchCli) return true;
-            const term = searchCli;
-            const name = norm(c.name);
-            const whats = norm(c.whatsapp_number);
-            return (
-              name.includes(term) ||
-              whats.includes(term) ||
-              whats.replace(/\D/g, "").includes(term.replace(/\D/g, ""))
-            );
-          });
-
-        if (selCli) {
-          selCli.innerHTML =
-            '<option value="">Selecione um cliente</option>' +
-            filteredClientes
-              .map(
-                (c) =>
-                  `<option value="${c.id}">${c.name}${
-                    c.whatsapp_number ? " (" + c.whatsapp_number + ")" : ""
-                  }</option>`
-              )
-              .join("");
-        }
-
-        const filteredEmpresas = (emps || [])
-          .filter((e) => {
-            if (empStatus === "true") return e.is_active !== false;
-            if (empStatus === "false") return e.is_active === false;
-            return true;
-          })
-          .filter((e) => {
-            if (!searchEmp) return true;
-            const term = searchEmp;
-            const name = norm(e.name);
-            const cnpj = (e.cnpj || "").replace(/\D/g, "");
-            return name.includes(term) || cnpj.includes(term.replace(/\D/g, ""));
-          });
-
-        if (selEmp) {
-          selEmp.innerHTML =
-            '<option value="">Selecione uma empresa</option>' +
-            filteredEmpresas
-              .map((e) => `<option value="${e.id}">${e.name}</option>`)
-              .join("");
-        }
-      }
 
       function formatCurrencyBRL(value) {
         return Number(value || 0).toLocaleString("pt-BR", {
@@ -2057,8 +2004,8 @@
             totals.total_notas || 0;
           document.getElementById("relValorTotal").textContent =
             formatCurrencyBRL(toNumber(totals.soma_valor_total));
-        document.getElementById("relTaxasTotal").textContent =
-          formatCurrencyBRL(toNumber(totals.soma_taxas));
+          document.getElementById("relTaxasTotal").textContent =
+            formatCurrencyBRL(toNumber(totals.soma_taxas));
 
           // ------ GRÁFICO POR PERÍODO ------
           const porPeriodo = data.porPeriodo || [];
@@ -2442,16 +2389,12 @@
           document.getElementById("clienteAtivo").value = cliente.is_active
             ? "true"
             : "false";
-          document.getElementById("clienteUsaNF").checked = cliente.uses_nf !== false;
-          document.getElementById("clienteUsaPOS").checked = cliente.uses_pos === true;
         } else {
           editingClienteId = null;
           document.getElementById("clienteNome").value = "";
           document.getElementById("clienteWhats").value = "";
           document.getElementById("clienteTaxa").value = "";
           document.getElementById("clienteAtivo").value = "true";
-          document.getElementById("clienteUsaNF").checked = true;
-          document.getElementById("clienteUsaPOS").checked = false;
         }
       }
 
@@ -2465,8 +2408,6 @@
         const whats = document.getElementById("clienteWhats").value.trim();
         const taxa = document.getElementById("clienteTaxa").value.trim();
         const ativo = document.getElementById("clienteAtivo").value === "true";
-        const usaNF = document.getElementById("clienteUsaNF").checked;
-        const usaPOS = document.getElementById("clienteUsaPOS").checked;
         const errEl = document.getElementById("clienteFormError");
 
         errEl.style.display = "none";
@@ -2482,8 +2423,6 @@
           whatsapp_number: whats,
           fee_percent: parseFloat(taxa),
           is_active: ativo,
-          uses_nf: usaNF,
-          uses_pos: usaPOS,
         };
 
         try {
@@ -2867,14 +2806,10 @@
             // ==========================
       // MAQUININHAS (POS)
       // ==========================
-let posCompanies = [];
+      let posCompanies = [];
       let posTerminals = [];
       let posVendasRecentes = [];
       let posClientes = [];
-      let currentPosClienteId = null;
-      let currentPosCompanyId = null;
-      let currentPosTerminalId = null;
-      let currentPosVendaId = null;
 
       async function loadPosCompanies() {
         try {
@@ -2886,78 +2821,36 @@ let posCompanies = [];
         }
       }
 
-      function renderPosCompanies() {
-        const tbody = document.getElementById("posCompaniesTableBody");
-        if (!tbody) return;
-        const termRaw = (document.getElementById("posCompanySearch")?.value || "").trim().toLowerCase();
-        const term = termRaw.normalize("NFD").replace(/\p{Diacritic}/gu, "");
-        const tclean = term.replace(/\D/g, "");
-        const filtered = (posCompanies || []).filter((c) => {
-          if (!term) return true;
-          const nome = (c.name || "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
-          const cnpj = (c.cnpj || "").replace(/\D/g, "");
-          return nome.includes(term) || (!!tclean && cnpj.includes(tclean));
-        });
-        tbody.innerHTML = filtered
-          .map((c) => `
-            <tr data-id="${c.id}">
-              <td>${c.id}</td>
-              <td>${c.name}</td>
-              <td>${c.cnpj}</td>
-              <td>${c.is_active ? "Ativa" : "Inativa"}</td>
-              <td>
-                <button class="btn-secondary" data-edit-pos-company="${c.id}">Editar</button>
-                <button class="btn-danger" data-del-pos-company="${c.id}">Excluir</button>
-              </td>
-            </tr>
-          `)
-          .join("");
-      }
-
-      function resetPosCompanyForm() {
-        currentPosCompanyId = null;
-        document.getElementById("posCompanyName").value = "";
-        document.getElementById("posCompanyCnpj").value = "";
-        document.getElementById("posCompanyAtiva").value = "true";
-        const btn = document.getElementById("btnPosAddCompany");
-        if (btn) btn.textContent = "Salvar empresa";
-      }
-
-      async function savePosCompany() {
+      async function addPosCompany() {
         const name = document.getElementById("posCompanyName").value.trim();
         const cnpj = document.getElementById("posCompanyCnpj").value.trim();
         const is_active = document.getElementById("posCompanyAtiva").value === "true";
         if (!name || !cnpj) return alert("Informe nome e CNPJ");
         try {
-          if (currentPosCompanyId) {
-            await apiFetch(`/api/pos/companies/${currentPosCompanyId}`, {
-              method: "PUT",
-              body: JSON.stringify({ name, cnpj, is_active }),
-            });
-          } else {
-            await apiFetch("/api/pos/companies", {
-              method: "POST",
-              body: JSON.stringify({ name, cnpj, is_active }),
-            });
-          }
+          await apiFetch("/api/pos/companies", {
+            method: "POST",
+            body: JSON.stringify({ name, cnpj, is_active }),
+          });
           await loadPosCompanies();
-          resetPosCompanyForm();
         } catch (err) {
-          alert("Erro ao salvar empresa POS");
+          alert("Erro ao cadastrar empresa POS");
           console.error(err);
         }
       }
 
-      async function deletePosCompany(id) {
-        if (!confirm("Excluir empresa?")) return;
-        try {
-          await apiFetch(`/api/pos/companies/${id}`, { method: "DELETE" });
-          await loadPosCompanies();
-          fillPosSelects();
-        } catch (err) {
-          alert("Erro ao excluir empresa POS");
-          console.error(err);
-        }
+      function renderPosCompanies() {
+        const tbody = document.getElementById("posCompaniesTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = (posCompanies || [])
+          .map((c) => `
+            <tr>
+              <td>${c.id}</td>
+              <td>${c.name}</td>
+              <td>${c.cnpj}</td>
+              <td>${c.is_active ? "Ativa" : "Inativa"}</td>
+            </tr>
+          `)
+          .join("");
       }
 
       async function loadPosTerminals() {
@@ -2970,93 +2863,41 @@ let posCompanies = [];
         }
       }
 
+      async function addPosTerminal() {
+        const pos_company_id = document.getElementById("posTerminalEmpresa").value;
+        const customer_id = document.getElementById("posTerminalCliente").value;
+        const terminal_code = document.getElementById("posTerminalCode").value.trim();
+        const is_active = document.getElementById("posTerminalAtivo").value === "true";
+        if (!pos_company_id || !customer_id || !terminal_code) return alert("Preencha empresa, cliente e código");
+        try {
+          await apiFetch("/api/pos/terminals", {
+            method: "POST",
+            body: JSON.stringify({ pos_company_id, customer_id, terminal_code, is_active }),
+          });
+          await loadPosTerminals();
+        } catch (err) {
+          alert("Erro ao cadastrar terminal");
+          console.error(err);
+        }
+      }
+
       function renderPosTerminals() {
         const tbody = document.getElementById("posTerminalsTableBody");
         if (!tbody) return;
-        const term = (document.getElementById("posTerminalSearch")?.value || "").toLowerCase();
-        const filtered = (posTerminals || []).filter((t) => {
-          if (!term) return true;
-          const code = (t.terminal_code || "").toLowerCase();
-          const emp = (t.PosCompany?.name || "").toLowerCase();
-          const cli = (t.Customer?.name || "").toLowerCase();
-          return code.includes(term) || emp.includes(term) || cli.includes(term);
-        });
-        tbody.innerHTML = filtered
+        tbody.innerHTML = (posTerminals || [])
           .map((t) => `
-            <tr data-id="${t.id}">
+            <tr>
               <td>${t.id}</td>
               <td>${t.terminal_code}</td>
-              <td>${t.PosCompany?.name || "?"}</td>
-              <td>${t.Customer?.name || "?"}</td>
+              <td>${t.PosCompany?.name || "—"}</td>
+              <td>${t.Customer?.name || "—"}</td>
               <td>${t.is_active ? "Ativo" : "Inativo"}</td>
-              <td>
-                <button class="btn-secondary" data-edit-pos-terminal="${t.id}">Editar</button>
-                <button class="btn-danger" data-del-pos-terminal="${t.id}">Excluir</button>
-              </td>
             </tr>
           `)
           .join("");
       }
 
-      function resetPosTerminalForm() {
-        currentPosTerminalId = null;
-        document.getElementById("posTerminalEmpresa").value = "";
-        document.getElementById("posTerminalCliente").value = "";
-        document.getElementById("posTerminalCode").value = "";
-        document.getElementById("posTerminalAtivo").value = "true";
-        const btn = document.getElementById("btnPosAddTerminal");
-        if (btn) btn.textContent = "Salvar terminal";
-      }
-
-      function populatePosTerminalForm(t) {
-        currentPosTerminalId = t?.id || null;
-        document.getElementById("posTerminalEmpresa").value = t?.pos_company_id || "";
-        document.getElementById("posTerminalCliente").value = t?.customer_id || "";
-        document.getElementById("posTerminalCode").value = t?.terminal_code || "";
-        document.getElementById("posTerminalAtivo").value = t?.is_active === false ? "false" : "true";
-        const btn = document.getElementById("btnPosAddTerminal");
-        if (btn) btn.textContent = t ? "Atualizar terminal" : "Salvar terminal";
-      }
-
-      async function savePosTerminal() {
-        const pos_company_id = document.getElementById("posTerminalEmpresa").value;
-        const customer_id = document.getElementById("posTerminalCliente").value;
-        const terminal_code = document.getElementById("posTerminalCode").value.trim();
-        const is_active = document.getElementById("posTerminalAtivo").value === "true";
-        if (!pos_company_id || !customer_id || !terminal_code) return alert("Preencha todos os campos");
-        try {
-          if (currentPosTerminalId) {
-            await apiFetch(`/api/pos/terminals/${currentPosTerminalId}`, {
-              method: "PUT",
-              body: JSON.stringify({ pos_company_id, customer_id, terminal_code, is_active }),
-            });
-          } else {
-            await apiFetch("/api/pos/terminals", {
-              method: "POST",
-              body: JSON.stringify({ pos_company_id, customer_id, terminal_code, is_active }),
-            });
-          }
-          await loadPosTerminals();
-          resetPosTerminalForm();
-        } catch (err) {
-          alert("Erro ao salvar terminal");
-          console.error(err);
-        }
-      }
-
-      async function deletePosTerminal(id) {
-        if (!confirm("Excluir terminal?")) return;
-        try {
-          await apiFetch(`/api/pos/terminals/${id}`, { method: "DELETE" });
-          await loadPosTerminals();
-          fillPosSelects();
-        } catch (err) {
-          alert("Erro ao excluir terminal");
-          console.error(err);
-        }
-      }
-
-function fillPosSelects() {
+      function fillPosSelects() {
         const selEmp = document.getElementById("posTerminalEmpresa");
         const selCli = document.getElementById("posTerminalCliente");
         const selRateCli = document.getElementById("posRateCliente");
@@ -3072,8 +2913,7 @@ function fillPosSelects() {
           selCli.innerHTML =
             '<option value="">Selecione</option>' +
             (posClientes || [])
-              .filter((c) => c.uses_pos !== false && c.is_active !== false)
-              .map((c) => `<option value="${c.id}">${c.whatsapp_number ? c.whatsapp_number + " - " : ""}${c.name}</option>`)
+              .map((c) => `<option value="${c.id}">${c.name}</option>`)
               .join("");
         }
         if (selRateCli) selRateCli.innerHTML = selCli ? selCli.innerHTML : "";
@@ -3081,13 +2921,6 @@ function fillPosSelects() {
           selVendaTerm.innerHTML =
             '<option value="">Selecione</option>' +
             (posTerminals || [])
-              .filter((t) => {
-                const term = (document.getElementById("posVendaTerminalSearch")?.value || "").toLowerCase();
-                if (!term) return true;
-                const code = (t.terminal_code || "").toLowerCase();
-                const cli = (t.Customer?.name || "").toLowerCase();
-                return code.includes(term) || cli.includes(term);
-              })
               .map(
                 (t) => `<option value="${t.id}">${t.terminal_code} - ${t.Customer?.name || "Cliente"}</option>`
               )
@@ -3138,53 +2971,20 @@ function fillPosSelects() {
         const amount = document.getElementById("posVendaValor").value;
         const payment_type = document.getElementById("posVendaForma").value;
         const nsu = document.getElementById("posVendaNsu").value.trim();
-        if (!pos_terminal_id || !sale_datetime || !amount || !nsu) return alert("Preencha todos os campos");
-        const method = currentPosVendaId ? "PUT" : "POST";
-        const url = currentPosVendaId ? `/api/pos/sales/${currentPosVendaId}` : "/api/pos/sales";
+        if (!pos_terminal_id || !sale_datetime || !amount || !nsu) return alert("Preencha terminal, data, valor e NSU");
         try {
-          await apiFetch(url, {
-            method,
+          await apiFetch("/api/pos/sales", {
+            method: "POST",
             body: JSON.stringify({ pos_terminal_id, sale_datetime, amount, payment_type, nsu }),
           });
-          document.getElementById("posVendaMsg").textContent = "Venda salva";
+          document.getElementById("posVendaMsg").textContent = "Venda registrada";
           document.getElementById("posVendaMsg").style.display = "block";
           await loadPosVendasRecentes();
           await loadPosResumo();
-          resetPosVendaForm();
         } catch (err) {
           alert("Erro ao registrar venda");
           console.error(err);
         }
-      }
-
-      function resetPosVendaForm() {
-        currentPosVendaId = null;
-        document.getElementById("posVendaTerminal").value = "";
-        document.getElementById("posVendaTerminalSearch").value = "";
-        document.getElementById("posVendaData").value = "";
-        document.getElementById("posVendaValor").value = "";
-        document.getElementById("posVendaForma").value = "DEBITO";
-        document.getElementById("posVendaNsu").value = "";
-        const btn = document.getElementById("btnPosRegistrarVenda");
-        if (btn) btn.textContent = "Salvar venda";
-        document.getElementById("posVendaMsg").style.display = "none";
-        fillPosSelects();
-      }
-
-      function populatePosVendaForm(v) {
-        currentPosVendaId = v?.id || null;
-        const searchInput = document.getElementById("posVendaTerminalSearch");
-        if (searchInput) searchInput.value = "";
-        fillPosSelects();
-        document.getElementById("posVendaTerminal").value = v?.pos_terminal_id || "";
-        document.getElementById("posVendaData").value = v?.sale_datetime
-          ? new Date(v.sale_datetime).toISOString().slice(0, 16)
-          : "";
-        document.getElementById("posVendaValor").value = v?.amount || "";
-        document.getElementById("posVendaForma").value = v?.payment_type || "DEBITO";
-        document.getElementById("posVendaNsu").value = v?.nsu || "";
-        const btn = document.getElementById("btnPosRegistrarVenda");
-        if (btn) btn.textContent = v ? "Atualizar venda" : "Salvar venda";
       }
 
       async function loadPosVendasRecentes() {
@@ -3197,69 +2997,121 @@ function fillPosSelects() {
         }
       }
 
-      function renderPosVendas() {
-        const tbody = document.getElementById("posVendasTableBody");
-        if (!tbody) return;
-        tbody.innerHTML = (posVendasRecentes || [])
-          .map((v) => {
-            const dt = v.sale_datetime ? new Date(v.sale_datetime).toLocaleString("pt-BR") : "?";
-            return `
-              <tr data-id="${v.id}">
-                <td>${dt}</td>
-                <td>${v.Customer?.name || "?"}</td>
-                <td>${v.PosTerminal?.terminal_code || "?"}</td>
-                <td>${v.payment_type}</td>
-                <td>${formatCurrencyBRL(Number(v.amount || 0))}</td>
-                <td>${formatCurrencyBRL(Number(v.fee_value || 0))}</td>
-                <td>${formatCurrencyBRL(Number(v.net_amount || 0))}</td>
-                <td>
-                  <button class="btn-secondary" data-edit-pos-venda="${v.id}">Editar</button>
-                  <button class="btn-danger" data-del-pos-venda="${v.id}">Excluir</button>
-                </td>
-              </tr>
-            `;
-          })
-          .join("");
-      }
-
       async function loadPosResumo() {
         try {
-          const start = document.getElementById("posResumoIni")?.value;
-          const end = document.getElementById("posResumoFim")?.value;
-          const params = new URLSearchParams();
-          if (start) params.append("start", start);
-          if (end) params.append("end", end);
-          const res = await apiFetch(`/api/pos/reports/summary?${params.toString()}`);
+          const res = await apiFetch("/api/pos/reports/summary");
           const bruto = Number(res?.totals?.bruto || 0);
-          const taxas = Number(res?.totals?.taxas || 0);
           const liquido = Number(res?.totals?.liquido || 0);
+          const taxas = Number(res?.totals?.taxas || 0);
           document.getElementById("posResumoBruto").textContent = formatCurrencyBRL(bruto);
-          document.getElementById("posResumoTaxas").textContent = formatCurrencyBRL(taxas);
           document.getElementById("posResumoLiquido").textContent = formatCurrencyBRL(liquido);
-          document.getElementById("posResumoTopCliente").textContent = res.topCliente?.Customer?.name || "?";
-          document.getElementById("posResumoTopDia").textContent = res.topDia?.Customer?.name || "?";
-          document.getElementById("posResumoMaiorVenda").textContent = res.maiorVenda
-            ? `${formatCurrencyBRL(Number(res.maiorVenda.amount || 0))} - ${res.maiorVenda.Customer?.name || ""}`
-            : "?";
+          document.getElementById("posResumoTaxas").textContent = formatCurrencyBRL(taxas);
+          document.getElementById("posResumoTopCliente").textContent =
+            res?.topCliente?.Customer?.name || "—";
+          document.getElementById("posResumoTopDia").textContent =
+            res?.topDia?.Customer?.name || "—";
+          const mv = res?.maiorVenda;
+          document.getElementById("posResumoMaiorVenda").textContent = mv
+            ? `${mv.Customer?.name || "—"} - ${formatCurrencyBRL(mv.amount)}`
+            : "—";
         } catch (err) {
           console.error("Erro ao carregar resumo POS:", err);
         }
       }
 
-document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePosCliente);
-        document.getElementById("btnPosNovoCliente")?.addEventListener("click", (e) => {
-          e.preventDefault();
-          resetPosClienteForm();
+      function renderPosVendas() {
+        const tbody = document.getElementById("posVendasTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = (posVendasRecentes || [])
+          .map((v) => {
+            const dt = v.sale_datetime ? new Date(v.sale_datetime).toLocaleString("pt-BR") : "—";
+            return `
+              <tr>
+                <td>${dt}</td>
+                <td>${v.Customer?.name || "—"}</td>
+                <td>${v.PosTerminal?.terminal_code || "—"}</td>
+                <td>${v.payment_type}</td>
+                <td>${formatCurrencyBRL(v.amount)}</td>
+                <td>${formatCurrencyBRL(v.fee_value)}</td>
+                <td>${formatCurrencyBRL(v.net_amount)}</td>
+                <td><button class="btn-danger" data-del-pos-sale="${v.id}">Excluir</button></td>
+              </tr>`;
+          })
+          .join("");
+      }
+
+      // ==========================
+      // EVENTOS GERAIS
+      // ==========================
+      document.addEventListener("DOMContentLoaded", () => {
+        // Theme
+        document
+          .getElementById("btnThemeToggle")
+          .addEventListener("click", () => {
+            const current = document.body.getAttribute("data-theme");
+            applyTheme(current === "dark" ? "light" : "dark");
+          });
+
+        // Login
+        document.getElementById("btnLogin").addEventListener("click", doLogin);
+        document
+          .getElementById("loginPassword")
+          .addEventListener("keydown", (e) => {
+            if (e.key === "Enter") doLogin();
+          });
+        document
+          .getElementById("forgotPasswordLink")
+          .addEventListener("click", sendForgotPassword);
+
+        // Logout
+        document
+          .getElementById("btnLogout")
+          .addEventListener("click", logout);
+
+        // Sidebar nav
+        document.querySelectorAll(".nav-item[data-page]").forEach((item) => {
+          item.addEventListener("click", () => {
+            const anchor = item.getAttribute("data-anchor");
+            selectPage(item.dataset.page, anchor);
+            if (window.innerWidth <= 900) {
+              document.getElementById("sidebar").classList.remove("open");
+              document
+                .getElementById("sidebarBackdrop")
+                .classList.remove("show");
+            }
+          });
         });
-        document.getElementById("posCliSearch")?.addEventListener("input", renderPosClientes);
-        document.getElementById("posClientesTableBody")?.addEventListener("click", (e) => {
-          const tr = e.target.closest("tr[data-id]");
-          if (!tr) return;
-          const id = Number(tr.getAttribute("data-id"));
-          const c = posClientes.find((x) => x.id === id);
-          if (c) populatePosClienteForm(c);
+
+        // Mobile sidebar
+        document
+          .getElementById("btnMobileMenu")
+          .addEventListener("click", () => {
+            document.getElementById("sidebar").classList.add("open");
+            document
+              .getElementById("sidebarBackdrop")
+              .classList.add("show");
+          });
+        document
+          .getElementById("sidebarBackdrop")
+          .addEventListener("click", () => {
+            document.getElementById("sidebar").classList.remove("open");
+            document
+              .getElementById("sidebarBackdrop")
+              .classList.remove("show");
+          });
+
+        // POS eventos
+        document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePosCliente);
+        document.getElementById("btnPosAddCompany")?.addEventListener("click", addPosCompany);
+        document.getElementById("btnPosAddTerminal")?.addEventListener("click", addPosTerminal);
+        document.getElementById("btnPosSalvarTaxas")?.addEventListener("click", savePosRates);
+        document.getElementById("btnPosRegistrarVenda")?.addEventListener("click", registrarVendaPos);
+        document.getElementById("btnPosCarregarResumo")?.addEventListener("click", loadPosResumo);
+        document.getElementById("posRateCliente")?.addEventListener("change", loadPosRateForSelected);
+        document.getElementById("posVendasTableBody")?.addEventListener("click", (e) => {
+          const delId = e.target.getAttribute("data-del-pos-sale");
+          if (delId && confirm("Excluir venda?")) deletePosVenda(delId);
         });
-        // (demais listeners de POS adicionados abaixo)
 
         // Clientes
         document
@@ -3368,17 +3220,7 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
       async function loadPosClientes() {
         try {
           const all = await apiFetch("/api/customers");
-          posClientes = await Promise.all(
-            (all || []).map(async (c) => {
-              let rate = null;
-              try {
-                rate = await apiFetch(`/api/pos/rates/${c.id}`);
-              } catch (err) {
-                // ignora erro de taxa individual
-              }
-              return { ...c, PosRate: rate || null };
-            })
-          );
+          posClientes = (all || []).filter((c) => c.uses_pos !== false);
           renderPosClientes();
           fillPosSelects();
         } catch (err) {
@@ -3389,63 +3231,20 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
       function renderPosClientes() {
         const tbody = document.getElementById("posClientesTableBody");
         if (!tbody) return;
-        const term = (document.getElementById("posCliSearch")?.value || "").toLowerCase();
-        const filtered = (posClientes || []).filter((c) => {
-          if (!term) return true;
-          const name = (c.name || "").toLowerCase();
-          const whats = (c.whatsapp_number || "").toLowerCase();
-          const digits = whats.replace(/\D/g, "");
-          const tclean = term.replace(/\D/g, "");
-          return (
-            name.includes(term) ||
-            whats.includes(term) ||
-            (tclean && digits.includes(tclean))
-          );
-        });
-
-        tbody.innerHTML = filtered
-          .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+        tbody.innerHTML = posClientes
           .map((c) => `
-            <tr data-id="${c.id}">
+            <tr>
               <td>${c.id}</td>
-              <td>${c.name || ""}</td>
-              <td>${c.whatsapp_number || ""}</td>
-              <td>${c.uses_pos === false ? "N?o" : "Sim"}</td>
-              <td>${c.uses_nf === false ? "N?o" : "Sim"}</td>
+              <td>${c.name}</td>
+              <td>${c.whatsapp_number}</td>
               <td>${Number(c.PosRate?.debit_percent || 0).toFixed(2)}%</td>
               <td>${Number(c.PosRate?.credit_avista_percent || 0).toFixed(2)}%</td>
               <td>${Number(c.PosRate?.credit_2a6_percent || 0).toFixed(2)}%</td>
               <td>${Number(c.PosRate?.credit_7a12_percent || 0).toFixed(2)}%</td>
-              <td>${c.PosRate?.pix_key || "?"}</td>
+              <td>${c.PosRate?.pix_key || "—"}</td>
             </tr>
           `)
           .join("");
-      }
-
-      function populatePosClienteForm(c) {
-        currentPosClienteId = c?.id || null;
-        document.getElementById("posCliNome").value = c?.name || "";
-        document.getElementById("posCliWhats").value = c?.whatsapp_number || "";
-        document.getElementById("posCliPix").value = c?.PosRate?.pix_key || "";
-        document.getElementById("posCliDeb").value = c?.PosRate?.debit_percent || "";
-        document.getElementById("posCliCredAv").value = c?.PosRate?.credit_avista_percent || "";
-        document.getElementById("posCliCred2a6").value = c?.PosRate?.credit_2a6_percent || "";
-        document.getElementById("posCliCred7a12").value = c?.PosRate?.credit_7a12_percent || "";
-        document.getElementById("posCliAtivo").checked = c?.is_active !== false && c?.uses_pos !== false;
-        document.getElementById("posCliUsaNF").checked = c?.uses_nf !== false;
-      }
-
-      function resetPosClienteForm() {
-        currentPosClienteId = null;
-        document.getElementById("posCliNome").value = "";
-        document.getElementById("posCliWhats").value = "";
-        document.getElementById("posCliPix").value = "";
-        document.getElementById("posCliDeb").value = "";
-        document.getElementById("posCliCredAv").value = "";
-        document.getElementById("posCliCred2a6").value = "";
-        document.getElementById("posCliCred7a12").value = "";
-        document.getElementById("posCliAtivo").checked = true;
-        document.getElementById("posCliUsaNF").checked = false;
       }
 
       async function savePosCliente() {
@@ -3456,8 +3255,6 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
         const credit_avista_percent = Number(document.getElementById("posCliCredAv").value || 0);
         const credit_2a6_percent = Number(document.getElementById("posCliCred2a6").value || 0);
         const credit_7a12_percent = Number(document.getElementById("posCliCred7a12").value || 0);
-        const ativo = document.getElementById("posCliAtivo").checked;
-        const usaNF = document.getElementById("posCliUsaNF").checked;
 
         if (!name || !whatsapp_number) {
           alert("Informe nome e WhatsApp");
@@ -3465,32 +3262,19 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
         }
 
         try {
-          const isEdit = !!currentPosClienteId;
-          let custId = currentPosClienteId;
-          const base = posClientes.find((c) => c.id === custId) || {};
-          const payload = {
-            name,
-            whatsapp_number,
-            fee_percent: base.fee_percent ?? 0,
-            is_active: ativo,
-            uses_pos: ativo,
-            uses_nf: usaNF,
-          };
+          const created = await apiFetch("/api/customers", {
+            method: "POST",
+            body: JSON.stringify({
+              name,
+              whatsapp_number,
+              fee_percent: 0,
+              is_active: true,
+              uses_nf: false,
+              uses_pos: true,
+            }),
+          });
 
-          if (isEdit) {
-            await apiFetch(`/api/customers/${custId}`, {
-              method: "PUT",
-              body: JSON.stringify(payload),
-            });
-          } else {
-            const created = await apiFetch("/api/customers", {
-              method: "POST",
-              body: JSON.stringify(payload),
-            });
-            custId = created.id;
-          }
-
-          await apiFetch(`/api/pos/rates/${custId}`, {
+          await apiFetch(`/api/pos/rates/${created.id}`, {
             method: "POST",
             body: JSON.stringify({
               pix_key,
@@ -3502,76 +3286,17 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
           });
 
           await loadPosClientes();
-          resetPosClienteForm();
           alert("Cliente POS salvo");
         } catch (err) {
           alert("Erro ao salvar cliente POS (WhatsApp deve ser unico)");
           console.error(err);
         }
       }
-        document.getElementById("btnPosAddCompany")?.addEventListener("click", savePosCompany);
-        document.getElementById("btnPosLimparCompany")?.addEventListener("click", (e) => {
-          e.preventDefault();
-          resetPosCompanyForm();
-        });
-        document.getElementById("posCompanySearch")?.addEventListener("input", renderPosCompanies);
-        document.getElementById("posCompaniesTableBody")?.addEventListener("click", (e) => {
-          const edit = e.target.getAttribute("data-edit-pos-company");
-          const del = e.target.getAttribute("data-del-pos-company");
-          if (edit) {
-            const c = posCompanies.find((x) => x.id == edit);
-            if (c) {
-              currentPosCompanyId = c.id;
-              document.getElementById("posCompanyName").value = c.name;
-              document.getElementById("posCompanyCnpj").value = c.cnpj;
-              document.getElementById("posCompanyAtiva").value = c.is_active ? "true" : "false";
-              const btn = document.getElementById("btnPosAddCompany");
-              if (btn) btn.textContent = "Atualizar empresa";
-            }
-          } else if (del) {
-            deletePosCompany(del);
-          }
-        });
-
-        document.getElementById("btnPosAddTerminal")?.addEventListener("click", savePosTerminal);
-        document.getElementById("btnPosLimparTerminal")?.addEventListener("click", (e) => {
-          e.preventDefault();
-          resetPosTerminalForm();
-        });
-        document.getElementById("posTerminalSearch")?.addEventListener("input", renderPosTerminals);
-        document.getElementById("posTerminalsTableBody")?.addEventListener("click", (e) => {
-          const edit = e.target.getAttribute("data-edit-pos-terminal");
-          const del = e.target.getAttribute("data-del-pos-terminal");
-          if (edit) {
-            const t = posTerminals.find((x) => x.id == edit);
-            if (t) {
-              populatePosTerminalForm(t);
-            }
-          } else if (del) {
-            deletePosTerminal(del);
-          }
-        });
-
+        document.getElementById("btnPosAddCompany")?.addEventListener("click", addPosCompany);
+        document.getElementById("btnPosAddTerminal")?.addEventListener("click", addPosTerminal);
         document.getElementById("btnPosSalvarTaxas")?.addEventListener("click", savePosRates);
         document.getElementById("posRateCliente")?.addEventListener("change", loadPosRateForSelected);
         document.getElementById("btnPosRegistrarVenda")?.addEventListener("click", registrarVendaPos);
-        document.getElementById("btnPosLimparVenda")?.addEventListener("click", (e) => {
-          e.preventDefault();
-          resetPosVendaForm();
-        });
-        document.getElementById("posVendaTerminalSearch")?.addEventListener("input", () => {
-          fillPosSelects();
-        });
-        document.getElementById("posVendasTableBody")?.addEventListener("click", (e) => {
-          const edit = e.target.getAttribute("data-edit-pos-venda");
-          const del = e.target.getAttribute("data-del-pos-venda");
-          if (edit) {
-            const v = posVendasRecentes.find((x) => x.id == edit);
-            if (v) populatePosVendaForm(v);
-          } else if (del) {
-            if (confirm("Excluir venda?")) deletePosVenda(del);
-          }
-        });
         document.getElementById("btnPosCarregarResumo")?.addEventListener("click", loadPosResumo);
 
         // Notas
@@ -3590,20 +3315,6 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
           .addEventListener("click", () => {
             resetNotasInfiniteScroll();
             notasState.lastFiltersKey = getNotasFiltersKey();
-            loadNotasPage(false);
-          });
-        document
-          .getElementById("notasClearFilters")
-          .addEventListener("click", () => {
-            document.getElementById("notasSearch").value = "";
-            document.getElementById("notasStatusFilter").value = "";
-            document.getElementById("notasOrigemFilter").value = "";
-            document.getElementById("notasDataIni").value = "";
-            document.getElementById("notasDataFim").value = "";
-            document.querySelectorAll(".chip-filter[data-cliente-ativo], .chip-filter[data-empresa-ativo]").forEach((c) => c.classList.remove("active"));
-            resetNotasInfiniteScroll();
-            notasState.lastFiltersKey = getNotasFiltersKey();
-            renderNotas();
             loadNotasPage(false);
           });
 
@@ -3625,21 +3336,13 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
             document
               .getElementById("relClienteSection")
               .classList.remove("hidden");
-            if (!clientes || clientes.length === 0) {
-              loadClientes().then(populateRelatorioSelects);
-            } else {
-              populateRelatorioSelects();
-            }
+            populateRelatorioSelects();
           } else if (tab === "empresa") {
             document.getElementById("tabRelEmpresa").classList.add("active");
             document
               .getElementById("relEmpresaSection")
               .classList.remove("hidden");
-            if (!empresas || empresas.length === 0) {
-              loadEmpresas().then(populateRelatorioSelects);
-            } else {
-              populateRelatorioSelects();
-            }
+            populateRelatorioSelects();
           }
         }
 
@@ -3664,29 +3367,10 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
           .addEventListener("click", () => loadRelatorioPorEmpresa(true));
 
 
-        // Se já tiver token salvo, tenta usar
-        if (authToken) {
-          showApp();
-          const userEmail = localStorage.getItem("nf_user_email") || "Administrador";
-          document.getElementById("currentUserEmail").textContent = userEmail;
-          selectPage("dashboard");
-          loadDashboard();
-          loadClientes();
-          loadEmpresas();
-        } else {
-          showLogin();
-        }
-      }
-
-      // listeners de login
-      document.getElementById("btnLogin")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        doLogin();
+        // Se ja tiver token salvo, tenta restaurar a sessao
+        tryRestoreSession();
       });
-      document.getElementById("loginPassword")?.addEventListener("keyup", (e) => {
-        if (e.key === "Enter") doLogin();
-      });
-    });
+    
 </script>
   </body>
 </html>
