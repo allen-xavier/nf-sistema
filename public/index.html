@@ -3005,11 +3005,11 @@
         }
       }
 
-      async function loadPosResumo() {
-        try {
-          const res = await apiFetch("/api/pos/reports/summary");
-          const bruto = Number(res?.totals?.bruto || 0);
-          const liquido = Number(res?.totals?.liquido || 0);
+  async function loadPosResumo() {
+    try {
+      const res = await apiFetch("/api/pos/reports/summary");
+      const bruto = Number(res?.totals?.bruto || 0);
+      const liquido = Number(res?.totals?.liquido || 0);
           const taxas = Number(res?.totals?.taxas || 0);
           document.getElementById("posResumoBruto").textContent = formatCurrencyBRL(bruto);
           document.getElementById("posResumoLiquido").textContent = formatCurrencyBRL(liquido);
@@ -3027,11 +3027,11 @@
         }
       }
 
-      function renderPosVendas() {
-        const tbody = document.getElementById("posVendasTableBody");
-        if (!tbody) return;
-        tbody.innerHTML = (posVendasRecentes || [])
-          .map((v) => {
+  function renderPosVendas() {
+    const tbody = document.getElementById("posVendasTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = (posVendasRecentes || [])
+      .map((v) => {
             const dt = v.sale_datetime ? new Date(v.sale_datetime).toLocaleString("pt-BR") : "—";
             return `
               <tr>
@@ -3044,14 +3044,100 @@
                 <td>${formatCurrencyBRL(v.net_amount)}</td>
                 <td><button class="btn-danger" data-del-pos-sale="${v.id}">Excluir</button></td>
               </tr>`;
-          })
-          .join("");
-      }
+      })
+      .join("");
+  }
 
-      // ==========================
-      // EVENTOS GERAIS
-      // ==========================
-      document.addEventListener("DOMContentLoaded", () => {
+  async function deletePosVenda(id) {
+    try {
+      await apiFetch(`/api/pos/sales/${id}`, { method: "DELETE" });
+      await loadPosVendasRecentes();
+      await loadPosResumo();
+    } catch (err) {
+      alert("Erro ao excluir venda POS");
+      console.error(err);
+    }
+  }
+
+  async function loadPosClientes() {
+    try {
+      const all = await apiFetch("/api/customers");
+      posClientes = (all || []).filter((c) => c.uses_pos !== false);
+      renderPosClientes();
+      fillPosSelects();
+    } catch (err) {
+      console.error("Erro ao carregar clientes POS:", err);
+    }
+  }
+
+  function renderPosClientes() {
+    const tbody = document.getElementById("posClientesTableBody");
+    if (!tbody) return;
+    tbody.innerHTML = posClientes
+      .map((c) => `
+        <tr>
+          <td>${c.id}</td>
+          <td>${c.name}</td>
+          <td>${c.whatsapp_number}</td>
+          <td>${Number(c.PosRate?.debit_percent || 0).toFixed(2)}%</td>
+          <td>${Number(c.PosRate?.credit_avista_percent || 0).toFixed(2)}%</td>
+          <td>${Number(c.PosRate?.credit_2a6_percent || 0).toFixed(2)}%</td>
+          <td>${Number(c.PosRate?.credit_7a12_percent || 0).toFixed(2)}%</td>
+          <td>${c.PosRate?.pix_key || "—"}</td>
+        </tr>`)
+      .join("");
+  }
+
+  async function savePosCliente() {
+    const name = document.getElementById("posCliNome").value.trim();
+    const whatsapp_number = document.getElementById("posCliWhats").value.trim();
+    const pix_key = document.getElementById("posCliPix").value.trim();
+    const debit_percent = Number(document.getElementById("posCliDeb").value || 0);
+    const credit_avista_percent = Number(document.getElementById("posCliCredAv").value || 0);
+    const credit_2a6_percent = Number(document.getElementById("posCliCred2a6").value || 0);
+    const credit_7a12_percent = Number(document.getElementById("posCliCred7a12").value || 0);
+
+    if (!name || !whatsapp_number) {
+      alert("Informe nome e WhatsApp");
+      return;
+    }
+
+    try {
+      const created = await apiFetch("/api/customers", {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          whatsapp_number,
+          fee_percent: 0,
+          is_active: true,
+          uses_nf: false,
+          uses_pos: true,
+        }),
+      });
+
+      await apiFetch(`/api/pos/rates/${created.id}`, {
+        method: "POST",
+        body: JSON.stringify({
+          pix_key,
+          debit_percent,
+          credit_avista_percent,
+          credit_2a6_percent,
+          credit_7a12_percent,
+        }),
+      });
+
+      await loadPosClientes();
+      alert("Cliente POS salvo");
+    } catch (err) {
+      alert("Erro ao salvar cliente POS (WhatsApp deve ser unico)");
+      console.error(err);
+    }
+  }
+
+  // ==========================
+  // EVENTOS GERAIS
+  // ==========================
+  document.addEventListener("DOMContentLoaded", () => {
         // Theme
         document
           .getElementById("btnThemeToggle")
@@ -3215,91 +3301,6 @@
           });
 
         // POS (Maquininhas)
-      async function deletePosVenda(id) {
-        try {
-          await apiFetch(`/api/pos/sales/${id}`, { method: "DELETE" });
-          await loadPosVendasRecentes();
-          await loadPosResumo();
-        } catch (err) {
-          alert("Erro ao excluir venda POS");
-          console.error(err);
-        }
-      }
-      async function loadPosClientes() {
-        try {
-          const all = await apiFetch("/api/customers");
-          posClientes = (all || []).filter((c) => c.uses_pos !== false);
-          renderPosClientes();
-          fillPosSelects();
-        } catch (err) {
-          console.error("Erro ao carregar clientes POS:", err);
-        }
-      }
-
-      function renderPosClientes() {
-        const tbody = document.getElementById("posClientesTableBody");
-        if (!tbody) return;
-        tbody.innerHTML = posClientes
-          .map((c) => `
-            <tr>
-              <td>${c.id}</td>
-              <td>${c.name}</td>
-              <td>${c.whatsapp_number}</td>
-              <td>${Number(c.PosRate?.debit_percent || 0).toFixed(2)}%</td>
-              <td>${Number(c.PosRate?.credit_avista_percent || 0).toFixed(2)}%</td>
-              <td>${Number(c.PosRate?.credit_2a6_percent || 0).toFixed(2)}%</td>
-              <td>${Number(c.PosRate?.credit_7a12_percent || 0).toFixed(2)}%</td>
-              <td>${c.PosRate?.pix_key || "—"}</td>
-            </tr>
-          `)
-          .join("");
-      }
-
-      async function savePosCliente() {
-        const name = document.getElementById("posCliNome").value.trim();
-        const whatsapp_number = document.getElementById("posCliWhats").value.trim();
-        const pix_key = document.getElementById("posCliPix").value.trim();
-        const debit_percent = Number(document.getElementById("posCliDeb").value || 0);
-        const credit_avista_percent = Number(document.getElementById("posCliCredAv").value || 0);
-        const credit_2a6_percent = Number(document.getElementById("posCliCred2a6").value || 0);
-        const credit_7a12_percent = Number(document.getElementById("posCliCred7a12").value || 0);
-
-        if (!name || !whatsapp_number) {
-          alert("Informe nome e WhatsApp");
-          return;
-        }
-
-        try {
-          const created = await apiFetch("/api/customers", {
-            method: "POST",
-            body: JSON.stringify({
-              name,
-              whatsapp_number,
-              fee_percent: 0,
-              is_active: true,
-              uses_nf: false,
-              uses_pos: true,
-            }),
-          });
-
-          await apiFetch(`/api/pos/rates/${created.id}`, {
-            method: "POST",
-            body: JSON.stringify({
-              pix_key,
-              debit_percent,
-              credit_avista_percent,
-              credit_2a6_percent,
-              credit_7a12_percent,
-            }),
-          });
-
-          await loadPosClientes();
-          alert("Cliente POS salvo");
-        } catch (err) {
-          alert("Erro ao salvar cliente POS (WhatsApp deve ser unico)");
-          console.error(err);
-        }
-      }
         document.getElementById("btnPosAddCompany")?.addEventListener("click", addPosCompany);
         document.getElementById("btnPosAddTerminal")?.addEventListener("click", addPosTerminal);
         document.getElementById("btnPosSalvarTaxas")?.addEventListener("click", savePosRates);
