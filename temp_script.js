@@ -1610,7 +1610,7 @@
       document.getElementById("posResumoPago").textContent = formatCurrencyBRL(posResumoTotals.liquido_pago);
 
       const top = res.topTerminal;
-      const topSum = top?.get ? top.get("soma") : top?.dataValues?.soma;
+      const topSum = Number(top?.dataValues?.soma ?? top?.soma ?? 0);
       document.getElementById("posResumoTopTerminal").textContent = top
         ? `${top.PosTerminal?.terminal_code || "?"} - ${formatCurrencyBRL(topSum || 0)}`
         : "—";
@@ -1627,6 +1627,26 @@
         : "";
 
       renderPosResumoTabela();
+
+      const selResumoTerm = document.getElementById("posResumoTerminal");
+      if (selResumoTerm) {
+        const onlyUnpaid = document.getElementById("posResumoOnlyUnpaid").checked;
+        const current = selResumoTerm.value;
+        const idsSet = onlyUnpaid
+          ? Array.from(new Set(posResumoList.filter((s) => !s.paid).map((s) => s.pos_terminal_id)))
+          : posTerminals.map((t) => t.id);
+        selResumoTerm.innerHTML =
+          '<option value="">Todos</option>' +
+          posTerminals
+            .filter((t) => idsSet.includes(t.id))
+            .map((t) => `<option value="${t.id}">${t.terminal_code} - ${t.Customer?.name || "Cliente"}</option>`)
+            .join("");
+        if (idsSet.includes(Number(current))) {
+          selResumoTerm.value = current;
+        } else {
+          selResumoTerm.value = "";
+        }
+      }
     } catch (err) {
       console.error("Erro ao carregar resumo POS:", err);
     }
@@ -1646,7 +1666,7 @@
         <td>${s.PosTerminal?.terminal_code || "—"}</td>
         <td>${s.Customer?.name || "—"}</td>
         <td>${formatCurrencyBRL(s.amount)}</td>
-        <td>${formatCurrencyBRL(s.fee_value)}</td>
+        <td>${formatCurrencyBRL(s.fee_value)} (${Number(s.fee_percent || 0).toFixed(2)}%)</td>
         <td>${formatCurrencyBRL(s.net_amount)}</td>
         <td>
           <span class="tag ${s.paid ? "tag-success" : "tag-danger"}">
@@ -1659,6 +1679,40 @@
     tbody.innerHTML = rows;
     const selectAll = document.getElementById("posResumoSelectAll");
     if (selectAll) selectAll.checked = false;
+    updateResumoSelecionados();
+  }
+
+  function updateResumoSelecionados() {
+    const checks = Array.from(document.querySelectorAll(".posResumoCheck:checked")).map((c) =>
+      Number(c.getAttribute("data-sale-id"))
+    );
+    const selectedSales = posResumoList.filter((s) => checks.includes(s.id));
+    const uniqueTerminals = new Set(selectedSales.map((s) => s.pos_terminal_id));
+    const btn = document.getElementById("btnPosMarcarPago");
+    const msg = document.getElementById("posResumoSelectMsg");
+    const totalEl = document.getElementById("posResumoTotalSelecionado");
+    const pixEl = document.getElementById("posResumoPix");
+
+    const total = selectedSales.reduce((acc, s) => acc + Number(s.net_amount || 0), 0);
+    if (totalEl) totalEl.textContent = formatCurrencyBRL(total);
+
+    if (uniqueTerminals.size > 1) {
+      if (btn) btn.disabled = true;
+      if (msg) msg.textContent = "Selecione vendas de um único terminal para pagar.";
+      if (pixEl) pixEl.textContent = "—";
+      return;
+    }
+
+    if (btn) btn.disabled = false;
+    if (msg) msg.textContent = "";
+
+    const first = selectedSales[0];
+    if (first) {
+      const cli = posClientes.find((c) => c.id === first.customer_id);
+      if (pixEl) pixEl.textContent = cli?.PosRate?.pix_key || "—";
+    } else {
+      if (pixEl) pixEl.textContent = "—";
+    }
   }
 
   async function marcarPosPagas() {
@@ -1673,6 +1727,13 @@
     const pos_terminal_id = document.getElementById("posResumoTerminal").value;
     const payment_batch =
       document.getElementById("posResumoBatch").value.trim() || `fechamento-${Date.now()}`;
+    const uniqueTerminals = new Set(
+      posResumoList.filter((s) => checks.includes(String(s.id))).map((s) => s.pos_terminal_id)
+    );
+    if (uniqueTerminals.size > 1) {
+      alert("Selecione vendas de apenas um terminal por vez para pagar.");
+      return;
+    }
     try {
       await apiFetch("/api/pos/reports/payouts/mark-paid", {
         method: "POST",
@@ -2017,11 +2078,15 @@
         document.getElementById("btnPosRegistrarVenda")?.addEventListener("click", registrarVendaPos);
         document.getElementById("btnPosCarregarResumo")?.addEventListener("click", loadPosResumo);
         document.getElementById("posRateCliente")?.addEventListener("change", loadPosRateForSelected);
+        document.getElementById("posResumoTabela")?.addEventListener("change", (e) => {
+          if (e.target.classList.contains("posResumoCheck")) updateResumoSelecionados();
+        });
         document.getElementById("posResumoSelectAll")?.addEventListener("change", (e) => {
           const checked = e.target.checked;
           document.querySelectorAll(".posResumoCheck").forEach((c) => {
             if (!c.disabled) c.checked = checked;
           });
+          updateResumoSelecionados();
         });
         document.getElementById("btnPosMarcarPago")?.addEventListener("click", (e) => {
           e.preventDefault();
