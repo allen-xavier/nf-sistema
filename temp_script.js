@@ -1798,6 +1798,28 @@
       .join("");
   }
 
+  function updateVendaTerminalOptions(searchRaw = "") {
+    const selVendaTerm = document.getElementById("posVendaTerminal");
+    if (!selVendaTerm) return;
+    const term = normalizeText(searchRaw);
+    const digits = onlyDigits(searchRaw);
+    const list = (posTerminals || []).filter((t) => {
+      if (!term && !digits) return true;
+      const name = normalizeText(t.Customer?.name);
+      const code = normalizeText(t.terminal_code);
+      return (
+        name.includes(term) ||
+        code.includes(term) ||
+        (digits && onlyDigits(t.terminal_code).includes(digits))
+      );
+    });
+    selVendaTerm.innerHTML =
+      '<option value="">Selecione</option>' +
+      list
+        .map((t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`)
+        .join("");
+  }
+
   async function deletePosVenda(id) {
     try {
       await apiFetch(`/api/pos/sales/${id}`, { method: "DELETE" });
