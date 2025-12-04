@@ -1759,7 +1759,7 @@
           await startAppAfterAuth();
         } catch (err) {
           console.error(err);
-          errorEl.textContent = "Credenciais inválidas.";
+          errorEl.textContent = "Credenciais invalidas.";
           errorEl.style.display = "block";
         }
       }
@@ -1791,6 +1791,30 @@
         showLogin();
       }
 
+      async function tryRestoreSession() {
+        if (!authToken) {
+          showLogin();
+          return;
+        }
+        try {
+          currentUser = await apiFetch("/api/auth/me");
+          localStorage.setItem(
+            "nf_user_email",
+            currentUser?.email || localStorage.getItem("nf_user_email") || "Administrador"
+          );
+          await startAppAfterAuth();
+        } catch (err) {
+          console.warn("Falha ao validar token; tentando continuar com cache:", err);
+          currentUser = { email: localStorage.getItem("nf_user_email") || "Administrador" };
+          try {
+            await startAppAfterAuth();
+          } catch {
+            logout();
+          }
+        }
+      }
+
+      
       async function tryRestoreSession() {
         if (!authToken) {
           showLogin();
