@@ -3680,20 +3680,18 @@ document.getElementById("btnPosSalvarCliente")?.addEventListener("click", savePo
           .getElementById("btnRelEmpresaGerar")
           .addEventListener("click", () => loadRelatorioPorEmpresa(true));
 
-
-                // Se ja tiver token salvo, tenta restaurar a sessao
+        // Se ja tiver token salvo, tenta restaurar a sessao
         tryRestoreSession();
-      }
 
-      // listeners de login
-      document.getElementById("btnLogin")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        doLogin();
+        // listeners de login
+        document.getElementById("btnLogin")?.addEventListener("click", (e) => {
+          e.preventDefault();
+          doLogin();
+        });
+        document.getElementById("loginPassword")?.addEventListener("keyup", (e) => {
+          if (e.key === "Enter") doLogin();
+        });
       });
-      document.getElementById("loginPassword")?.addEventListener("keyup", (e) => {
-        if (e.key === "Enter") doLogin();
-      });
-    });
 </script>
   </body>
 </html>
