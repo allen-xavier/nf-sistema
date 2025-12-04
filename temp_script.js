@@ -222,6 +222,15 @@
       let chartRelClientePeriodo = null;
       let chartRelEmpresaPeriodo = null;
 
+      function formatCNPJ(cnpj) {
+        const digits = (cnpj || "").replace(/\D/g, "");
+        if (digits.length !== 14) return cnpj || "";
+        return digits.replace(
+          /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
+          "$1.$2.$3/$4-$5"
+        );
+      }
+
       function populateRelatorioSelects(clis = clientes, emps = empresas) {
         const selCli = document.getElementById("relClienteSelect");
         const selEmp = document.getElementById("relEmpresaSelect");
@@ -245,7 +254,6 @@
         const empStatus = document.getElementById("relEmpresaAtivo")?.value || "all";
 
         const filteredClientes = (clis || [])
-          .filter((c) => c.uses_nf !== false)
           .filter((c) => {
             if (!searchCli) return true;
             const term = searchCli;
@@ -289,7 +297,10 @@
           selEmp.innerHTML =
             '<option value="">Selecione uma empresa</option>' +
             filteredEmpresas
-              .map((e) => `<option value="${e.id}">${e.name}</option>`)
+              .map(
+                (e) =>
+                  `<option value="${e.id}">${e.name} - ${formatCNPJ(e.cnpj)}</option>`
+              )
               .join("");
         }
       }
