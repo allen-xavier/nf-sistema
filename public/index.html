@@ -1175,46 +1175,43 @@
                 </div>
               </div>
 
-              <div class="toolbar">
-                <div class="toolbar-left">
-                  <div class="form-group">
-                    <label>Buscar por cliente / empresa / comprador / CPF</label>
-                    <input
-                      type="text"
-                      id="notasSearch"
-                      placeholder="Nome, empresa ou CPF do comprador"
-                    />
-                  </div>
-                  <div class="form-group" style="max-width: 160px">
-                    <label>Status</label>
-                    <select id="notasStatusFilter">
-                      <option value="all">Todos</option>
-                      <option value="EMITIDA">Emitida</option>
-                      <option value="PAGA">Paga</option>
-                      <option value="CANCELADA">Cancelada</option>
-                    </select>
-                  </div>
-                  <div class="form-group" style="max-width: 160px">
-                    <label>Origem</label>
-                    <select id="notasOrigemFilter">
-                      <option value="all">Todas</option>
-                      <option value="terminal">Maquininha</option>
-                      <option value="manual">Manual</option>
-                    </select>
-                  </div>
+              <div class="form-row" style="gap:10px; align-items:flex-end">
+                <div class="form-group" style="flex:2; min-width:220px">
+                  <label>Buscar por cliente / empresa / comprador / CPF</label>
+                  <input
+                    type="text"
+                    id="notasSearch"
+                    placeholder="Nome, empresa ou CPF do comprador"
+                  />
                 </div>
-
-                <div class="toolbar-right">
-                  <div class="form-group" style="max-width: 140px">
-                    <label>Data inicial</label>
-                    <input type="date" id="notasDataIni" />
-                  </div>
-                  <div class="form-group" style="max-width: 140px">
-                    <label>Data final</label>
-                    <input type="date" id="notasDataFim" />
-                  </div>
-                  <button id="notasApplyFilters" class="btn-secondary">Aplicar filtros</button>
-                  <button id="notasClearFilters" class="btn-secondary">Limpar filtros</button>
+                <div class="form-group" style="max-width: 150px">
+                  <label>Status</label>
+                  <select id="notasStatusFilter">
+                    <option value="all">Todos</option>
+                    <option value="EMITIDA">Emitida</option>
+                    <option value="PAGA">Paga</option>
+                    <option value="CANCELADA">Cancelada</option>
+                  </select>
+                </div>
+                <div class="form-group" style="max-width: 150px">
+                  <label>Origem</label>
+                  <select id="notasOrigemFilter">
+                    <option value="all">Todas</option>
+                    <option value="terminal">Maquininha</option>
+                    <option value="manual">Manual</option>
+                  </select>
+                </div>
+                <div class="form-group" style="max-width: 160px">
+                  <label>Data inicial</label>
+                  <input type="date" id="notasDataIni" />
+                </div>
+                <div class="form-group" style="max-width: 160px">
+                  <label>Data final</label>
+                  <input type="date" id="notasDataFim" />
+                </div>
+                <div class="form-group" style="max-width: 220px; display:flex; gap:6px">
+                  <button id="notasApplyFilters" class="btn-secondary" style="flex:1">Aplicar filtros</button>
+                  <button id="notasClearFilters" class="btn-secondary" style="flex:1">Limpar filtros</button>
                 </div>
               </div>
 
