@@ -225,17 +225,23 @@
       function populateRelatorioSelects(clis = clientes, emps = empresas) {
         const selCli = document.getElementById("relClienteSelect");
         const selEmp = document.getElementById("relEmpresaSelect");
-        const norm = (str) =>
-          (str || "")
-            .toString()
-            .trim()
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/\p{Diacritic}/gu, "");
-        const searchCli =
-          norm(document.getElementById("relClienteSearch")?.value || "");
-        const searchEmp =
-          norm(document.getElementById("relEmpresaSearch")?.value || "");
+
+        const safeNorm = (str) => {
+          const base = (str || "").toString().trim().toLowerCase();
+          try {
+            return base.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+          } catch (e) {
+            // fallback em navegadores que não suportam \p{Diacritic}
+            return base.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          }
+        };
+
+        const searchCli = safeNorm(
+          document.getElementById("relClienteSearch")?.value || ""
+        );
+        const searchEmp = safeNorm(
+          document.getElementById("relEmpresaSearch")?.value || ""
+        );
         const empStatus = document.getElementById("relEmpresaAtivo")?.value || "all";
 
         const filteredClientes = (clis || [])
@@ -243,8 +249,8 @@
           .filter((c) => {
             if (!searchCli) return true;
             const term = searchCli;
-            const name = norm(c.name);
-            const whats = norm(c.whatsapp_number);
+            const name = safeNorm(c.name);
+            const whats = safeNorm(c.whatsapp_number);
             return (
               name.includes(term) ||
               whats.includes(term) ||
@@ -274,7 +280,7 @@
           .filter((e) => {
             if (!searchEmp) return true;
             const term = searchEmp;
-            const name = norm(e.name);
+            const name = safeNorm(e.name);
             const cnpj = (e.cnpj || "").replace(/\D/g, "");
             return name.includes(term) || cnpj.includes(term.replace(/\D/g, ""));
           });
