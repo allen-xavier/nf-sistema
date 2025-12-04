@@ -334,7 +334,17 @@
 
       async function loadDashboard() {
         try {
-          const data = await apiFetch("/api/reports/summary");
+          const mesSel = Number(document.getElementById("dashMesSelect")?.value ?? new Date().getMonth());
+          const anoSel = Number(document.getElementById("dashAnoInput")?.value || new Date().getFullYear());
+          const start = `${anoSel}-${String(mesSel + 1).padStart(2, "0")}-01`;
+          const lastDay = new Date(anoSel, mesSel + 1, 0).getDate();
+          const end = `${anoSel}-${String(mesSel + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+
+          const params = new URLSearchParams();
+          params.append("start", start);
+          params.append("end", end);
+
+          const data = await apiFetch("/api/reports/summary?" + params.toString());
 
           const totals = data.totals || {};
           document.getElementById("dashTotalNotas").textContent =
@@ -2088,6 +2098,23 @@
             const current = document.body.getAttribute("data-theme");
             applyTheme(current === "dark" ? "light" : "dark");
           });
+        // Dashboard período padrão (mês atual)
+        const now = new Date();
+        const dashMesSel = document.getElementById("dashMesSelect");
+        const dashAnoInput = document.getElementById("dashAnoInput");
+        if (dashMesSel) dashMesSel.value = String(now.getMonth());
+        if (dashAnoInput) dashAnoInput.value = String(now.getFullYear());
+        document.getElementById("dashAplicarMes")?.addEventListener("click", (e) => {
+          e.preventDefault();
+          loadDashboard();
+        });
+        document.getElementById("dashMesAtual")?.addEventListener("click", (e) => {
+          e.preventDefault();
+          const n = new Date();
+          if (dashMesSel) dashMesSel.value = String(n.getMonth());
+          if (dashAnoInput) dashAnoInput.value = String(n.getFullYear());
+          loadDashboard();
+        });
 
         // Login
         document.getElementById("btnLogin").addEventListener("click", doLogin);
