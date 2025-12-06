@@ -1,5 +1,5 @@
-const express = require("express");
-const { Op, fn, col, literal } = require("sequelize");
+﻿const express = require("express");
+const { Op, fn, col, literal, where: whereFn } = require("sequelize");
 const { Invoice, Customer, Company } = require("../models");
 const { authMiddleware, adminOnly } = require("../middleware/auth");
 
@@ -7,6 +7,23 @@ const router = express.Router();
 
 router.use(authMiddleware);
 router.use(adminOnly);
+
+function buildDateWhere(base = {}, start, end) {
+  const where = { ...base };
+  const and = where[Op.and] ? [...where[Op.and]] : [];
+
+  if (start) {
+    and.push(whereFn(fn("DATE", col("issued_at")), ">=", start));
+  }
+  if (end) {
+    and.push(whereFn(fn("DATE", col("issued_at")), "<=", end));
+  }
+
+  if (and.length) {
+    where[Op.and] = and;
+  }
+  return where;
+}
 
 /**
  * -------------------------------------------------------------
@@ -26,22 +43,7 @@ router.get("/summary", async (req, res) => {
   try {
     const { start, end, group_by = "day" } = req.query;
 
-    // Normaliza datas para o inÇ’’cio/fim do dia para evitar pegar perÇ’’odos fora do intervalo
-    const where = {};
-    if (start || end) {
-      const issuedFilter = {};
-      if (start) {
-        const dStart = new Date(start);
-        dStart.setHours(0, 0, 0, 0);
-        issuedFilter[Op.gte] = dStart;
-      }
-      if (end) {
-        const dEnd = new Date(end);
-        dEnd.setHours(23, 59, 59, 999);
-        issuedFilter[Op.lte] = dEnd;
-      }
-      where.issued_at = issuedFilter;
-    }
+    const where = buildDateWhere({}, start, end);
 
     // 1️⃣ Totais gerais
     const totals = await Invoice.findOne({
@@ -172,13 +174,7 @@ router.get("/cliente/:id", async (req, res) => {
       return res.status(404).json({ error: "Cliente não encontrado" });
     }
 
-    const where = { customer_id: id };
-
-    if (start || end) {
-      where.issued_at = {};
-      if (start) where.issued_at[Op.gte] = new Date(start);
-      if (end) where.issued_at[Op.lte] = new Date(`${end} 23:59:59`);
-    }
+    const where = buildDateWhere({ customer_id: id }, start, end);
 
     // Notas do cliente (com empresa junto)
     const notas = await Invoice.findAll({
@@ -267,13 +263,7 @@ router.get("/empresa/:id", async (req, res) => {
       return res.status(404).json({ error: "Empresa não encontrada" });
     }
 
-    const where = { company_id: id };
-
-    if (start || end) {
-      where.issued_at = {};
-      if (start) where.issued_at[Op.gte] = new Date(start);
-      if (end) where.issued_at[Op.lte] = new Date(`${end} 23:59:59`);
-    }
+    const where = buildDateWhere({ company_id: id }, start, end);
 
     // Notas da empresa (com cliente junto)
     const notas = await Invoice.findAll({
@@ -346,3 +336,6 @@ router.get("/empresa/:id", async (req, res) => {
 });
 
 module.exports = router;
+
+
+
