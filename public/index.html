@@ -2285,18 +2285,14 @@
           const data = await apiFetch("/api/reports/summary?" + params.toString());
 
           // ------ TOTAL GERAL ------
-          const totals = data.totals || {};
           const porPeriodo = data.porPeriodo || [];
           const sumNotas = porPeriodo.reduce((acc, p) => acc + Number(p.total_notas || 0), 0);
           const sumValor = porPeriodo.reduce((acc, p) => acc + toNumber(p.soma_valor_total), 0);
           const sumTaxas = porPeriodo.reduce((acc, p) => acc + toNumber(p.soma_taxas), 0);
-          const totalNotasDisplay = sumNotas || totals.total_notas || 0;
-          const totalValorDisplay = sumValor || toNumber(totals.soma_valor_total);
-          const totalTaxasDisplay = sumTaxas || toNumber(totals.soma_taxas);
 
-          document.getElementById("relTotalNotas").textContent = totalNotasDisplay;
-          document.getElementById("relValorTotal").textContent = formatCurrencyBRL(totalValorDisplay);
-          document.getElementById("relTaxasTotal").textContent = formatCurrencyBRL(totalTaxasDisplay);
+          document.getElementById("relTotalNotas").textContent = sumNotas;
+          document.getElementById("relValorTotal").textContent = formatCurrencyBRL(sumValor);
+          document.getElementById("relTaxasTotal").textContent = formatCurrencyBRL(sumTaxas);
 
           // ------ GRÁFICO POR PERÍODO ------
           if (chartRelPeriodo) chartRelPeriodo.destroy();

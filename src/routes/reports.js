@@ -12,11 +12,17 @@ function buildDateWhere(base = {}, start, end) {
   const where = { ...base };
   const and = where[Op.and] ? [...where[Op.and]] : [];
 
+  const issuedFilter = {};
   if (start) {
     and.push(whereFn(fn("DATE", col("issued_at")), ">=", start));
+    issuedFilter[Op.gte] = new Date(`${start}T00:00:00`);
   }
   if (end) {
     and.push(whereFn(fn("DATE", col("issued_at")), "<=", end));
+    issuedFilter[Op.lte] = new Date(`${end}T23:59:59.999`);
+  }
+  if (Object.keys(issuedFilter).length) {
+    and.push({ issued_at: issuedFilter });
   }
 
   if (and.length) {
