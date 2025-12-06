@@ -2683,14 +2683,16 @@
         const nfChecked = document.getElementById("clienteUsaNF")?.checked || false;
         const posChecked = document.getElementById("clienteUsaPOS")?.checked || false;
 
-        // Se ambos NF e POS desligados, geral deve ficar inativo
-        if (geralSelect && !nfChecked && !posChecked) {
-          geralSelect.value = "false";
+        // Se geral ativo mas nenhum serviço marcado, liga NF por padrão para permitir ativação
+        if (geralSelect && geralSelect.value === "true" && !nfChecked && !posChecked) {
+          const nfToggle = document.getElementById("clienteUsaNF");
+          if (nfToggle) nfToggle.checked = true;
         }
-        // Se geral ativo mas estava false com ambos off, manter coerencia visual
-        if (geralSelect && geralSelect.value === "false") {
-          if (document.getElementById("clienteUsaNF")) document.getElementById("clienteUsaNF").checked = false;
-          if (document.getElementById("clienteUsaPOS")) document.getElementById("clienteUsaPOS").checked = false;
+        // Se nenhum serviço estiver ativo, força geral para inativo
+        const afterNf = document.getElementById("clienteUsaNF")?.checked || false;
+        const afterPos = document.getElementById("clienteUsaPOS")?.checked || false;
+        if (geralSelect && !afterNf && !afterPos) {
+          geralSelect.value = "false";
         }
 
         const showNF = document.getElementById("clienteUsaNF")?.checked;
