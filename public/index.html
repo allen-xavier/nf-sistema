@@ -1013,14 +1013,6 @@
                       placeholder="Digite para filtrar..."
                     />
                   </div>
-                  <div class="form-group" style="max-width: 140px">
-                    <label>Taxa NF minima (%)</label>
-                    <input type="number" id="clienteFeeMin" step="0.01" />
-                  </div>
-                  <div class="form-group" style="max-width: 140px">
-                    <label>Taxa NF maxima (%)</label>
-                    <input type="number" id="clienteFeeMax" step="0.01" />
-                  </div>
                 </div>
                 <div class="toolbar-right">
                   <span class="chip-filter active" data-cliente-ativo="all">Todos</span>
@@ -1097,10 +1089,6 @@
                       <label>Credito 7 a 12x (%)</label>
                       <input id="clienteCred7a12" type="number" step="0.01" />
                     </div>
-                  </div>
-                  <div style="display: flex; justify-content: flex-end; gap: 8px">
-                    <button id="btnCancelCliente" class="btn-secondary">Cancelar edicao</button>
-                    <button id="btnSaveCliente" class="btn-primary">Salvar / atualizar</button>
                   </div>
                   <div id="clienteFormError" class="error-text" style="display: none"></div>
                 </div>
@@ -2621,12 +2609,6 @@
           ?.value || "";
         const search = normalizeText(searchRaw);
         const searchDigits = onlyDigits(searchRaw);
-        const feeMin = parseFloat(
-          document.getElementById("clienteFeeMin")?.value
-        );
-        const feeMax = parseFloat(
-          document.getElementById("clienteFeeMax")?.value
-        );
         const ativoChip = document.querySelector(
           '.chip-filter[data-cliente-ativo].active'
         );
@@ -2645,12 +2627,6 @@
               )
             )
               return false;
-
-            if (c.uses_nf !== false) {
-              const feeValue = parseFloat(c.fee_percent || 0);
-              if (!isNaN(feeMin) && feeValue < feeMin) return false;
-              if (!isNaN(feeMax) && feeValue > feeMax) return false;
-            }
 
             if (ativoFilter === "true" && !c.is_active) return false;
             if (ativoFilter === "false" && c.is_active) return false;
@@ -2692,14 +2668,36 @@
       }
 
       function updateClienteSections() {
-        const usaNF = document.getElementById("clienteUsaNF")?.checked;
-        const usaPOS = document.getElementById("clienteUsaPOS")?.checked;
+        const geralSelect = document.getElementById("clienteAtivo");
         const nfRow = document.getElementById("clienteNfFields");
         const posRow1 = document.getElementById("clientePosFields");
         const posRow2 = document.getElementById("clientePosFields2");
-        if (nfRow) nfRow.style.display = usaNF ? "flex" : "none";
-        if (posRow1) posRow1.style.display = usaPOS ? "flex" : "none";
-        if (posRow2) posRow2.style.display = usaPOS ? "flex" : "none";
+        const geralAtivo = geralSelect ? geralSelect.value === "true" : true;
+
+        // Se geral inativo, desativa NF e POS
+        if (!geralAtivo) {
+          if (document.getElementById("clienteUsaNF")) document.getElementById("clienteUsaNF").checked = false;
+          if (document.getElementById("clienteUsaPOS")) document.getElementById("clienteUsaPOS").checked = false;
+        }
+        // Releitura apos possiveis ajustes
+        const nfChecked = document.getElementById("clienteUsaNF")?.checked || false;
+        const posChecked = document.getElementById("clienteUsaPOS")?.checked || false;
+
+        // Se ambos NF e POS desligados, geral deve ficar inativo
+        if (geralSelect && !nfChecked && !posChecked) {
+          geralSelect.value = "false";
+        }
+        // Se geral ativo mas estava false com ambos off, manter coerencia visual
+        if (geralSelect && geralSelect.value === "false") {
+          if (document.getElementById("clienteUsaNF")) document.getElementById("clienteUsaNF").checked = false;
+          if (document.getElementById("clienteUsaPOS")) document.getElementById("clienteUsaPOS").checked = false;
+        }
+
+        const showNF = document.getElementById("clienteUsaNF")?.checked;
+        const showPOS = document.getElementById("clienteUsaPOS")?.checked;
+        if (nfRow) nfRow.style.display = showNF ? "flex" : "none";
+        if (posRow1) posRow1.style.display = showPOS ? "flex" : "none";
+        if (posRow2) posRow2.style.display = showPOS ? "flex" : "none";
       }
 
       function resetClienteForm() {
@@ -2752,12 +2750,13 @@
       }
 
       async function saveCliente() {
+        const wasEditing = !!editingClienteId;
         const nome = document.getElementById("clienteNome").value.trim();
         const whats = document.getElementById("clienteWhats").value.trim();
         const taxa = document.getElementById("clienteTaxa").value.trim();
-        const ativo = document.getElementById("clienteAtivo").value === "true";
-        const usaNF = document.getElementById("clienteUsaNF").checked;
-        const usaPOS = document.getElementById("clienteUsaPOS").checked;
+        let ativo = document.getElementById("clienteAtivo").value === "true";
+        let usaNF = document.getElementById("clienteUsaNF").checked;
+        let usaPOS = document.getElementById("clienteUsaPOS").checked;
         const pix = document.getElementById("clientePix").value.trim();
         const deb = document.getElementById("clienteDeb").value.trim();
         const credAv = document.getElementById("clienteCredAv").value.trim();
@@ -2766,6 +2765,16 @@
         const errEl = document.getElementById("clienteFormError");
 
         if (errEl) errEl.style.display = "none";
+
+        if (!ativo) {
+          usaNF = false;
+          usaPOS = false;
+        }
+        if (ativo && !usaNF && !usaPOS) {
+          ativo = false;
+          const geralSel = document.getElementById("clienteAtivo");
+          if (geralSel) geralSel.value = "false";
+        }
 
         const missing = [];
         if (!nome) missing.push("nome");
@@ -2829,6 +2838,10 @@
           const list = await loadClientes();
           await loadPosClientes();
           populateRelatorioSelects(list, empresas);
+          const successMsg = wasEditing
+            ? "Cliente atualizado com sucesso."
+            : "Cliente criado com sucesso.";
+          alert(successMsg);
         } catch (err) {
           console.error(err);
           if (errEl) {
@@ -4240,25 +4253,14 @@
           .getElementById("btnAddCliente")
           .addEventListener("click", () => resetClienteForm());
         document
-          .getElementById("btnCancelCliente")
-          .addEventListener("click", (e) => {
-            e.preventDefault();
-            resetClienteForm();
-          });
-        document
           .getElementById("btnSaveCliente")
           .addEventListener("click", saveCliente);
         document.getElementById("clienteUsaNF")?.addEventListener("change", updateClienteSections);
         document.getElementById("clienteUsaPOS")?.addEventListener("change", updateClienteSections);
+        document.getElementById("clienteAtivo")?.addEventListener("change", updateClienteSections);
 
         document
           .getElementById("clienteSearch")
-          .addEventListener("input", renderClientes);
-        document
-          .getElementById("clienteFeeMin")
-          .addEventListener("input", renderClientes);
-        document
-          .getElementById("clienteFeeMax")
           .addEventListener("input", renderClientes);
         document
           .querySelectorAll(".chip-filter[data-cliente-ativo]")
