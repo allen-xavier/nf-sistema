@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -352,7 +352,7 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      /* Para quando mostrar um único bloco POS ocupar largura total */
+      /* Para quando mostrar um Ãºnico bloco POS ocupar largura total */
       .pos-single {
         grid-column: 1 / -1;
       }
@@ -427,7 +427,7 @@
         border-color: var(--primary);
       }
 
-      /* Ajusta o ícone do calendar picker para ficar visível em fundo escuro/claro */
+      /* Ajusta o Ã­cone do calendar picker para ficar visÃ­vel em fundo escuro/claro */
       input[type="date"]::-webkit-calendar-picker-indicator,
       input[type="datetime-local"]::-webkit-calendar-picker-indicator {
         filter: invert(1);
@@ -716,7 +716,7 @@
         display: block;
       }
 
-      /* RELATÓRIOS TABS */
+      /* RELATÃ“RIOS TABS */
 
       .tabs {
         display: inline-flex;
@@ -826,7 +826,7 @@
 
         <div class="login-footer">
           <span class="link" id="forgotPasswordLink">Esqueci minha senha</span>
-          <span>© NF Sistema</span>
+          <span>Â© NF Sistema</span>
         </div>
 
         <div id="forgotInfo" class="success-text" style="display: none"></div>
@@ -898,13 +898,13 @@
               <span style="font-size: 11px; color: #9ca3af">Tema</span>
               <span style="font-size: 12px">Claro / Escuro</span>
             </div>
-            <button id="btnThemeToggle">🌓</button>
+            <button id="btnThemeToggle">ðŸŒ“</button>
           </div>
 
           <div class="user-info">
             <div>
-              <div class="user-tag">Usuário logado</div>
-              <div id="currentUserEmail" style="font-size: 12px">—</div>
+              <div class="user-tag">UsuÃ¡rio logado</div>
+              <div id="currentUserEmail" style="font-size: 12px">â€”</div>
             </div>
             <button class="btn-logout" id="btnLogout">Sair</button>
           </div>
@@ -915,16 +915,16 @@
       <main class="main" id="main">
         <header class="topbar">
           <div class="topbar-left">
-            <button class="mobile-menu-btn" id="btnMobileMenu">☰</button>
+            <button class="mobile-menu-btn" id="btnMobileMenu">â˜°</button>
             <div>
               <div class="topbar-title" id="topbarTitle">Dashboard</div>
               <div class="topbar-subtitle" id="topbarSubtitle">
-                Visão geral das notas fiscais, clientes e empresas
+                VisÃ£o geral das notas fiscais, clientes e empresas
               </div>
             </div>
           </div>
           <div class="topbar-right">
-            <div class="chip">Produção</div>
+            <div class="chip">ProduÃ§Ã£o</div>
           </div>
         </header>
 
@@ -933,11 +933,11 @@
           <section id="page-dashboard" class="page-section active">
             <div class="form-row" style="gap:10px; align-items:flex-end; margin-bottom:10px">
               <div class="form-group" style="max-width:160px">
-                <label>Mês</label>
+                <label>MÃªs</label>
                 <select id="dashMesSelect">
                   <option value="0">Janeiro</option>
                   <option value="1">Fevereiro</option>
-                  <option value="2">Março</option>
+                  <option value="2">MarÃ§o</option>
                   <option value="3">Abril</option>
                   <option value="4">Maio</option>
                   <option value="5">Junho</option>
@@ -955,7 +955,7 @@
               </div>
               <div class="form-group" style="max-width:200px; display:flex; gap:6px">
                 <button class="btn-secondary" id="dashAplicarMes" style="flex:1">Aplicar</button>
-                <button class="btn-secondary" id="dashMesAtual" style="flex:1">Mês atual</button>
+                <button class="btn-secondary" id="dashMesAtual" style="flex:1">MÃªs atual</button>
               </div>
             </div>
             <div class="grid grid-3">
@@ -963,20 +963,20 @@
                 <div class="metric-label">Total de notas</div>
                 <div class="metric-value" id="dashTotalNotas">-</div>
                 <div class="metric-detail">
-                  Soma de todas as notas emitidas no período selecionado
+                  Soma de todas as notas emitidas no perÃ­odo selecionado
                 </div>
               </div>
               <div class="card metric-card">
                 <div class="metric-label">Valor total</div>
-                <div class="metric-value" id="dashValorTotal">—</div>
+                <div class="metric-value" id="dashValorTotal">â€”</div>
                 <div class="metric-detail">
                   Considerando notas emitidas (EMITIDA + PAGA)
                 </div>
               </div>
               <div class="card metric-card">
                 <div class="metric-label">Total taxas</div>
-                <div class="metric-value" id="dashTaxas">—</div>
-                <div class="metric-detail">Com base na comissão configurada dos clientes</div>
+                <div class="metric-value" id="dashTaxas">â€”</div>
+                <div class="metric-detail">Com base na comissÃ£o configurada dos clientes</div>
               </div>
             </div>
 
@@ -984,8 +984,8 @@
               <div class="card">
                 <div class="card-header">
                   <div>
-                    <div class="card-title">Notas por dia (últimos 30 dias)</div>
-                    <div class="card-subtitle">Volume diário de emissões</div>
+                    <div class="card-title">Notas por dia (Ãºltimos 30 dias)</div>
+                    <div class="card-subtitle">Volume diÃ¡rio de emissÃµes</div>
                   </div>
                   <span class="badge">Linhas</span>
                 </div>
@@ -996,7 +996,7 @@
                 <div class="card-header">
                   <div>
                     <div class="card-title">Status das notas</div>
-                    <div class="card-subtitle">Distribuição por status atual</div>
+                    <div class="card-subtitle">DistribuiÃ§Ã£o por status atual</div>
                   </div>
                   <span class="badge">Pizza</span>
                 </div>
@@ -1220,7 +1220,7 @@
                       <th>CNPJ</th>
                       <th>Status</th>
                       <th>Criada em</th>
-                      <th>Ações</th>
+                      <th>AÃ§Ãµes</th>
                     </tr>
                   </thead>
                   <tbody id="empresasTableBody"></tbody>
@@ -1236,7 +1236,7 @@
                 <div>
                   <div class="card-title">Notas fiscais</div>
                   <div class="card-subtitle">
-                    Listagem com carregamento automático (scroll infinito)
+                    Listagem com carregamento automÃ¡tico (scroll infinito)
                   </div>
                 </div>
               </div>
@@ -1286,7 +1286,7 @@
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th>Data emissão</th>
+                      <th>Data emissÃ£o</th>
                       <th>Cliente</th>
                       <th>Empresa</th>
                       <th>Comprador</th>
@@ -1305,7 +1305,7 @@
                   <tbody id="notasTableBody"></tbody>
                 </table>
                 <div id="notasLoaderRow" class="loader-row">
-                  <span id="notasLoaderText">Rolando para carregar mais…</span>
+                  <span id="notasLoaderText">Rolando para carregar maisâ€¦</span>
                 </div>
               </div>
             </div>
@@ -1355,7 +1355,7 @@
               </div>
               <button class="btn-primary" id="btnPosAddTerminal">Salvar terminal</button>
               <div class="table-wrapper" style="max-height:320px; margin-top:10px">
-                <table><thead><tr><th>ID</th><th>Terminal</th><th>Empresa</th><th>Cliente</th><th>Status</th><th>Déb</th><th>Cr av</th><th>2-6x</th><th>7-12x</th><th>PIX</th><th>Ações</th></tr></thead><tbody id="posTerminalsTableBody"></tbody></table>
+                <table><thead><tr><th>ID</th><th>Terminal</th><th>Empresa</th><th>Cliente</th><th>Status</th><th>DÃ©b</th><th>Cr av</th><th>2-6x</th><th>7-12x</th><th>PIX</th><th>AÃ§Ãµes</th></tr></thead><tbody id="posTerminalsTableBody"></tbody></table>
               </div>
             </div>
           </section>
@@ -1432,7 +1432,7 @@
               <div class="card-header">
                 <div>
                   <div class="card-title">Fechamento POS</div>
-                  <div class="card-subtitle">Filtre por período/terminal, marque como pago e evite duplicidade</div>
+                  <div class="card-subtitle">Filtre por perÃ­odo/terminal, marque como pago e evite duplicidade</div>
                 </div>
                 <div style="display:flex; gap:6px; align-items:center">
                   <button class="btn-ghost" id="btnPosLimparResumo" style="padding:6px 10px">Limpar</button>
@@ -1446,17 +1446,17 @@
                 <div class="form-group checkbox" style="align-self:flex-end"><label><input type="checkbox" id="posResumoOnlyUnpaid" /> Somente a pagar</label></div>
               </div>
               <div class="grid grid-3">
-                <div class="metric-card"><div class="metric-label">Bruto período</div><div class="metric-value" id="posResumoBruto">?</div></div>
-                <div class="metric-card"><div class="metric-label">Taxas período</div><div class="metric-value" id="posResumoTaxas">?</div></div>
-                <div class="metric-card"><div class="metric-label">Líquido período</div><div class="metric-value" id="posResumoLiquido">?</div></div>
+                <div class="metric-card"><div class="metric-label">Bruto perÃ­odo</div><div class="metric-value" id="posResumoBruto">?</div></div>
+                <div class="metric-card"><div class="metric-label">Taxas perÃ­odo</div><div class="metric-value" id="posResumoTaxas">?</div></div>
+                <div class="metric-card"><div class="metric-label">LÃ­quido perÃ­odo</div><div class="metric-value" id="posResumoLiquido">?</div></div>
               </div>
               <div class="grid grid-2" style="margin-top:8px">
                 <div class="metric-card"><div class="metric-label">A pagar</div><div class="metric-value" id="posResumoAPagar">?</div></div>
                 <div class="metric-card"><div class="metric-label">Pago</div><div class="metric-value" id="posResumoPago">?</div></div>
               </div>
               <div class="grid grid-2" style="margin-top:10px">
-                <div class="metric-card"><div class="metric-label">Top terminal período</div><div class="metric-value" id="posResumoTopTerminal">?</div><div class="metric-detail" id="posResumoTopTerminalOwner"></div></div>
-                <div class="metric-card"><div class="metric-label">Maior venda período</div><div class="metric-value" id="posResumoMaiorVenda">?</div><div class="metric-detail" id="posResumoMaiorVendaInfo"></div></div>
+                <div class="metric-card"><div class="metric-label">Top terminal perÃ­odo</div><div class="metric-value" id="posResumoTopTerminal">?</div><div class="metric-detail" id="posResumoTopTerminalOwner"></div></div>
+                <div class="metric-card"><div class="metric-label">Maior venda perÃ­odo</div><div class="metric-value" id="posResumoMaiorVenda">?</div><div class="metric-detail" id="posResumoMaiorVendaInfo"></div></div>
               </div>
               <div class="table-wrapper" style="margin-top:12px; max-height:320px">
                 <table>
@@ -1478,7 +1478,7 @@
               </div>
               <div class="grid grid-3" style="margin-top:10px">
                 <div class="metric-card"><div class="metric-label">Total selecionado a pagar</div><div class="metric-value" id="posResumoTotalSelecionado">R$ 0,00</div></div>
-                <div class="metric-card"><div class="metric-label">PIX do cliente</div><div class="metric-value" id="posResumoPix">—</div></div>
+                <div class="metric-card"><div class="metric-label">PIX do cliente</div><div class="metric-value" id="posResumoPix">â€”</div></div>
                 <div class="metric-card"><div class="metric-label">Avisos</div><div class="metric-value" style="font-size:13px" id="posResumoSelectMsg"></div></div>
               </div>
               <div class="form-row" style="margin-top:10px">
@@ -1496,9 +1496,9 @@
             <div class="card">
               <div class="card-header">
                 <div>
-                  <div class="card-title">Relatórios</div>
+                  <div class="card-title">RelatÃ³rios</div>
                   <div class="card-subtitle">
-                    Visão consolidada por período, cliente e empresa
+                    VisÃ£o consolidada por perÃ­odo, cliente e empresa
                   </div>
                 </div>
                 <div class="tabs">
@@ -1507,7 +1507,7 @@
                     data-rel-tab="geral"
                     id="tabRelGeral"
                   >
-                    Visão geral
+                    VisÃ£o geral
                   </button>
                   <button class="tab-button" data-rel-tab="cliente" id="tabRelCliente">
                     Por cliente
@@ -1518,7 +1518,7 @@
                 </div>
               </div>
 
-              <!-- VISÃO GERAL -->
+              <!-- VISÃƒO GERAL -->
               <div
                 class="rel-subsection"
                 id="relGeralSection"
@@ -1537,33 +1537,33 @@
                       <label>Agrupar por</label>
                       <select id="relGroupBy">
                         <option value="day">Dia</option>
-                        <option value="month">Mês</option>
+                        <option value="month">MÃªs</option>
                       </select>
                     </div>
                   </div>
                   <div class="toolbar-right">
                     <button id="btnReloadReports" class="btn-secondary">
-                      Atualizar relatórios
+                      Atualizar relatÃ³rios
                     </button>
                   </div>
                 </div>
 
                 <div class="grid grid-3">
                   <div class="metric-card">
-                    <div class="metric-label">Notas no período</div>
-                    <div class="metric-value" id="relTotalNotas">—</div>
+                    <div class="metric-label">Notas no perÃ­odo</div>
+                    <div class="metric-value" id="relTotalNotas">â€”</div>
                     <div class="metric-detail">Quantidade de notas emitidas</div>
                   </div>
                   <div class="metric-card">
                     <div class="metric-label">Valor total (R$)</div>
-                    <div class="metric-value" id="relValorTotal">—</div>
+                    <div class="metric-value" id="relValorTotal">â€”</div>
                     <div class="metric-detail">Soma do valor total das notas</div>
                   </div>
                   <div class="metric-card">
                     <div class="metric-label">Taxas totais (R$)</div>
-                    <div class="metric-value" id="relTaxasTotal">—</div>
+                    <div class="metric-value" id="relTaxasTotal">â€”</div>
                     <div class="metric-detail">
-                      Somatório das taxas cobradas dos clientes
+                      SomatÃ³rio das taxas cobradas dos clientes
                     </div>
                   </div>
                 </div>
@@ -1572,8 +1572,8 @@
                   <div class="card">
                     <div class="card-header">
                       <div>
-                        <div class="card-title">Notas por período</div>
-                        <div class="card-subtitle">Agrupado por dia ou mês</div>
+                        <div class="card-title">Notas por perÃ­odo</div>
+                        <div class="card-subtitle">Agrupado por dia ou mÃªs</div>
                       </div>
                     </div>
                     <canvas id="chartRelPeriodo"></canvas>
@@ -1584,18 +1584,18 @@
                       <div>
                         <div class="card-title">Top cliente / empresa</div>
                         <div class="card-subtitle">
-                          Maior número de notas e maior volume financeiro
+                          Maior nÃºmero de notas e maior volume financeiro
                         </div>
                       </div>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px">
                       <div>
                         <span class="tag tag-muted">Cliente com mais notas</span>
-                        <div id="relTopCliente" style="margin-top: 4px">—</div>
+                        <div id="relTopCliente" style="margin-top: 4px">â€”</div>
                       </div>
                       <div>
                         <span class="tag tag-muted">Empresa com maior volume</span>
-                        <div id="relTopEmpresa" style="margin-top: 4px">—</div>
+                        <div id="relTopEmpresa" style="margin-top: 4px">â€”</div>
                       </div>
                     </div>
                   </div>
@@ -1634,7 +1634,7 @@
                   </div>
                   <div class="toolbar-right">
                     <button id="btnRelClienteGerar" class="btn-secondary">
-                      Gerar relatório por cliente
+                      Gerar relatÃ³rio por cliente
                     </button>
                   </div>
                 </div>
@@ -1642,21 +1642,21 @@
                 <div class="grid grid-3">
                   <div class="metric-card">
                     <div class="metric-label">Cliente</div>
-                    <div class="metric-value" id="relClienteNome">—</div>
-                    <div class="metric-detail" id="relClienteWhats">WhatsApp: —</div>
+                    <div class="metric-value" id="relClienteNome">â€”</div>
+                    <div class="metric-detail" id="relClienteWhats">WhatsApp: â€”</div>
                   </div>
                   <div class="metric-card">
-                    <div class="metric-label">Notas no período</div>
-                    <div class="metric-value" id="relClienteTotalNotas">—</div>
+                    <div class="metric-label">Notas no perÃ­odo</div>
+                    <div class="metric-value" id="relClienteTotalNotas">â€”</div>
                     <div class="metric-detail">Quantidade de notas emitidas</div>
                   </div>
                   <div class="metric-card">
                     <div class="metric-label">Total faturado / Taxas</div>
                     <div class="metric-detail">
-                      Faturamento: <span id="relClienteValorTotal">—</span>
+                      Faturamento: <span id="relClienteValorTotal">â€”</span>
                     </div>
                     <div class="metric-detail">
-                      Taxas: <span id="relClienteTaxasTotal">—</span>
+                      Taxas: <span id="relClienteTaxasTotal">â€”</span>
                     </div>
                   </div>
                 </div>
@@ -1665,8 +1665,8 @@
                   <div class="card">
                     <div class="card-header">
                       <div>
-                        <div class="card-title">Notas do cliente por período</div>
-                        <div class="card-subtitle">Volume diário/mensal</div>
+                        <div class="card-title">Notas do cliente por perÃ­odo</div>
+                        <div class="card-subtitle">Volume diÃ¡rio/mensal</div>
                       </div>
                     </div>
                     <canvas id="chartRelClientePeriodo"></canvas>
@@ -1701,7 +1701,7 @@
                     <div>
                       <div class="card-title">Notas do cliente</div>
                       <div class="card-subtitle">
-                        Lista completa das notas dentro do período
+                        Lista completa das notas dentro do perÃ­odo
                       </div>
                     </div>
                   </div>
@@ -1710,7 +1710,7 @@
                       <thead>
                         <tr>
                           <th>ID</th>
-                          <th>Emissão</th>
+                          <th>EmissÃ£o</th>
                           <th>Empresa</th>
                           <th>Valor total</th>
                           <th>Taxa (R$)</th>
@@ -1765,7 +1765,7 @@
                   </div>
                   <div class="toolbar-right">
                     <button id="btnRelEmpresaGerar" class="btn-secondary">
-                      Gerar relatório por empresa
+                      Gerar relatÃ³rio por empresa
                     </button>
                   </div>
                 </div>
@@ -1773,18 +1773,18 @@
                 <div class="grid grid-3">
                   <div class="metric-card">
                     <div class="metric-label">Empresa</div>
-                    <div class="metric-value" id="relEmpresaNome">—</div>
-                    <div class="metric-detail" id="relEmpresaCnpj">CNPJ: —</div>
+                    <div class="metric-value" id="relEmpresaNome">â€”</div>
+                    <div class="metric-detail" id="relEmpresaCnpj">CNPJ: â€”</div>
                   </div>
                   <div class="metric-card">
-                    <div class="metric-label">Notas no período</div>
-                    <div class="metric-value" id="relEmpresaTotalNotas">—</div>
+                    <div class="metric-label">Notas no perÃ­odo</div>
+                    <div class="metric-value" id="relEmpresaTotalNotas">â€”</div>
                     <div class="metric-detail">Quantidade de notas emitidas</div>
                   </div>
                   <div class="metric-card">
                     <div class="metric-label">Total faturado</div>
-                    <div class="metric-value" id="relEmpresaValorTotal">—</div>
-                    <div class="metric-detail">Somatório das notas da empresa</div>
+                    <div class="metric-value" id="relEmpresaValorTotal">â€”</div>
+                    <div class="metric-detail">SomatÃ³rio das notas da empresa</div>
                   </div>
                 </div>
 
@@ -1792,8 +1792,8 @@
                   <div class="card">
                     <div class="card-header">
                       <div>
-                        <div class="card-title">Notas da empresa por período</div>
-                        <div class="card-subtitle">Volume diário/mensal</div>
+                        <div class="card-title">Notas da empresa por perÃ­odo</div>
+                        <div class="card-subtitle">Volume diÃ¡rio/mensal</div>
                       </div>
                     </div>
                     <canvas id="chartRelEmpresaPeriodo"></canvas>
@@ -1828,7 +1828,7 @@
                     <div>
                       <div class="card-title">Notas da empresa</div>
                       <div class="card-subtitle">
-                        Lista completa das notas dentro do período
+                        Lista completa das notas dentro do perÃ­odo
                       </div>
                     </div>
                   </div>
@@ -1837,7 +1837,7 @@
                       <thead>
                         <tr>
                           <th>ID</th>
-                          <th>Emissão</th>
+                          <th>EmissÃ£o</th>
                           <th>Cliente</th>
                           <th>Valor total</th>
                           <th>Taxa (R$)</th>
@@ -1903,7 +1903,7 @@
 
         if (res.status === 401) {
           showLogin();
-          throw new Error("Não autorizado");
+          throw new Error("NÃ£o autorizado");
         }
 
         if (!res.ok) {
@@ -1945,7 +1945,7 @@
           await startAppAfterAuth();
         } catch (err) {
           console.error(err);
-          errorEl.textContent = "Credenciais inválidas.";
+          errorEl.textContent = "Credenciais invÃ¡lidas.";
           errorEl.style.display = "block";
         }
       }
@@ -2024,11 +2024,11 @@
             body: JSON.stringify({ email }),
           });
           infoEl.textContent =
-            "Se o e-mail estiver cadastrado, um link de recuperação foi enviado.";
+            "Se o e-mail estiver cadastrado, um link de recuperaÃ§Ã£o foi enviado.";
           infoEl.style.display = "block";
         } catch (err) {
           console.error(err);
-          errorEl.textContent = "Erro ao solicitar recuperação de senha.";
+          errorEl.textContent = "Erro ao solicitar recuperaÃ§Ã£o de senha.";
           errorEl.style.display = "block";
         }
       }
@@ -2037,7 +2037,7 @@
       // NAV / PAGES
       // ==========================
       function selectPage(page, anchor) {
-        // mostra apenas a seção selecionada
+        // mostra apenas a seÃ§Ã£o selecionada
         document.querySelectorAll(".page-section").forEach((sec) => sec.classList.remove("active"));
         const pageEl = document.getElementById("page-" + page);
         if (pageEl) pageEl.classList.add("active");
@@ -2072,13 +2072,13 @@
           loadRelatorios?.();
         }
 
-        // ações ao entrar em páginas
+        // aÃ§Ãµes ao entrar em pÃ¡ginas
         if (page === "notas") {
           resetNotasInfiniteScroll();
           loadNotasPage(true);
         }
         if (page.startsWith("pos")) {
-          // páginas POS independentes
+          // pÃ¡ginas POS independentes
           loadPosCompanies();
           loadPosTerminals();
           loadPosVendasRecentes();
@@ -2185,7 +2185,7 @@
         });
       }
 
-      // Converte valores que podem vir como string com vírgula/ponto
+      // Converte valores que podem vir como string com vÃ­rgula/ponto
       function toNumber(val) {
         if (!val) return 0;
         if (typeof val === "number") return val;
@@ -2199,10 +2199,10 @@
           // assume "." milhar e "," decimal
           normalized = cleaned.replace(/\./g, "").replace(",", ".");
         } else if (hasComma && !hasDot) {
-          // apenas vírgula, usa como decimal
+          // apenas vÃ­rgula, usa como decimal
           normalized = cleaned.replace(",", ".");
         }
-        // se só tiver ponto, mantém
+        // se sÃ³ tiver ponto, mantÃ©m
         return parseFloat(normalized) || 0;
       }
 
@@ -2309,7 +2309,7 @@
           document.getElementById("relValorTotal").textContent = formatCurrencyBRL(sumValor);
           document.getElementById("relTaxasTotal").textContent = formatCurrencyBRL(sumTaxas);
 
-          // ------ GRÁFICO POR PERÍODO ------
+          // ------ GRÃFICO POR PERÃODO ------
           if (chartRelPeriodo) chartRelPeriodo.destroy();
           const ctx = document.getElementById("chartRelPeriodo").getContext("2d");
           chartRelPeriodo = new Chart(ctx, {
@@ -2342,9 +2342,9 @@
             )[0];
 
             document.getElementById("relTopCliente").textContent =
-              `${topCliente.name || "—"} — ${topCliente.total_notas} notas, ${formatCurrencyBRL(toNumber(topCliente.soma_valor_total))}`;
+              `${topCliente.name || "â€”"} â€” ${topCliente.total_notas} notas, ${formatCurrencyBRL(toNumber(topCliente.soma_valor_total))}`;
           } else {
-            document.getElementById("relTopCliente").textContent = "—";
+            document.getElementById("relTopCliente").textContent = "â€”";
           }
 
           // ------ TOP EMPRESA ------
@@ -2355,13 +2355,13 @@
             )[0];
 
             document.getElementById("relTopEmpresa").textContent =
-              `${topEmpresa.name || "—"} — ${formatCurrencyBRL(toNumber(topEmpresa.soma_valor_total))} em notas`;
+              `${topEmpresa.name || "â€”"} â€” ${formatCurrencyBRL(toNumber(topEmpresa.soma_valor_total))} em notas`;
           } else {
-            document.getElementById("relTopEmpresa").textContent = "—";
+            document.getElementById("relTopEmpresa").textContent = "â€”";
           }
 
         } catch (err) {
-          console.error("Erro ao carregar relatórios:", err);
+          console.error("Erro ao carregar relatÃ³rios:", err);
         }
       }
 
@@ -2388,13 +2388,13 @@
         return { labels, counts };
       }
 
-      // RELATÓRIO POR CLIENTE
-      // RELATÓRIO POR CLIENTE
+      // RELATÃ“RIO POR CLIENTE
+      // RELATÃ“RIO POR CLIENTE
       async function loadRelatorioPorCliente() {
         const select = document.getElementById("relClienteSelect");
         const id = select.value;
 
-        // Se não tiver cliente selecionado, apenas sai silenciosamente
+        // Se nÃ£o tiver cliente selecionado, apenas sai silenciosamente
         if (!id) return;
 
         const start = document.getElementById("relClienteDataIni").value;
@@ -2412,9 +2412,9 @@
           const notas = data.notas || [];
 
           document.getElementById("relClienteNome").textContent =
-            cliente?.name || "—";
+            cliente?.name || "â€”";
           document.getElementById("relClienteWhats").textContent =
-            `WhatsApp: ${cliente?.whatsapp_number || "—"}`;
+            `WhatsApp: ${cliente?.whatsapp_number || "â€”"}`;
           document.getElementById("relClienteTotalNotas").textContent =
             totais.total_notas || 0;
           document.getElementById("relClienteValorTotal").textContent =
@@ -2422,7 +2422,7 @@
           document.getElementById("relClienteTaxasTotal").textContent =
             formatCurrencyBRL(totais.soma_taxas || 0);
 
-          // gráfico
+          // grÃ¡fico
           const { labels, counts } = groupByDateForChart(notas);
           if (chartRelClientePeriodo) chartRelClientePeriodo.destroy();
           const ctx = document.getElementById("chartRelClientePeriodo").getContext("2d");
@@ -2435,7 +2435,7 @@
           // tabela empresas
           const empMap = new Map();
           notas.forEach((n) => {
-            const nome = n.Company?.name || "—";
+            const nome = n.Company?.name || "â€”";
             const obj =
               empMap.get(nome) || { empresa: nome, total_notas: 0, soma_valor_total: 0 };
             obj.total_notas += 1;
@@ -2464,8 +2464,8 @@
               (n) => `
               <tr>
                 <td>${n.id}</td>
-                <td>${n.issued_at ? new Date(n.issued_at).toLocaleString("pt-BR") : "—"}</td>
-                <td>${n.Company?.name || "—"}</td>
+                <td>${n.issued_at ? new Date(n.issued_at).toLocaleString("pt-BR") : "â€”"}</td>
+                <td>${n.Company?.name || "â€”"}</td>
                 <td>${formatCurrencyBRL(n.total_amount)}</td>
                 <td>${formatCurrencyBRL(n.fee_value)}</td>
                 <td>${n.status}</td>
@@ -2475,16 +2475,16 @@
           notasBody.innerHTML = notasRows;
 
         } catch (err) {
-          console.error("Erro relatório por cliente:", err);
-          // NÃO MOSTRA ALERTA — só loga
+          console.error("Erro relatÃ³rio por cliente:", err);
+          // NÃƒO MOSTRA ALERTA â€” sÃ³ loga
         }
       }
 
 
 
 
-      // RELATÓRIO POR EMPRESA
-      // RELATÓRIO POR EMPRESA (versão corrigida)
+      // RELATÃ“RIO POR EMPRESA
+      // RELATÃ“RIO POR EMPRESA (versÃ£o corrigida)
       async function loadRelatorioPorEmpresa() {
         const select = document.getElementById("relEmpresaSelect");
         const id = select.value;
@@ -2507,16 +2507,16 @@
           const notas = data.notas || [];
 
           document.getElementById("relEmpresaNome").textContent =
-            empresa?.name || "—";
+            empresa?.name || "â€”";
           document.getElementById("relEmpresaCnpj").textContent =
-            `CNPJ: ${empresa?.cnpj || "—"}`;
+            `CNPJ: ${empresa?.cnpj || "â€”"}`;
 
           document.getElementById("relEmpresaTotalNotas").textContent =
             totais.total_notas || 0;
           document.getElementById("relEmpresaValorTotal").textContent =
             formatCurrencyBRL(totais.soma_valor_total || 0);
 
-          // Gráfico da empresa
+          // GrÃ¡fico da empresa
           const { labels, counts } = groupByDateForChart(notas);
           if (chartRelEmpresaPeriodo) chartRelEmpresaPeriodo.destroy();
 
@@ -2549,7 +2549,7 @@
           // Tabela de clientes atendidos pela empresa
           const cliMap = new Map();
           notas.forEach((n) => {
-            const nome = n.Customer?.name || "—";
+            const nome = n.Customer?.name || "â€”";
             const obj = cliMap.get(nome) || {
               cliente: nome,
               total_notas: 0,
@@ -2582,8 +2582,8 @@
               (n) => `
               <tr>
                 <td>${n.id}</td>
-                <td>${n.issued_at ? new Date(n.issued_at).toLocaleString("pt-BR") : "—"}</td>
-                <td>${n.Customer?.name || "—"}</td>
+                <td>${n.issued_at ? new Date(n.issued_at).toLocaleString("pt-BR") : "â€”"}</td>
+                <td>${n.Customer?.name || "â€”"}</td>
                 <td>${formatCurrencyBRL(n.total_amount)}</td>
                 <td>${formatCurrencyBRL(n.fee_value)}</td>
                 <td>${n.status}</td>
@@ -2594,8 +2594,8 @@
           notasBody.innerHTML = notasRows;
 
         } catch (err) {
-          console.error("Erro relatório por empresa:", err);
-          // Não usamos alert(), para não causar erro visual
+          console.error("Erro relatÃ³rio por empresa:", err);
+          // NÃ£o usamos alert(), para nÃ£o causar erro visual
         }
       }
 
@@ -2716,12 +2716,12 @@
         const nfChecked = document.getElementById("clienteUsaNF")?.checked || false;
         const posChecked = document.getElementById("clienteUsaPOS")?.checked || false;
 
-        // Se geral ativo mas nenhum serviço marcado, liga NF por padrão para permitir ativação
+        // Se geral ativo mas nenhum serviÃ§o marcado, liga NF por padrÃ£o para permitir ativaÃ§Ã£o
         if (geralSelect && geralSelect.value === "true" && !nfChecked && !posChecked) {
           const nfToggle = document.getElementById("clienteUsaNF");
           if (nfToggle) nfToggle.checked = true;
         }
-        // Se nenhum serviço estiver ativo, força geral para inativo
+        // Se nenhum serviÃ§o estiver ativo, forÃ§a geral para inativo
         const afterNf = document.getElementById("clienteUsaNF")?.checked || false;
         const afterPos = document.getElementById("clienteUsaPOS")?.checked || false;
         if (geralSelect && !afterNf && !afterPos) {
@@ -2957,7 +2957,7 @@
                   e.is_active ? "tag-success" : "tag-muted"
                 }">${e.is_active ? "Ativa" : "Inativa"}</span>
               </td>
-              <td>${e.created_at ? new Date(e.created_at).toLocaleString("pt-BR") : "—"}</td>
+              <td>${e.created_at ? new Date(e.created_at).toLocaleString("pt-BR") : "â€”"}</td>
               <td>
                 <button class="btn-ghost" data-edit-empresa="${e.id}">Editar</button>
                 <button class="btn-danger" data-del-empresa="${e.id}">Excluir</button>
@@ -3003,7 +3003,7 @@
         errEl.style.display = "none";
 
         if (!nome || !cnpj || !chave) {
-          errEl.textContent = "Preencha todos os campos obrigatórios.";
+          errEl.textContent = "Preencha todos os campos obrigatÃ³rios.";
           errEl.style.display = "block";
           return;
         }
@@ -3034,7 +3034,7 @@
           console.error(err);
           errEl.textContent = "Erro ao salvar empresa.";
           if (String(err.message).includes("CNPJ")) {
-            errEl.textContent = "Já existe uma empresa com esse CNPJ.";
+            errEl.textContent = "JÃ¡ existe uma empresa com esse CNPJ.";
           }
           errEl.style.display = "block";
         }
@@ -3072,7 +3072,7 @@
         notasState.allLoaded = [];
         document.getElementById("notasTableBody").innerHTML = "";
         document.getElementById("notasLoaderText").textContent =
-          "Rolando para carregar mais…";
+          "Rolando para carregar maisâ€¦";
       }
 
       function getNotasFiltersKey() {
@@ -3114,10 +3114,10 @@
 
           if (!notasState.hasMore) {
             document.getElementById("notasLoaderText").textContent =
-              "Não há mais notas para carregar.";
+              "NÃ£o hÃ¡ mais notas para carregar.";
           } else {
             document.getElementById("notasLoaderText").textContent =
-              "Rolando para carregar mais…";
+              "Rolando para carregar maisâ€¦";
           }
         } catch (err) {
           console.error("Erro ao carregar notas:", err);
@@ -3188,11 +3188,11 @@
             const tr = document.createElement("tr");
             const dt = n.issued_at
               ? new Date(n.issued_at).toLocaleString("pt-BR")
-              : "—";
+              : "â€”";
             const origem = n.is_terminal_sale ? "Maquininha" : "Manual";
             const nfLink = n.nf_link
               ? `<a href="${n.nf_link}" target="_blank" rel="noopener noreferrer">Download</a>`
-              : "—";
+              : "â€”";
             const statusClass =
               n.status === "PAGA"
                 ? "status-paga"
@@ -3203,17 +3203,17 @@
             tr.innerHTML = `
               <td>${n.id}</td>
               <td>${dt}</td>
-              <td>${n.Customer?.name || "—"}</td>
-              <td>${n.Company?.name || "—"}</td>
-              <td>${n.buyer_name || "—"}</td>
-              <td>${n.buyer_cpf || "—"}</td>
+              <td>${n.Customer?.name || "â€”"}</td>
+              <td>${n.Company?.name || "â€”"}</td>
+              <td>${n.buyer_name || "â€”"}</td>
+              <td>${n.buyer_cpf || "â€”"}</td>
               <td>${formatCurrencyBRL(n.total_amount)}</td>
-              <td>${n.paid_amount ? formatCurrencyBRL(n.paid_amount) : "—"}</td>
+              <td>${n.paid_amount ? formatCurrencyBRL(n.paid_amount) : "â€”"}</td>
               <td>${Number(n.fee_percent).toFixed(2)}%</td>
               <td>${formatCurrencyBRL(n.fee_value)}</td>
               <td>${origem}</td>
-              <td>${n.terminal_id || "—"}</td>
-              <td>${n.nsu || "—"}</td>
+              <td>${n.terminal_id || "â€”"}</td>
+              <td>${n.nsu || "â€”"}</td>
               <td>${nfLink}</td>
               <td><span class="status-pill ${statusClass}">${n.status}</span></td>
             `;
@@ -3381,7 +3381,7 @@
         const customer_id = document.getElementById("posTerminalCliente").value;
         const terminal_code = document.getElementById("posTerminalCode").value.trim();
         const is_active = document.getElementById("posTerminalAtivo").value === "true";
-        if (!pos_company_id || !customer_id || !terminal_code) return alert("Preencha empresa, cliente e código");
+        if (!pos_company_id || !customer_id || !terminal_code) return alert("Preencha empresa, cliente e cÃ³digo");
         try {
           const payload = { pos_company_id, customer_id, terminal_code, is_active };
           if (editingPosTerminalId) {
@@ -3470,14 +3470,14 @@
             <tr>
               <td>${t.id}</td>
               <td>${t.terminal_code}</td>
-              <td>${t.PosCompany?.name || "ƒ?"}</td>
-              <td>${t.Customer?.name || "ƒ?"}</td>
+              <td>${t.PosCompany?.name || "-"}</td>
+              <td>${t.Customer?.name || "-"}</td>
               <td>${statusTag}</td>
               <td>${Number(rate.debit_percent || 0).toFixed(2)}%</td>
               <td>${Number(rate.credit_avista_percent || 0).toFixed(2)}%</td>
               <td>${Number(rate.credit_2a6_percent || 0).toFixed(2)}%</td>
               <td>${Number(rate.credit_7a12_percent || 0).toFixed(2)}%</td>
-              <td>${rate.pix_key || "ƒ?"}</td>
+              <td>${rate.pix_key || "Æ’?"}</td>
               <td>
                 <button class="btn-ghost" data-edit-pos-terminal="${t.id}">Editar</button>
                 <button class="btn-danger" data-del-pos-terminal="${t.id}">Excluir</button>
@@ -3505,14 +3505,14 @@
           selVendaTerm.innerHTML =
             '<option value="">Selecione</option>' +
             (posTerminals || [])
-              .map((t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`)
+              .map((t) => `<option value="${t.id}">${t.Customer?.name || "-"} - ${t.terminal_code}</option>`)
               .join("");
         }
         if (selResumoTerm) {
           selResumoTerm.innerHTML =
             '<option value="">Todos</option>' +
             (posTerminals || [])
-              .map((t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`)
+              .map((t) => `<option value="${t.id}">${t.Customer?.name || "-"} - ${t.terminal_code}</option>`)
               .join("");
         }
       }
@@ -3531,14 +3531,14 @@
             <tr>
               <td>${t.id}</td>
               <td>${t.terminal_code}</td>
-              <td>${t.PosCompany?.name || "—"}</td>
-              <td>${t.Customer?.name || "—"}</td>
+              <td>${t.PosCompany?.name || "-"}</td>
+              <td>${t.Customer?.name || "-"}</td>
               <td>${t.is_active ? "Ativo" : "Inativo"}</td>
               <td>${Number(rate.debit_percent || 0).toFixed(2)}%</td>
               <td>${Number(rate.credit_avista_percent || 0).toFixed(2)}%</td>
               <td>${Number(rate.credit_2a6_percent || 0).toFixed(2)}%</td>
               <td>${Number(rate.credit_7a12_percent || 0).toFixed(2)}%</td>
-              <td>${rate.pix_key || "—"}</td>
+              <td>${rate.pix_key || "â€”"}</td>
               <td>
                 <button class="btn-ghost" data-edit-pos-terminal="${t.id}">Editar</button>
                 <button class="btn-danger" data-del-pos-terminal="${t.id}">Excluir</button>
@@ -3575,7 +3575,7 @@
             '<option value="">Selecione</option>' +
             (posTerminals || [])
               .map(
-                (t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`
+                (t) => `<option value="${t.id}">${t.Customer?.name || "-"} - ${t.terminal_code}</option>`
               )
               .join("");
         }
@@ -3583,7 +3583,7 @@
           selResumoTerm.innerHTML =
             '<option value="">Todos</option>' +
             (posTerminals || [])
-              .map((t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`)
+              .map((t) => `<option value="${t.id}">${t.Customer?.name || "-"} - ${t.terminal_code}</option>`)
               .join("");
         }
       }
@@ -3693,15 +3693,15 @@
       const topSum = Number(top?.dataValues?.soma ?? top?.soma ?? 0);
       document.getElementById("posResumoTopTerminal").textContent = top
         ? `${top.PosTerminal?.terminal_code || "?"} - ${formatCurrencyBRL(topSum || 0)}`
-        : "—";
+        : "â€”";
       document.getElementById("posResumoTopTerminalOwner").textContent = top
-        ? `Proprietário: ${top.PosTerminal?.Customer?.name || "—"}`
+        ? `ProprietÃ¡rio: ${top.PosTerminal?.Customer?.name || "â€”"}`
         : "";
 
       const mv = res.maiorVendaPeriodo;
       document.getElementById("posResumoMaiorVenda").textContent = mv
         ? formatCurrencyBRL(mv.amount)
-        : "—";
+        : "â€”";
       document.getElementById("posResumoMaiorVendaInfo").textContent = mv
         ? `${mv.PosTerminal?.terminal_code || "?"} - ${mv.Customer?.name || "?"}`
         : "";
@@ -3719,7 +3719,7 @@
           '<option value="">Todos</option>' +
           posTerminals
             .filter((t) => idsSet.includes(t.id))
-            .map((t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`)
+            .map((t) => `<option value="${t.id}">${t.Customer?.name || "-"} - ${t.terminal_code}</option>`)
             .join("");
         if (idsSet.includes(Number(current))) {
           selResumoTerm.value = current;
@@ -3742,9 +3742,9 @@
         (s) => `
       <tr>
         <td><input type="checkbox" data-sale-id="${s.id}" class="posResumoCheck" ${s.paid ? "disabled" : ""}></td>
-        <td>${s.sale_datetime ? new Date(s.sale_datetime).toLocaleString("pt-BR") : "—"}</td>
-        <td>${s.PosTerminal?.terminal_code || "—"}</td>
-        <td>${s.Customer?.name || "—"}</td>
+        <td>${s.sale_datetime ? new Date(s.sale_datetime).toLocaleString("pt-BR") : "â€”"}</td>
+        <td>${s.PosTerminal?.terminal_code || "â€”"}</td>
+        <td>${s.Customer?.name || "â€”"}</td>
         <td>${formatCurrencyBRL(s.amount)}</td>
         <td>${formatCurrencyBRL(s.fee_value)} (${Number(s.fee_percent || 0).toFixed(2)}%)</td>
         <td>${formatCurrencyBRL(s.net_amount)}</td>
@@ -3789,9 +3789,9 @@
     const first = selectedSales[0];
     if (first) {
       const cli = posClientes.find((c) => c.id === first.customer_id);
-      if (pixEl) pixEl.textContent = cli?.PosRate?.pix_key || "—";
+      if (pixEl) pixEl.textContent = cli?.PosRate?.pix_key || "â€”";
     } else {
-      if (pixEl) pixEl.textContent = "—";
+      if (pixEl) pixEl.textContent = "â€”";
     }
   }
 
@@ -3859,12 +3859,12 @@
 
     tbody.innerHTML = list
       .map((v) => {
-        const dt = v.sale_datetime ? new Date(v.sale_datetime).toLocaleString("pt-BR") : "—";
+        const dt = v.sale_datetime ? new Date(v.sale_datetime).toLocaleString("pt-BR") : "â€”";
         return `
           <tr>
             <td>${dt}</td>
-            <td>${v.Customer?.name || "—"}</td>
-            <td>${v.PosTerminal?.terminal_code || "—"}</td>
+            <td>${v.Customer?.name || "â€”"}</td>
+            <td>${v.PosTerminal?.terminal_code || "â€”"}</td>
             <td>${v.payment_type}</td>
             <td>${Number(v.fee_percent || 0).toFixed(2)}%</td>
             <td>${formatCurrencyBRL(v.amount)}</td>
@@ -3899,7 +3899,7 @@
     selVendaTerm.innerHTML =
       '<option value="">Selecione</option>' +
       list
-        .map((t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`)
+        .map((t) => `<option value="${t.id}">${t.Customer?.name || "-"} - ${t.terminal_code}</option>`)
         .join("");
   }
 
@@ -3966,19 +3966,19 @@
       tag.className = `tag ${sale.paid ? "tag-success" : "tag-danger"}`;
       tag.textContent = sale.paid ? "Pago" : "A pagar";
     }
-    set("posSaleModalData", sale.sale_datetime ? new Date(sale.sale_datetime).toLocaleString("pt-BR") : "—");
-    set("posSaleModalTerminal", sale.PosTerminal?.terminal_code || "—");
-    set("posSaleModalCliente", sale.Customer?.name || "—");
-    set("posSaleModalEmpresa", sale.PosCompany?.name || "—");
-    set("posSaleModalForma", sale.payment_type || "—");
-    set("posSaleModalNsu", sale.nsu || "—");
+    set("posSaleModalData", sale.sale_datetime ? new Date(sale.sale_datetime).toLocaleString("pt-BR") : "â€”");
+    set("posSaleModalTerminal", sale.PosTerminal?.terminal_code || "â€”");
+    set("posSaleModalCliente", sale.Customer?.name || "â€”");
+    set("posSaleModalEmpresa", sale.PosCompany?.name || "â€”");
+    set("posSaleModalForma", sale.payment_type || "â€”");
+    set("posSaleModalNsu", sale.nsu || "â€”");
     set("posSaleModalBruto", formatCurrencyBRL(sale.amount));
     set("posSaleModalTaxa", `${Number(sale.fee_percent || 0).toFixed(2)}% / ${formatCurrencyBRL(sale.fee_value)}`);
     set("posSaleModalLiquido", formatCurrencyBRL(sale.net_amount));
-    set("posSaleModalPagoEm", sale.paid_at ? new Date(sale.paid_at).toLocaleString("pt-BR") : "—");
-    set("posSaleModalLote", sale.payment_batch || "—");
+    set("posSaleModalPagoEm", sale.paid_at ? new Date(sale.paid_at).toLocaleString("pt-BR") : "â€”");
+    set("posSaleModalLote", sale.payment_batch || "â€”");
     const cli = posClientes.find((c) => c.id === sale.customer_id);
-    set("posSaleModalPix", cli?.PosRate?.pix_key || "—");
+    set("posSaleModalPix", cli?.PosRate?.pix_key || "â€”");
     if (modal) modal.style.display = "flex";
   }
 
@@ -4039,13 +4039,13 @@
               <td>${c.id}</td>
               <td>${c.name}</td>
               <td>${c.whatsapp_number}</td>
-              <td>${c.uses_pos === false ? "Não" : "Sim"}</td>
-              <td>${c.uses_nf ? "Sim" : "Não"}</td>
+              <td>${c.uses_pos === false ? "NÃ£o" : "Sim"}</td>
+              <td>${c.uses_nf ? "Sim" : "NÃ£o"}</td>
               <td>${Number(c.PosRate?.debit_percent || 0).toFixed(2)}%</td>
               <td>${Number(c.PosRate?.credit_avista_percent || 0).toFixed(2)}%</td>
               <td>${Number(c.PosRate?.credit_2a6_percent || 0).toFixed(2)}%</td>
               <td>${Number(c.PosRate?.credit_7a12_percent || 0).toFixed(2)}%</td>
-              <td>${c.PosRate?.pix_key || "—"}</td>
+              <td>${c.PosRate?.pix_key || "â€”"}</td>
               <td>
                 <button class="btn-ghost" data-edit-pos-cliente="${c.id}">Editar</button>
                 <button class="btn-danger" data-del-pos-cliente="${c.id}">Excluir</button>
@@ -4167,7 +4167,7 @@
             const current = document.body.getAttribute("data-theme");
             applyTheme(current === "dark" ? "light" : "dark");
           });
-        // Dashboard período padrão (mês atual)
+        // Dashboard perÃ­odo padrÃ£o (mÃªs atual)
         const now = new Date();
         const dashMesSel = document.getElementById("dashMesSelect");
         const dashAnoInput = document.getElementById("dashAnoInput");
@@ -4289,6 +4289,7 @@
         document.getElementById("posResumoTerminal")?.addEventListener("change", loadPosResumo);
         document.getElementById("posCompanySearch")?.addEventListener("input", renderPosCompanies);
         document.getElementById("posTerminalSearch")?.addEventListener("input", renderPosTerminals);
+        document.getElementById("posTerminalStatusFilter")?.addEventListener("change", renderPosTerminals);
         document.getElementById("posCliSearch")?.addEventListener("input", renderPosClientes);
         document.getElementById("posVendaTerminalSearch")?.addEventListener("input", renderPosVendas);
         document.getElementById("posVendaStatusFilter")?.addEventListener("change", renderPosVendas);
@@ -4468,7 +4469,7 @@
             loadNotasPage(false);
           });
 
-        // Relatórios - tabs
+        // RelatÃ³rios - tabs
         function setRelTab(tab) {
           document
             .querySelectorAll(".tab-button")
@@ -4533,23 +4534,25 @@
           <button class="btn-ghost" id="posSaleModalClose">Fechar</button>
         </div>
         <div class="modal-grid">
-          <div class="modal-field"><label>Data</label><div class="value" id="posSaleModalData">—</div></div>
-          <div class="modal-field"><label>Terminal</label><div class="value" id="posSaleModalTerminal">—</div></div>
-          <div class="modal-field"><label>Cliente</label><div class="value" id="posSaleModalCliente">—</div></div>
-          <div class="modal-field"><label>Empresa</label><div class="value" id="posSaleModalEmpresa">—</div></div>
-          <div class="modal-field"><label>Forma</label><div class="value" id="posSaleModalForma">—</div></div>
-          <div class="modal-field"><label>NSU</label><div class="value" id="posSaleModalNsu">—</div></div>
-          <div class="modal-field"><label>Bruto</label><div class="value" id="posSaleModalBruto">—</div></div>
-          <div class="modal-field"><label>Taxa (%/R$)</label><div class="value" id="posSaleModalTaxa">—</div></div>
-          <div class="modal-field"><label>Líquido</label><div class="value" id="posSaleModalLiquido">—</div></div>
-          <div class="modal-field"><label>Pago em</label><div class="value" id="posSaleModalPagoEm">—</div></div>
-          <div class="modal-field"><label>Lote pagamento</label><div class="value" id="posSaleModalLote">—</div></div>
-          <div class="modal-field"><label>PIX do cliente</label><div class="value" id="posSaleModalPix">—</div></div>
+          <div class="modal-field"><label>Data</label><div class="value" id="posSaleModalData">â€”</div></div>
+          <div class="modal-field"><label>Terminal</label><div class="value" id="posSaleModalTerminal">â€”</div></div>
+          <div class="modal-field"><label>Cliente</label><div class="value" id="posSaleModalCliente">â€”</div></div>
+          <div class="modal-field"><label>Empresa</label><div class="value" id="posSaleModalEmpresa">â€”</div></div>
+          <div class="modal-field"><label>Forma</label><div class="value" id="posSaleModalForma">â€”</div></div>
+          <div class="modal-field"><label>NSU</label><div class="value" id="posSaleModalNsu">â€”</div></div>
+          <div class="modal-field"><label>Bruto</label><div class="value" id="posSaleModalBruto">â€”</div></div>
+          <div class="modal-field"><label>Taxa (%/R$)</label><div class="value" id="posSaleModalTaxa">â€”</div></div>
+          <div class="modal-field"><label>LÃ­quido</label><div class="value" id="posSaleModalLiquido">â€”</div></div>
+          <div class="modal-field"><label>Pago em</label><div class="value" id="posSaleModalPagoEm">â€”</div></div>
+          <div class="modal-field"><label>Lote pagamento</label><div class="value" id="posSaleModalLote">â€”</div></div>
+          <div class="modal-field"><label>PIX do cliente</label><div class="value" id="posSaleModalPix">â€”</div></div>
         </div>
       </div>
     </div>
   </body>
 </html>
+
+
 
 
 
