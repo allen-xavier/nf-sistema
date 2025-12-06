@@ -26,11 +26,21 @@ router.get("/summary", async (req, res) => {
   try {
     const { start, end, group_by = "day" } = req.query;
 
+    // Normaliza datas para o inÇ’’cio/fim do dia para evitar pegar perÇ’’odos fora do intervalo
     const where = {};
     if (start || end) {
-      where.issued_at = {};
-      if (start) where.issued_at[Op.gte] = new Date(start);
-      if (end) where.issued_at[Op.lte] = new Date(`${end} 23:59:59`);
+      const issuedFilter = {};
+      if (start) {
+        const dStart = new Date(start);
+        dStart.setHours(0, 0, 0, 0);
+        issuedFilter[Op.gte] = dStart;
+      }
+      if (end) {
+        const dEnd = new Date(end);
+        dEnd.setHours(23, 59, 59, 999);
+        issuedFilter[Op.lte] = dEnd;
+      }
+      where.issued_at = issuedFilter;
     }
 
     // 1️⃣ Totais gerais
