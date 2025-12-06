@@ -2188,7 +2188,21 @@
       function toNumber(val) {
         if (!val) return 0;
         if (typeof val === "number") return val;
-        return Number(String(val).replace(/\./g, "").replace(",", ".")) || 0;
+        const str = String(val).trim();
+        const cleaned = str.replace(/[^\d.,-]/g, "");
+        const hasComma = cleaned.includes(",");
+        const hasDot = cleaned.includes(".");
+
+        let normalized = cleaned;
+        if (hasComma && hasDot) {
+          // assume "." milhar e "," decimal
+          normalized = cleaned.replace(/\./g, "").replace(",", ".");
+        } else if (hasComma && !hasDot) {
+          // apenas vírgula, usa como decimal
+          normalized = cleaned.replace(",", ".");
+        }
+        // se só tiver ponto, mantém
+        return parseFloat(normalized) || 0;
       }
 
       async function loadDashboard() {
