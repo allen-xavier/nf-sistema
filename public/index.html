@@ -3443,6 +3443,11 @@
         const digits = onlyDigits(searchRaw);
         const statusFilter = document.getElementById("posTerminalStatusFilter")?.value || "all";
         const list = (posTerminals || []).filter((t) => {
+          const isActive =
+            t.is_active === true ||
+            t.is_active === "true" ||
+            t.is_active === 1 ||
+            t.is_active === "1";
           if (!term && !digits && statusFilter === "all") return true;
           const terminalCode = normalizeText(t.terminal_code);
           const company = normalizeText(t.PosCompany?.name);
@@ -3455,14 +3460,19 @@
             (digits && (cnpjDigits.includes(digits) || onlyDigits(t.terminal_code).includes(digits)));
           const matchesStatus =
             statusFilter === "all" ||
-            (statusFilter === "true" && t.is_active) ||
-            (statusFilter === "false" && !t.is_active);
+            (statusFilter === "true" && isActive) ||
+            (statusFilter === "false" && !isActive);
           return matchesText && matchesStatus;
         });
 
         tbody.innerHTML = list
           .map((t) => {
             const rate = posClientes.find((c) => c.id === t.customer_id)?.PosRate || {};
+            const isActive =
+              t.is_active === true ||
+              t.is_active === "true" ||
+              t.is_active === 1 ||
+              t.is_active === "1";
             const statusTag = t.is_active
               ? '<span class="tag tag-success">Ativo</span>'
               : '<span class="tag tag-danger">Inativo</span>';
@@ -3472,7 +3482,7 @@
               <td>${t.terminal_code}</td>
               <td>${t.PosCompany?.name || "—"}</td>
               <td>${t.Customer?.name || "—"}</td>
-              <td>${statusTag}</td>
+              <td>${isActive ? '<span class="tag tag-success">Ativo</span>' : '<span class="tag tag-danger">Inativo</span>'}</td>
               <td>${Number(rate.debit_percent || 0).toFixed(2)}%</td>
               <td>${Number(rate.credit_avista_percent || 0).toFixed(2)}%</td>
               <td>${Number(rate.credit_2a6_percent || 0).toFixed(2)}%</td>
@@ -4227,6 +4237,7 @@
         document.getElementById("posResumoTerminal")?.addEventListener("change", loadPosResumo);
         document.getElementById("posCompanySearch")?.addEventListener("input", renderPosCompanies);
         document.getElementById("posTerminalSearch")?.addEventListener("input", renderPosTerminals);
+        document.getElementById("posTerminalStatusFilter")?.addEventListener("change", renderPosTerminals);
         document.getElementById("posCliSearch")?.addEventListener("input", renderPosClientes);
         document.getElementById("posVendaTerminalSearch")?.addEventListener("input", renderPosVendas);
         document.getElementById("posVendaStatusFilter")?.addEventListener("change", renderPosVendas);
