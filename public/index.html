@@ -1350,6 +1350,7 @@
               </div>
               <div class="form-row">
                 <div class="form-group"><label>Buscar terminal / empresa / cliente</label><input id="posTerminalSearch" placeholder="Filtrar" /></div>
+                <div class="form-group" style="max-width:140px"><label>Filtro status</label><select id="posTerminalStatusFilter"><option value="all">Todos</option><option value="true">Ativos</option><option value="false">Inativos</option></select></div>
                 <div class="form-group"><label>&nbsp;</label><button class="btn-secondary" id="btnPosLimparTerminal" style="width:100%">Novo / limpar</button></div>
               </div>
               <button class="btn-primary" id="btnPosAddTerminal">Salvar terminal</button>
@@ -3440,13 +3441,82 @@
         const searchRaw = document.getElementById("posTerminalSearch")?.value || "";
         const term = normalizeText(searchRaw);
         const digits = onlyDigits(searchRaw);
+        const statusFilter = document.getElementById("posTerminalStatusFilter")?.value || "all";
         const list = (posTerminals || []).filter((t) => {
-          if (!term && !digits) return true;
+          if (!term && !digits && statusFilter === "all") return true;
           const terminalCode = normalizeText(t.terminal_code);
           const company = normalizeText(t.PosCompany?.name);
           const customer = normalizeText(t.Customer?.name);
           const cnpjDigits = onlyDigits(t.PosCompany?.cnpj);
-          return (
+          const matchesText =
+            terminalCode.includes(term) ||
+            company.includes(term) ||
+            customer.includes(term) ||
+            (digits && (cnpjDigits.includes(digits) || onlyDigits(t.terminal_code).includes(digits)));
+          const matchesStatus =
+            statusFilter === "all" ||
+            (statusFilter === "true" && t.is_active) ||
+            (statusFilter === "false" && !t.is_active);
+          return matchesText && matchesStatus;
+        });
+
+        tbody.innerHTML = list
+          .map((t) => {
+            const rate = posClientes.find((c) => c.id === t.customer_id)?.PosRate || {};
+            const statusTag = t.is_active
+              ? '<span class="tag tag-success">Ativo</span>'
+              : '<span class="tag tag-danger">Inativo</span>';
+            return `
+            <tr>
+              <td>${t.id}</td>
+              <td>${t.terminal_code}</td>
+              <td>${t.PosCompany?.name || "ƒ?"}</td>
+              <td>${t.Customer?.name || "ƒ?"}</td>
+              <td>${statusTag}</td>
+              <td>${Number(rate.debit_percent || 0).toFixed(2)}%</td>
+              <td>${Number(rate.credit_avista_percent || 0).toFixed(2)}%</td>
+              <td>${Number(rate.credit_2a6_percent || 0).toFixed(2)}%</td>
+              <td>${Number(rate.credit_7a12_percent || 0).toFixed(2)}%</td>
+              <td>${rate.pix_key || "ƒ?"}</td>
+              <td>
+                <button class="btn-ghost" data-edit-pos-terminal="${t.id}">Editar</button>
+                <button class="btn-danger" data-del-pos-terminal="${t.id}">Excluir</button>
+              </td>
+            </tr>
+          `;
+          })
+          .join("");
+      }
+
+      
+        if (selCli) {
+          selCli.innerHTML =
+            '<option value="">Selecione</option>' +
+            (posClientes || []).map((c) => `<option value="${c.id}">${c.name}${c.whatsapp_number ? " (" + c.whatsapp_number + ")" : ""}</option>`).join("");
+        }
+        if (selRateCli) {
+          selRateCli.innerHTML =
+            '<option value="">Selecione</option>' +
+            (posClientes || [])
+              .map((c) => `<option value="${c.id}">${c.name}</option>`)
+              .join("");
+        }
+        if (selVendaTerm) {
+          selVendaTerm.innerHTML =
+            '<option value="">Selecione</option>' +
+            (posTerminals || [])
+              .map((t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`)
+              .join("");
+        }
+        if (selResumoTerm) {
+          selResumoTerm.innerHTML =
+            '<option value="">Todos</option>' +
+            (posTerminals || [])
+              .map((t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`)
+              .join("");
+        }
+      }
+
             terminalCode.includes(term) ||
             company.includes(term) ||
             customer.includes(term) ||
