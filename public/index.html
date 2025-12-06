@@ -835,11 +835,13 @@
             <span>Dashboard</span>
           </div>
 
-          <div class="sidebar-section-label">Nota Fiscal</div>
+          <div class="sidebar-section-label">Cadastros</div>
           <div class="nav-item" data-page="clientes">
-            <span class="icon">•</span>
-            <span>Clientes</span>
+            <span class="icon">???</span>
+            <span>Cadastro de Clientes</span>
           </div>
+
+          <div class="sidebar-section-label">Nota Fiscal</div>
           <div class="nav-item" data-page="empresas">
             <span class="icon">•</span>
             <span>Empresas</span>
@@ -861,10 +863,6 @@
           <div class="nav-item" data-page="pos-terminais">
             <span class="icon">•</span>
             <span>Terminais</span>
-          </div>
-          <div class="nav-item" data-page="pos-clientes">
-            <span class="icon">•</span>
-            <span>Clientes POS</span>
           </div>
           <div class="nav-item" data-page="pos-vendas">
             <span class="icon">•</span>
@@ -994,12 +992,15 @@
             <div class="card">
               <div class="card-header">
                 <div>
-                  <div class="card-title">Clientes</div>
+                  <div class="card-title">Cadastro de Clientes</div>
                   <div class="card-subtitle">
-                    Cadastro de clientes identificados por WhatsApp e taxa de comissão
+                    Clientes unicos para Nota Fiscal e Maquininhas, com taxas condicionais por servico
                   </div>
                 </div>
-                <button id="btnAddCliente" class="btn-primary">+ Adicionar cliente</button>
+                <div style="display:flex; gap:8px; flex-wrap:wrap">
+                  <button id="btnAddCliente" class="btn-secondary">Novo / limpar</button>
+                  <button id="btnSaveCliente" class="btn-primary">Salvar cliente</button>
+                </div>
               </div>
 
               <div class="toolbar">
@@ -1013,11 +1014,11 @@
                     />
                   </div>
                   <div class="form-group" style="max-width: 140px">
-                    <label>Comissão mínima (%)</label>
+                    <label>Taxa NF minima (%)</label>
                     <input type="number" id="clienteFeeMin" step="0.01" />
                   </div>
                   <div class="form-group" style="max-width: 140px">
-                    <label>Comissão máxima (%)</label>
+                    <label>Taxa NF maxima (%)</label>
                     <input type="number" id="clienteFeeMax" step="0.01" />
                   </div>
                 </div>
@@ -1029,7 +1030,7 @@
               </div>
 
               <!-- FORM CLIENTE -->
-              <div id="clienteFormWrapper" style="display: none; margin-bottom: 10px">
+              <div id="clienteFormWrapper" style="margin-bottom: 10px">
                 <div
                   style="
                     padding: 10px;
@@ -1048,15 +1049,15 @@
                       <input type="text" id="clienteNome" />
                     </div>
                     <div class="form-group">
-                      <label>WhatsApp</label>
+                      <label>WhatsApp (unico)</label>
                       <input type="text" id="clienteWhats" placeholder="+55..." />
                     </div>
-                    <div class="form-group" style="max-width: 140px">
-                      <label>Taxa (%)</label>
-                      <input type="number" id="clienteTaxa" step="0.01" />
+                    <div class="form-group">
+                      <label>Chave PIX</label>
+                      <input type="text" id="clientePix" placeholder="Opcional" />
                     </div>
                     <div class="form-group" style="max-width: 120px">
-                      <label>Status</label>
+                      <label>Status geral</label>
                       <select id="clienteAtivo">
                         <option value="true">Ativo</option>
                         <option value="false">Inativo</option>
@@ -1065,15 +1066,41 @@
                   </div>
                   <div class="form-row">
                     <div class="form-group checkbox">
-                      <label><input type="checkbox" id="clienteUsaNF" checked /> Ativo para Nota Fiscal</label>
+                      <label><input type="checkbox" id="clienteUsaPOS" /> Ativo POS</label>
                     </div>
                     <div class="form-group checkbox">
-                      <label><input type="checkbox" id="clienteUsaPOS" /> Ativo no POS</label>
+                      <label><input type="checkbox" id="clienteUsaNF" checked /> Ativo Nota Fiscal</label>
+                    </div>
+                  </div>
+                  <div class="form-row" id="clienteNfFields" style="display:none">
+                    <div class="form-group" style="max-width: 140px">
+                      <label>Taxa Nota Fiscal (%)</label>
+                      <input type="number" id="clienteTaxa" step="0.01" />
+                    </div>
+                  </div>
+                  <div class="form-row" id="clientePosFields" style="display:none">
+                    <div class="form-group">
+                      <label>Debito (%)</label>
+                      <input id="clienteDeb" type="number" step="0.01" />
+                    </div>
+                    <div class="form-group">
+                      <label>Credito a vista (%)</label>
+                      <input id="clienteCredAv" type="number" step="0.01" />
+                    </div>
+                  </div>
+                  <div class="form-row" id="clientePosFields2" style="display:none">
+                    <div class="form-group">
+                      <label>Credito 2 a 6x (%)</label>
+                      <input id="clienteCred2a6" type="number" step="0.01" />
+                    </div>
+                    <div class="form-group">
+                      <label>Credito 7 a 12x (%)</label>
+                      <input id="clienteCred7a12" type="number" step="0.01" />
                     </div>
                   </div>
                   <div style="display: flex; justify-content: flex-end; gap: 8px">
-                    <button id="btnCancelCliente" class="btn-secondary">Cancelar</button>
-                    <button id="btnSaveCliente" class="btn-primary">Salvar</button>
+                    <button id="btnCancelCliente" class="btn-secondary">Cancelar edicao</button>
+                    <button id="btnSaveCliente" class="btn-primary">Salvar / atualizar</button>
                   </div>
                   <div id="clienteFormError" class="error-text" style="display: none"></div>
                 </div>
@@ -1086,10 +1113,17 @@
                       <th>ID</th>
                       <th>Nome</th>
                       <th>WhatsApp</th>
-                      <th>Taxa (%)</th>
+                      <th>NF</th>
+                      <th>Taxa NF (%)</th>
+                      <th>POS</th>
+                      <th>Debito</th>
+                      <th>Cr av</th>
+                      <th>2-6x</th>
+                      <th>7-12x</th>
+                      <th>PIX</th>
                       <th>Status</th>
                       <th>Criado em</th>
-                      <th>Ações</th>
+                      <th>Acoes</th>
                     </tr>
                   </thead>
                   <tbody id="clientesTableBody"></tbody>
@@ -1097,7 +1131,6 @@
               </div>
             </div>
           </section>
-
           <!-- EMPRESAS -->
           <section id="page-empresas" class="page-section">
             <div class="card">
@@ -2014,8 +2047,8 @@
           topbarTitle.textContent = "Dashboard";
           topbarSubtitle.textContent = "Visao geral das notas fiscais, clientes e empresas";
         } else if (page === "clientes") {
-          topbarTitle.textContent = "Clientes";
-          topbarSubtitle.textContent = "Gestao de clientes identificados por WhatsApp";
+          topbarTitle.textContent = "Cadastro de Clientes";
+          topbarSubtitle.textContent = "Clientes unicos para NF e POS com taxas condicionais";
         } else if (page === "empresas") {
           topbarTitle.textContent = "Empresas emissoras";
           topbarSubtitle.textContent = "Configuracao das empresas que podem emitir notas";
@@ -2555,7 +2588,22 @@
 
       async function loadClientes() {
         try {
-          clientes = await apiFetch("/api/customers");
+          const base = await apiFetch("/api/customers");
+          const ratePairs = await Promise.all(
+            (base || []).map(async (c) => {
+              try {
+                const rate = await apiFetch(`/api/pos/rates/${c.id}`);
+                return [c.id, rate];
+              } catch {
+                return [c.id, null];
+              }
+            })
+          );
+          const rateMap = new Map(ratePairs);
+          clientes = (base || []).map((c) => ({
+            ...c,
+            PosRate: rateMap.get(c.id) || null,
+          }));
           renderClientes();
           return clientes;
         } catch (err) {
@@ -2566,23 +2614,25 @@
 
       function renderClientes() {
         const tbody = document.getElementById("clientesTableBody");
-        tbody.innerHTML = "";
+        if (!tbody) return;
 
         const searchRaw = document
           .getElementById("clienteSearch")
-          .value;
+          ?.value || "";
         const search = normalizeText(searchRaw);
         const searchDigits = onlyDigits(searchRaw);
         const feeMin = parseFloat(
-          document.getElementById("clienteFeeMin").value
+          document.getElementById("clienteFeeMin")?.value
         );
         const feeMax = parseFloat(
-          document.getElementById("clienteFeeMax").value
+          document.getElementById("clienteFeeMax")?.value
         );
         const ativoChip = document.querySelector(
           '.chip-filter[data-cliente-ativo].active'
         );
         const ativoFilter = ativoChip ? ativoChip.dataset.clienteAtivo : "all";
+
+        tbody.innerHTML = "";
 
         clientes
           .filter((c) => {
@@ -2596,8 +2646,11 @@
             )
               return false;
 
-            if (!isNaN(feeMin) && parseFloat(c.fee_percent) < feeMin) return false;
-            if (!isNaN(feeMax) && parseFloat(c.fee_percent) > feeMax) return false;
+            if (c.uses_nf !== false) {
+              const feeValue = parseFloat(c.fee_percent || 0);
+              if (!isNaN(feeMin) && feeValue < feeMin) return false;
+              if (!isNaN(feeMax) && feeValue > feeMax) return false;
+            }
 
             if (ativoFilter === "true" && !c.is_active) return false;
             if (ativoFilter === "false" && c.is_active) return false;
@@ -2605,18 +2658,30 @@
             return true;
           })
           .forEach((c) => {
+            const usesNF = c.uses_nf !== false;
+            const usesPOS = c.uses_pos !== false;
+            const rate = c.PosRate || {};
+            const nfFee = usesNF ? `${Number(c.fee_percent || 0).toFixed(2)}%` : "-";
+            const deb = usesPOS ? `${Number(rate.debit_percent || 0).toFixed(2)}%` : "-";
+            const credAv = usesPOS ? `${Number(rate.credit_avista_percent || 0).toFixed(2)}%` : "-";
+            const cred2a6 = usesPOS ? `${Number(rate.credit_2a6_percent || 0).toFixed(2)}%` : "-";
+            const cred7a12 = usesPOS ? `${Number(rate.credit_7a12_percent || 0).toFixed(2)}%` : "-";
+            const pix = usesPOS ? rate.pix_key || "-" : "-";
             const tr = document.createElement("tr");
             tr.innerHTML = `
               <td>${c.id}</td>
               <td>${c.name}</td>
               <td>${c.whatsapp_number}</td>
-              <td>${Number(c.fee_percent).toFixed(2)}%</td>
-              <td>
-                <span class="tag ${
-                  c.is_active ? "tag-success" : "tag-muted"
-                }">${c.is_active ? "Ativo" : "Inativo"}</span>
-              </td>
-              <td>${c.created_at ? new Date(c.created_at).toLocaleString("pt-BR") : "—"}</td>
+              <td>${usesNF ? "Sim" : "Nao"}</td>
+              <td>${nfFee}</td>
+              <td>${usesPOS ? "Sim" : "Nao"}</td>
+              <td>${deb}</td>
+              <td>${credAv}</td>
+              <td>${cred2a6}</td>
+              <td>${cred7a12}</td>
+              <td>${pix}</td>
+              <td><span class="tag ${c.is_active ? "tag-success" : "tag-muted"}">${c.is_active ? "Ativo" : "Inativo"}</span></td>
+              <td>${c.created_at ? new Date(c.created_at).toLocaleString("pt-BR") : "-"}</td>
               <td>
                 <button class="btn-ghost" data-edit-cliente="${c.id}">Editar</button>
                 <button class="btn-danger" data-del-cliente="${c.id}">Excluir</button>
@@ -2626,35 +2691,64 @@
           });
       }
 
+      function updateClienteSections() {
+        const usaNF = document.getElementById("clienteUsaNF")?.checked;
+        const usaPOS = document.getElementById("clienteUsaPOS")?.checked;
+        const nfRow = document.getElementById("clienteNfFields");
+        const posRow1 = document.getElementById("clientePosFields");
+        const posRow2 = document.getElementById("clientePosFields2");
+        if (nfRow) nfRow.style.display = usaNF ? "flex" : "none";
+        if (posRow1) posRow1.style.display = usaPOS ? "flex" : "none";
+        if (posRow2) posRow2.style.display = usaPOS ? "flex" : "none";
+      }
+
+      function resetClienteForm() {
+        editingClienteId = null;
+        document.getElementById("clienteNome").value = "";
+        document.getElementById("clienteWhats").value = "";
+        document.getElementById("clientePix").value = "";
+        document.getElementById("clienteTaxa").value = "";
+        document.getElementById("clienteDeb").value = "";
+        document.getElementById("clienteCredAv").value = "";
+        document.getElementById("clienteCred2a6").value = "";
+        document.getElementById("clienteCred7a12").value = "";
+        document.getElementById("clienteAtivo").value = "true";
+        document.getElementById("clienteUsaNF").checked = true;
+        document.getElementById("clienteUsaPOS").checked = false;
+        document.getElementById("btnSaveCliente").textContent = "Salvar cliente";
+        const errEl = document.getElementById("clienteFormError");
+        if (errEl) errEl.style.display = "none";
+        updateClienteSections();
+      }
+
       function openClienteForm(cliente) {
         document.getElementById("clienteFormWrapper").style.display = "block";
         document.getElementById("clienteFormError").style.display = "none";
 
         if (cliente) {
           editingClienteId = cliente.id;
-          document.getElementById("clienteNome").value = cliente.name;
-          document.getElementById("clienteWhats").value =
-            cliente.whatsapp_number;
-          document.getElementById("clienteTaxa").value = cliente.fee_percent;
+          document.getElementById("clienteNome").value = cliente.name || "";
+          document.getElementById("clienteWhats").value = cliente.whatsapp_number || "";
+          document.getElementById("clienteTaxa").value = cliente.fee_percent ?? "";
           document.getElementById("clienteAtivo").value = cliente.is_active
             ? "true"
             : "false";
           document.getElementById("clienteUsaNF").checked = cliente.uses_nf !== false;
           document.getElementById("clienteUsaPOS").checked = cliente.uses_pos !== false;
+          document.getElementById("clientePix").value = cliente.PosRate?.pix_key || "";
+          document.getElementById("clienteDeb").value = cliente.PosRate?.debit_percent ?? "";
+          document.getElementById("clienteCredAv").value = cliente.PosRate?.credit_avista_percent ?? "";
+          document.getElementById("clienteCred2a6").value = cliente.PosRate?.credit_2a6_percent ?? "";
+          document.getElementById("clienteCred7a12").value = cliente.PosRate?.credit_7a12_percent ?? "";
+          document.getElementById("btnSaveCliente").textContent = "Atualizar cliente";
+          updateClienteSections();
         } else {
-          editingClienteId = null;
-          document.getElementById("clienteNome").value = "";
-          document.getElementById("clienteWhats").value = "";
-          document.getElementById("clienteTaxa").value = "";
-          document.getElementById("clienteAtivo").value = "true";
-          document.getElementById("clienteUsaNF").checked = true;
-          document.getElementById("clienteUsaPOS").checked = false;
+          resetClienteForm();
         }
       }
 
       function closeClienteForm() {
-        document.getElementById("clienteFormWrapper").style.display = "none";
-        editingClienteId = null;
+        resetClienteForm();
       }
 
       async function saveCliente() {
@@ -2664,20 +2758,42 @@
         const ativo = document.getElementById("clienteAtivo").value === "true";
         const usaNF = document.getElementById("clienteUsaNF").checked;
         const usaPOS = document.getElementById("clienteUsaPOS").checked;
+        const pix = document.getElementById("clientePix").value.trim();
+        const deb = document.getElementById("clienteDeb").value.trim();
+        const credAv = document.getElementById("clienteCredAv").value.trim();
+        const cred2a6 = document.getElementById("clienteCred2a6").value.trim();
+        const cred7a12 = document.getElementById("clienteCred7a12").value.trim();
         const errEl = document.getElementById("clienteFormError");
 
-        errEl.style.display = "none";
+        if (errEl) errEl.style.display = "none";
 
-        if (!nome || !whats || taxa === "") {
-          errEl.textContent = "Preencha todos os campos obrigatórios.";
-          errEl.style.display = "block";
+        const missing = [];
+        if (!nome) missing.push("nome");
+        if (!whats) missing.push("WhatsApp");
+        if (usaNF && taxa === "") missing.push("taxa da Nota Fiscal");
+        if (usaPOS) {
+          if (deb === "") missing.push("percentual de debito");
+          if (credAv === "") missing.push("credito a vista");
+          if (cred2a6 === "") missing.push("credito 2 a 6x");
+          if (cred7a12 === "") missing.push("credito 7 a 12x");
+        }
+
+        if (missing.length) {
+          const message = `Preencha os campos obrigatorios: ${missing.join(", ")}.`;
+          if (errEl) {
+            errEl.textContent = message;
+            errEl.style.display = "block";
+          }
+          alert(message);
           return;
         }
+
+        const nfFee = usaNF ? parseFloat(taxa || "0") : 0;
 
         const payload = {
           name: nome,
           whatsapp_number: whats,
-          fee_percent: parseFloat(taxa),
+          fee_percent: nfFee,
           is_active: ativo,
           uses_nf: usaNF,
           uses_pos: usaPOS,
@@ -2690,9 +2806,23 @@
               body: JSON.stringify(payload),
             });
           } else {
-            await apiFetch("/api/customers", {
+            const created = await apiFetch("/api/customers", {
               method: "POST",
               body: JSON.stringify(payload),
+            });
+            editingClienteId = created.id;
+          }
+
+          if (usaPOS && editingClienteId) {
+            await apiFetch(`/api/pos/rates/${editingClienteId}`, {
+              method: "POST",
+              body: JSON.stringify({
+                pix_key: pix,
+                debit_percent: Number(deb || 0),
+                credit_avista_percent: Number(credAv || 0),
+                credit_2a6_percent: Number(cred2a6 || 0),
+                credit_7a12_percent: Number(cred7a12 || 0),
+              }),
             });
           }
           closeClienteForm();
@@ -2701,12 +2831,15 @@
           populateRelatorioSelects(list, empresas);
         } catch (err) {
           console.error(err);
-          errEl.textContent = "Erro ao salvar cliente.";
-          if (String(err.message).includes("WhatsApp")) {
-            errEl.textContent =
-              "Já existe um cliente com esse número de WhatsApp.";
+          if (errEl) {
+            errEl.textContent = "Erro ao salvar cliente.";
+            if (String(err.message).includes("WhatsApp")) {
+              errEl.textContent =
+                "Ja existe um cliente com esse numero de WhatsApp.";
+            }
+            errEl.style.display = "block";
           }
-          errEl.style.display = "block";
+          alert("Erro ao salvar cliente. Verifique os dados obrigatorios.");
         }
       }
 
@@ -2722,7 +2855,6 @@
           alert("Erro ao excluir cliente.");
         }
       }
-
       // ==========================
       // EMPRESAS
       // ==========================
@@ -4106,13 +4238,18 @@
         // Clientes
         document
           .getElementById("btnAddCliente")
-          .addEventListener("click", () => openClienteForm(null));
+          .addEventListener("click", () => resetClienteForm());
         document
           .getElementById("btnCancelCliente")
-          .addEventListener("click", closeClienteForm);
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            resetClienteForm();
+          });
         document
           .getElementById("btnSaveCliente")
           .addEventListener("click", saveCliente);
+        document.getElementById("clienteUsaNF")?.addEventListener("change", updateClienteSections);
+        document.getElementById("clienteUsaPOS")?.addEventListener("change", updateClienteSections);
 
         document
           .getElementById("clienteSearch")
@@ -4134,6 +4271,8 @@
               renderClientes();
             });
           });
+
+        updateClienteSections();
 
         document
           .getElementById("clientesTableBody")
