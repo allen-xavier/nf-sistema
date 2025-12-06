@@ -78,6 +78,8 @@
         display: flex;
         flex-direction: column;
         padding: 16px 12px;
+        border-right: 1px solid #1f2937;
+        box-shadow: 6px 0 18px rgba(0, 0, 0, 0.22);
       }
 
       .sidebar-header {
@@ -124,7 +126,7 @@
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.16em;
-        color: #4b5563;
+        color: #6b7280;
         padding: 0 10px;
         margin: 12px 0 6px;
       }
@@ -132,28 +134,44 @@
       .nav-item {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 10px 10px;
+        gap: 10px;
+        padding: 10px 12px;
         border-radius: 10px;
         margin: 2px 0;
-        color: #9ca3af;
+        color: #cbd5e1;
         font-size: 14px;
-        transition: background 0.15s ease, color 0.15s ease, transform 0.1s;
+        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        border: 1px solid transparent;
       }
 
       .nav-item span.icon {
-        font-size: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 24px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        font-size: 12px;
+        font-weight: 700;
+        color: inherit;
+        letter-spacing: 0.05em;
       }
 
       .nav-item.active {
-        background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+        background: rgba(255, 255, 255, 0.06);
         color: #f9fafb;
-        transform: translateY(-1px);
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+
+      .nav-item.active .icon {
+        background: rgba(255, 255, 255, 0.12);
       }
 
       .nav-item:hover {
         background: var(--bg-sidebar-hover);
         color: #e5e7eb;
+        border-color: rgba(255, 255, 255, 0.08);
       }
 
       .sidebar-footer {
@@ -831,45 +849,45 @@
         <nav class="sidebar-nav">
           <div class="sidebar-section-label">Visao Geral</div>
           <div class="nav-item" data-page="dashboard">
-            <span class="icon">•</span>
+            <span class="icon">D</span>
             <span>Dashboard</span>
           </div>
 
           <div class="sidebar-section-label">Cadastros</div>
           <div class="nav-item" data-page="clientes">
-            <span class="icon">???</span>
+            <span class="icon">CL</span>
             <span>Cadastro de Clientes</span>
           </div>
 
           <div class="sidebar-section-label">Nota Fiscal</div>
           <div class="nav-item" data-page="empresas">
-            <span class="icon">•</span>
+            <span class="icon">E</span>
             <span>Empresas</span>
           </div>
           <div class="nav-item" data-page="notas">
-            <span class="icon">•</span>
+            <span class="icon">NF</span>
             <span>Notas Fiscais</span>
           </div>
           <div class="nav-item" data-page="relatorios">
-            <span class="icon">•</span>
+            <span class="icon">R</span>
             <span>Relatorios</span>
           </div>
 
           <div class="sidebar-section-label">Maquininhas</div>
           <div class="nav-item" data-page="pos-empresas">
-            <span class="icon">•</span>
+            <span class="icon">PE</span>
             <span>Empresas POS</span>
           </div>
           <div class="nav-item" data-page="pos-terminais">
-            <span class="icon">•</span>
+            <span class="icon">PT</span>
             <span>Terminais</span>
           </div>
           <div class="nav-item" data-page="pos-vendas">
-            <span class="icon">•</span>
+            <span class="icon">PV</span>
             <span>Vendas</span>
           </div>
           <div class="nav-item" data-page="pos-resumo">
-            <span class="icon">•</span>
+            <span class="icon">PR</span>
             <span>Resumo POS</span>
           </div>
         </nav>
