@@ -3487,68 +3487,6 @@
           })
           .join("");
       }
-
-      
-        if (selCli) {
-          selCli.innerHTML =
-            '<option value="">Selecione</option>' +
-            (posClientes || []).map((c) => `<option value="${c.id}">${c.name}${c.whatsapp_number ? " (" + c.whatsapp_number + ")" : ""}</option>`).join("");
-        }
-        if (selRateCli) {
-          selRateCli.innerHTML =
-            '<option value="">Selecione</option>' +
-            (posClientes || [])
-              .map((c) => `<option value="${c.id}">${c.name}</option>`)
-              .join("");
-        }
-        if (selVendaTerm) {
-          selVendaTerm.innerHTML =
-            '<option value="">Selecione</option>' +
-            (posTerminals || [])
-              .map((t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`)
-              .join("");
-        }
-        if (selResumoTerm) {
-          selResumoTerm.innerHTML =
-            '<option value="">Todos</option>' +
-            (posTerminals || [])
-              .map((t) => `<option value="${t.id}">${t.Customer?.name || "Cliente"} - ${t.terminal_code}</option>`)
-              .join("");
-        }
-      }
-
-            terminalCode.includes(term) ||
-            company.includes(term) ||
-            customer.includes(term) ||
-            (digits && (cnpjDigits.includes(digits) || onlyDigits(t.terminal_code).includes(digits)))
-          );
-        });
-
-        tbody.innerHTML = list
-          .map((t) => {
-            const rate = posClientes.find((c) => c.id === t.customer_id)?.PosRate || {};
-            return `
-            <tr>
-              <td>${t.id}</td>
-              <td>${t.terminal_code}</td>
-              <td>${t.PosCompany?.name || "—"}</td>
-              <td>${t.Customer?.name || "—"}</td>
-              <td>${t.is_active ? "Ativo" : "Inativo"}</td>
-              <td>${Number(rate.debit_percent || 0).toFixed(2)}%</td>
-              <td>${Number(rate.credit_avista_percent || 0).toFixed(2)}%</td>
-              <td>${Number(rate.credit_2a6_percent || 0).toFixed(2)}%</td>
-              <td>${Number(rate.credit_7a12_percent || 0).toFixed(2)}%</td>
-              <td>${rate.pix_key || "—"}</td>
-              <td>
-                <button class="btn-ghost" data-edit-pos-terminal="${t.id}">Editar</button>
-                <button class="btn-danger" data-del-pos-terminal="${t.id}">Excluir</button>
-              </td>
-            </tr>
-          `;
-          })
-          .join("");
-      }
-
       function fillPosSelects() {
         const selEmp = document.getElementById("posTerminalEmpresa");
         const selCli = document.getElementById("posTerminalCliente");
