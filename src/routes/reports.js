@@ -83,6 +83,7 @@ router.get("/summary", async (req, res) => {
         [literal(dateFormat), "label"],
         [fn("COUNT", col("id")), "total_notas"],
         [fn("SUM", col("total_amount")), "soma_valor_total"],
+        [fn("SUM", col("fee_value")), "soma_taxas"],
       ],
       group: ["label"],
       raw: true,
