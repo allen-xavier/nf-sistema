@@ -11,9 +11,8 @@ function parseBool(val) {
   return false;
 }
 
-// Todas as rotas abaixo exigem admin
+// Todas as rotas abaixo exigem autenticação (qualquer usuário logado)
 router.use(authMiddleware);
-router.use(adminOnly);
 
 /**
  * GET /api/invoices?page=1&limit=50&terminal_sale=true|false
@@ -246,9 +245,9 @@ router.put("/:id", async (req, res) => {
 });
 
 /**
- * DELETE /api/invoices/:id
+ * DELETE /api/invoices/:id (admin only)
  */
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", adminOnly, async (req, res) => {
   try {
     const id = Number(req.params.id);
     const invoice = await Invoice.findByPk(id);

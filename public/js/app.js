@@ -291,4 +291,9 @@ window.app = {
 
 // ============ START ============
 
+window.addEventListener('error', (e) => {
+  console.error('[NF] Uncaught error:', e.message, e.filename, e.lineno);
+  document.body.innerHTML = `<div style="padding:40px;font-family:monospace;color:red"><h2>Erro ao carregar</h2><pre>${e.message}\n${e.filename}:${e.lineno}</pre></div>`;
+});
+
 document.addEventListener('DOMContentLoaded', initApp);

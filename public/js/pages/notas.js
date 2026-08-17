@@ -1,8 +1,8 @@
 /* Notas Page - Full with infinite scroll and filters */
 
 import { invoices } from '../api.js';
-import { formatDate, showNotification, formatCurrency, createEmptyState, showModal, debounce } from '../ui.js';
-import { setData, getData } from '../state.js';
+import { formatDate, showNotification, formatCurrency, createEmptyState, showModal, showConfirmDialog, debounce } from '../ui.js';
+import { setData, getData, getState } from '../state.js';
 
 let notasState = {
   data: [],
@@ -163,6 +163,8 @@ function appendRows(notes) {
   const tbody = document.getElementById('notasTableBody');
   if (!tbody) return;
 
+  const isAdmin = getState().currentUser?.is_admin;
+
   notes.forEach((nota) => {
     const tr = document.createElement('tr');
     tr.style.cursor = 'pointer';
@@ -182,8 +184,9 @@ function appendRows(notes) {
       <td>${formatCurrency(totalAmount)}</td>
       <td>${feePercent.toFixed(2)}%</td>
       <td>${formatCurrency(feeValue)}</td>
-      <td>
+      <td style="display: flex; gap: 4px">
         <button class="btn btn-ghost" data-action="view" data-id="${nota.id}">👁</button>
+        ${isAdmin ? `<button class="btn btn-danger" data-action="delete" data-id="${nota.id}">✕</button>` : ''}
       </td>
     `;
 
@@ -191,6 +194,14 @@ function appendRows(notes) {
       e.stopPropagation();
       viewNotaDetail(nota);
     });
+
+    const deleteBtn = tr.querySelector('[data-action="delete"]');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteNota(nota.id);
+      });
+    }
 
     tbody.appendChild(tr);
   });
@@ -339,4 +350,24 @@ function viewNotaDetail(nota) {
   `;
 
   showModal(`Nota Fiscal #${nota.id}`, content, []);
+}
+
+function deleteNota(id) {
+  showConfirmDialog(
+    'Excluir nota fiscal',
+    `Deseja excluir a nota fiscal #${id}? Esta ação não pode ser desfeita.`,
+    async () => {
+      try {
+        await invoices.delete(id);
+        showNotification('Nota fiscal excluída', 'success');
+        const pageEl = document.getElementById('page-notas');
+        notasState.page = 1;
+        notasState.exhausted = false;
+        notasState.data = [];
+        await loadNotas(pageEl, false);
+      } catch (error) {
+        showNotification(error.message || 'Erro ao excluir nota', 'error');
+      }
+    }
+  );
 }

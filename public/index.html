@@ -168,6 +168,14 @@
     <!-- Notification Container -->
     <div id="notificationContainer" class="notification-container"></div>
 
+    <!-- Error handler for module loading failures -->
+    <script>
+      window.addEventListener('error', function(e) {
+        if (document.body.children.length <= 3) {
+          document.body.innerHTML = '<div style="padding:40px;font-family:monospace;color:#ef4444"><h2>Erro ao carregar aplicação</h2><pre>' + (e.message || 'Unknown error') + '\n' + (e.filename || '') + ':' + (e.lineno || '') + '</pre><p>Verifique o console do navegador (F12).</p></div>';
+        }
+      });
+    </script>
     <!-- Scripts -->
     <script type="module" src="/js/app.js"></script>
   </body>

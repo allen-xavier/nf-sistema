@@ -2,7 +2,7 @@
 
 import { customers } from '../api.js';
 import { formatDate, showNotification, showConfirmDialog, createEmptyState, formatPhoneNumber, debounce } from '../ui.js';
-import { setData, getData } from '../state.js';
+import { setData, getData, getState } from '../state.js';
 
 let currentEditId = null;
 
@@ -82,8 +82,8 @@ function renderClientes(pageEl, clientesList) {
               <input type="text" id="clienteWhats" placeholder="+55..." />
             </div>
             <div class="form-group" style="max-width: 140px">
-              <label>Taxa NF (%)</label>
-              <input type="number" id="clienteTaxa" step="0.01" />
+              <label>Taxa NF (%) <span id="taxaMinLabel" style="color: var(--danger); font-size: 10px"></span></label>
+              <input type="number" id="clienteTaxa" step="0.01" min="2" />
             </div>
             <div class="form-group" style="max-width: 120px">
               <label>Status</label>
@@ -125,7 +125,12 @@ function renderClientes(pageEl, clientesList) {
   pageEl.innerHTML = html;
 
   const tbody = document.getElementById('clientesTableBody');
+  const currentUser = getState().currentUser;
+  const isAdmin = currentUser?.is_admin;
+
   clientesList.forEach((cliente) => {
+    const canEdit = isAdmin || cliente.created_by_user_id === currentUser?.id;
+    const ownerName = cliente.CreatedBy?.name || '';
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong>${cliente.name}</strong></td>
@@ -134,9 +139,12 @@ function renderClientes(pageEl, clientesList) {
       <td>${cliente.fee_percent || '—'}%</td>
       <td><span class="status-pill status-${cliente.is_active ? 'paga' : 'cancelada'}">${cliente.is_active ? '✓ Ativo' : '✗ Inativo'}</span></td>
       <td>${formatDate(cliente.created_at)}</td>
-      <td style="display: flex; gap: 4px">
-        <button class="btn btn-ghost" data-action="edit" data-id="${cliente.id}">Editar</button>
-        <button class="btn btn-danger" data-action="delete" data-id="${cliente.id}">✕</button>
+      <td style="display: flex; gap: 4px; align-items: center">
+        ${canEdit
+          ? `<button class="btn btn-ghost" data-action="edit" data-id="${cliente.id}">Editar</button>
+             <button class="btn btn-danger" data-action="delete" data-id="${cliente.id}">✕</button>`
+          : `<span style="font-size: 11px; color: var(--text-muted)">🔒 ${ownerName}</span>`
+        }
       </td>
     `;
     tbody.appendChild(tr);
@@ -171,6 +179,26 @@ function renderClientes(pageEl, clientesList) {
   // Toggle form
   document.getElementById('btnToggleForm').addEventListener('click', () => toggleForm());
   document.getElementById('btnSaveCliente').addEventListener('click', saveCliente);
+
+  // Taxa mínima: admin pode qualquer valor, operador mínimo 2%
+  const taxaInput = document.getElementById('clienteTaxa');
+  const taxaLabel = document.getElementById('taxaMinLabel');
+
+  if (!isAdmin) {
+    taxaInput.min = '2';
+    taxaLabel.textContent = '(mín. 2%)';
+    taxaInput.addEventListener('input', () => {
+      const val = parseFloat(taxaInput.value);
+      if (val && val < 2) {
+        taxaInput.style.borderColor = 'var(--danger)';
+      } else {
+        taxaInput.style.borderColor = '';
+      }
+    });
+  } else {
+    taxaInput.removeAttribute('min');
+    taxaLabel.textContent = '';
+  }
 }
 
 function toggleForm(show = null) {
@@ -227,6 +255,14 @@ async function saveCliente() {
 
   if (fee_percent == null || isNaN(fee_percent)) {
     errorEl.textContent = 'Taxa é obrigatória';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  // Validação de taxa mínima para não-admin
+  const user = getState().currentUser;
+  if (!user?.is_admin && fee_percent < 2) {
+    errorEl.textContent = 'Taxa mínima é 2%. Não é permitido valor inferior.';
     errorEl.style.display = 'block';
     return;
   }

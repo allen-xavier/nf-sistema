@@ -1,12 +1,11 @@
 ﻿const express = require("express");
 const { Op, fn, col, literal, where: whereFn } = require("sequelize");
 const { Invoice, Customer, Company } = require("../models");
-const { authMiddleware, adminOnly } = require("../middleware/auth");
+const { authMiddleware } = require("../middleware/auth");
 
 const router = express.Router();
 
 router.use(authMiddleware);
-router.use(adminOnly);
 
 function buildDateWhere(base = {}, start, end) {
   const where = { ...base };
