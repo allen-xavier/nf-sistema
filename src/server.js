@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
+const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -16,15 +17,24 @@ const authRoutes = require("./routes/auth");
 // Rotas NOVAS
 const reportsRoutes = require("./routes/reports");
 const authExtraRoutes = require("./routes/authExtra");
-// POS (maquininha)
+// POS (maquininha) - mantidas para integração n8n
 const posCompaniesRoutes = require("./routes/pos/companies");
 const posTerminalsRoutes = require("./routes/pos/terminals");
 const posRatesRoutes = require("./routes/pos/rates");
 const posSalesRoutes = require("./routes/pos/sales");
 const posReportsRoutes = require("./routes/pos/reports");
 
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // Rotas API
 app.use("/api/customers", customersRoutes);
@@ -41,7 +51,12 @@ app.use("/api/pos/sales", posSalesRoutes);
 app.use("/api/pos/reports", posReportsRoutes);
 
 // Arquivos estáticos (frontend)
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "..", "public")));
+
+// Healthcheck
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", uptime: process.uptime(), timestamp: new Date().toISOString() });
+});
 
 /**
  * Inicialização principal
