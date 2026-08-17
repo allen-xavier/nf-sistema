@@ -8,6 +8,7 @@ const pages = {
   empresas: 'Empresas',
   notas: 'Notas Fiscais',
   relatorios: 'Relatórios',
+  usuarios: 'Usuários',
 };
 
 const pageSubtitles = {
@@ -16,6 +17,7 @@ const pageSubtitles = {
   empresas: 'Cadastro das empresas autorizadas a emitir notas fiscais',
   notas: 'Listagem de todas as notas fiscais emitidas',
   relatorios: 'Relatórios e análises de desempenho',
+  usuarios: 'Gerencie os operadores do sistema',
 };
 
 let currentPageElement = null;

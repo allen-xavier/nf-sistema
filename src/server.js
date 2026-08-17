@@ -17,6 +17,7 @@ const authRoutes = require("./routes/auth");
 // Rotas NOVAS
 const reportsRoutes = require("./routes/reports");
 const authExtraRoutes = require("./routes/authExtra");
+const usersRoutes = require("./routes/users");
 // POS (maquininha) - mantidas para integração n8n
 const posCompaniesRoutes = require("./routes/pos/companies");
 const posTerminalsRoutes = require("./routes/pos/terminals");
@@ -42,6 +43,7 @@ app.use("/api/companies", companiesRoutes);
 app.use("/api/invoices", invoicesRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", authExtraRoutes); // forgot-password
+app.use("/api/users", usersRoutes);
 app.use("/api/reports", reportsRoutes);
 // POS (maquininha)
 app.use("/api/pos/companies", posCompaniesRoutes);
@@ -90,9 +92,17 @@ async function start() {
           email: adminEmail,
           password_hash: hash,
           is_admin: true,
+          status: "ACTIVE",
+          activated_at: new Date(),
         });
         console.log("Usuário admin criado:", adminEmail);
       } else {
+        // Garantir que admin existente tenha status ACTIVE
+        if (!existing.status || existing.status === 'PENDING') {
+          existing.status = 'ACTIVE';
+          existing.activated_at = existing.activated_at || new Date();
+          await existing.save();
+        }
         console.log("Usuário admin já existe");
       }
     } else {

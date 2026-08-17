@@ -73,6 +73,52 @@ export const auth = {
       method: 'POST',
       body: JSON.stringify({ email }),
     }),
+
+  activateInfo: (token) =>
+    apiFetch(`/auth/activate-info?token=${encodeURIComponent(token)}`),
+
+  activate: (token, password, password_confirmation) =>
+    apiFetch('/auth/activate', {
+      method: 'POST',
+      body: JSON.stringify({ token, password, password_confirmation }),
+    }),
+
+  changePassword: (current_password, new_password) =>
+    apiFetch('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ current_password, new_password }),
+    }),
+};
+
+// Users endpoints (admin-only)
+export const users = {
+  list: () =>
+    apiFetch('/users'),
+
+  get: (id) =>
+    apiFetch(`/users/${id}`),
+
+  create: (data) =>
+    apiFetch('/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id, data) =>
+    apiFetch(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id) =>
+    apiFetch(`/users/${id}`, {
+      method: 'DELETE',
+    }),
+
+  resendInvite: (id) =>
+    apiFetch(`/users/${id}/resend-invite`, {
+      method: 'POST',
+    }),
 };
 
 // Customers endpoints

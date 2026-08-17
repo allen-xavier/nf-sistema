@@ -1,90 +1,74 @@
 const express = require("express");
-const { Customer } = require("../models");
-const { authMiddleware, adminOnly } = require("../middleware/auth");
+const { Customer, SystemUser } = require("../models");
+const { authMiddleware } = require("../middleware/auth");
 
 const router = express.Router();
 
-// Todas as rotas abaixo exigem:
-// - usuário autenticado
-// - usuário admin
+const MIN_FEE_PERCENT = 2;
+
+// Apenas autenticação (não precisa ser admin)
 router.use(authMiddleware);
-router.use(adminOnly);
 
 /**
  * GET /api/customers
  * Lista todos os clientes.
- * O frontend faz os filtros (nome, whatsapp, taxa, ativo) do lado do navegador.
  */
 router.get("/", async (req, res) => {
   try {
     const customers = await Customer.findAll({
+      include: [{ model: SystemUser, as: "CreatedBy", attributes: ["id", "name"] }],
       order: [["name", "ASC"]],
     });
     res.json(customers);
   } catch (err) {
     console.error("Erro ao listar clientes:", err);
-    res
-      .status(500)
-      .json({ error: "Erro ao listar clientes." });
+    res.status(500).json({ error: "Erro ao listar clientes." });
   }
 });
 
 /**
  * GET /api/customers/:id
- * Retorna um cliente específico.
  */
 router.get("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const customer = await Customer.findByPk(id);
+    const customer = await Customer.findByPk(id, {
+      include: [{ model: SystemUser, as: "CreatedBy", attributes: ["id", "name"] }],
+    });
 
     if (!customer) {
-      return res
-        .status(404)
-        .json({ error: "Cliente não encontrado." });
+      return res.status(404).json({ error: "Cliente não encontrado." });
     }
 
     res.json(customer);
   } catch (err) {
     console.error("Erro ao buscar cliente:", err);
-    res
-      .status(500)
-      .json({ error: "Erro ao buscar cliente." });
+    res.status(500).json({ error: "Erro ao buscar cliente." });
   }
 });
 
 /**
  * POST /api/customers
  * Cria um novo cliente.
- * Body esperado:
- *  {
- *    "name": "Fulano",
- *    "whatsapp_number": "+5511999999999",
- *    "fee_percent": 3.5,
- *    "is_active": true
- *  }
  */
 router.post("/", async (req, res) => {
   try {
-    let {
-      name,
-      whatsapp_number,
-      fee_percent,
-      is_active,
-      uses_nf,
-      uses_pos,
-    } = req.body;
+    let { name, whatsapp_number, fee_percent, is_active, uses_nf, uses_pos } = req.body;
 
     if (!name || !whatsapp_number || fee_percent == null) {
       return res.status(400).json({
-        error:
-          "Nome, WhatsApp e taxa (%) são obrigatórios.",
+        error: "Nome, WhatsApp e taxa (%) são obrigatórios.",
       });
     }
 
-    if (is_active == null) {
-      is_active = true;
+    // Não-admin: taxa mínima 2%
+    if (!req.user.is_admin && parseFloat(fee_percent) < MIN_FEE_PERCENT) {
+      return res.status(400).json({
+        error: `Taxa mínima é ${MIN_FEE_PERCENT}%.`,
+      });
     }
+
+    if (is_active == null) is_active = true;
 
     const customer = await Customer.create({
       name,
@@ -93,23 +77,20 @@ router.post("/", async (req, res) => {
       is_active,
       uses_nf: uses_nf ?? true,
       uses_pos: uses_pos ?? true,
+      created_by_user_id: req.user.id,
     });
 
     res.status(201).json(customer);
   } catch (err) {
     console.error("Erro ao criar cliente:", err);
 
-    // Tratamento de WhatsApp duplicado
     if (err.name === "SequelizeUniqueConstraintError") {
       return res.status(400).json({
-        error:
-          "Já existe um cliente com esse número de WhatsApp.",
+        error: "Já existe um cliente com esse número de WhatsApp.",
       });
     }
 
-    res
-      .status(500)
-      .json({ error: "Erro ao criar cliente." });
+    res.status(500).json({ error: "Erro ao criar cliente." });
   }
 });
 
@@ -123,30 +104,32 @@ router.put("/:id", async (req, res) => {
     const customer = await Customer.findByPk(id);
 
     if (!customer) {
-      return res
-        .status(404)
-        .json({ error: "Cliente não encontrado." });
+      return res.status(404).json({ error: "Cliente não encontrado." });
     }
 
-    let {
-      name,
-      whatsapp_number,
-      fee_percent,
-      is_active,
-      uses_nf,
-      uses_pos,
-    } = req.body;
-
-    if (!name || !whatsapp_number || fee_percent == null) {
-      return res.status(400).json({
-        error:
-          "Nome, WhatsApp e taxa (%) são obrigatórios.",
+    // Não-admin: só edita seus próprios clientes
+    if (!req.user.is_admin && customer.created_by_user_id !== req.user.id) {
+      return res.status(403).json({
+        error: "Você só pode editar clientes que você cadastrou.",
       });
     }
 
-    if (is_active == null) {
-      is_active = true;
+    let { name, whatsapp_number, fee_percent, is_active, uses_nf, uses_pos } = req.body;
+
+    if (!name || !whatsapp_number || fee_percent == null) {
+      return res.status(400).json({
+        error: "Nome, WhatsApp e taxa (%) são obrigatórios.",
+      });
     }
+
+    // Não-admin: taxa mínima 2%
+    if (!req.user.is_admin && parseFloat(fee_percent) < MIN_FEE_PERCENT) {
+      return res.status(400).json({
+        error: `Taxa mínima é ${MIN_FEE_PERCENT}%.`,
+      });
+    }
+
+    if (is_active == null) is_active = true;
 
     customer.name = name;
     customer.whatsapp_number = whatsapp_number;
@@ -163,21 +146,16 @@ router.put("/:id", async (req, res) => {
 
     if (err.name === "SequelizeUniqueConstraintError") {
       return res.status(400).json({
-        error:
-          "Já existe um cliente com esse número de WhatsApp.",
+        error: "Já existe um cliente com esse número de WhatsApp.",
       });
     }
 
-    res
-      .status(500)
-      .json({ error: "Erro ao atualizar cliente." });
+    res.status(500).json({ error: "Erro ao atualizar cliente." });
   }
 });
 
 /**
  * DELETE /api/customers/:id
- * Remove um cliente.
- * As notas ligadas a ele são removidas por ON DELETE CASCADE (no banco).
  */
 router.delete("/:id", async (req, res) => {
   try {
@@ -185,19 +163,21 @@ router.delete("/:id", async (req, res) => {
     const customer = await Customer.findByPk(id);
 
     if (!customer) {
-      return res
-        .status(404)
-        .json({ error: "Cliente não encontrado." });
+      return res.status(404).json({ error: "Cliente não encontrado." });
+    }
+
+    // Não-admin: só deleta seus próprios
+    if (!req.user.is_admin && customer.created_by_user_id !== req.user.id) {
+      return res.status(403).json({
+        error: "Você só pode excluir clientes que você cadastrou.",
+      });
     }
 
     await customer.destroy();
-
     res.json({ success: true });
   } catch (err) {
     console.error("Erro ao excluir cliente:", err);
-    res
-      .status(500)
-      .json({ error: "Erro ao excluir cliente." });
+    res.status(500).json({ error: "Erro ao excluir cliente." });
   }
 });
 

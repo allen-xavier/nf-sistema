@@ -83,7 +83,30 @@ async function sendPasswordRecoveryMail(email, token) {
   });
 }
 
+/**
+ * Envio do e-mail de ativação de conta
+ */
+async function sendActivationMail(email, name, activationUrl) {
+  const subject = "Ative sua conta - NF Sistema";
+  const html = `
+    <p>Olá, <strong>${name}</strong>!</p>
+    <p>Você foi convidado para o NF Sistema.</p>
+    <p>Clique no link abaixo para definir sua senha e ativar sua conta:</p>
+    <p><a href="${activationUrl}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;">Ativar minha conta</a></p>
+    <p style="font-size:12px;color:#6b7280;margin-top:16px;">Este link é válido por 24 horas e só pode ser usado uma vez.</p>
+    <p style="font-size:12px;color:#6b7280;">Se você não solicitou isso, ignore este e-mail.</p>
+  `;
+
+  await sendMail({
+    to: email,
+    subject,
+    html,
+    text: `Olá ${name}, ative sua conta em: ${activationUrl}`,
+  });
+}
+
 module.exports = {
   sendMail,
   sendPasswordRecoveryMail,
+  sendActivationMail,
 };

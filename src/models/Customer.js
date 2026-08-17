@@ -44,6 +44,11 @@ const Customer = sequelize.define(
       defaultValue: true,
     },
 
+    created_by_user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,

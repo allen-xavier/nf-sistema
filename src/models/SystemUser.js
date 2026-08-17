@@ -23,13 +23,29 @@ const SystemUser = sequelize.define(
 
     password_hash: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
 
     is_admin: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
+    },
+
+    status: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+      defaultValue: "PENDING",
+    },
+
+    activated_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+
+    last_login_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
 
     created_at: {

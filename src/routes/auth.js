@@ -1,60 +1,62 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { SystemUser } = require("../models");
+const { SystemUser, UserInvitation } = require("../models");
+const { audit } = require("../middleware/audit");
+const { hashToken, safeCompare } = require("../utils/tokens");
 
 const router = express.Router();
 
+const JWT_SECRET = process.env.JWT_SECRET || "default_secret_token";
+
 /**
  * POST /api/auth/login
- * Body:
- * {
- *   email: "",
- *   password: ""
- * }
  */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ error: "E-mail e senha são obrigatórios." });
+      return res.status(400).json({ error: "E-mail e senha são obrigatórios." });
     }
 
-    const user = await SystemUser.findOne({
-      where: { email },
-    });
+    const user = await SystemUser.findOne({ where: { email } });
 
     if (!user) {
-      return res
-        .status(401)
-        .json({ error: "Credenciais inválidas." });
+      await audit(null, 'LOGIN_FAILED', 'SystemUser', null, { email, reason: 'not_found' }, req);
+      return res.status(401).json({ error: "Credenciais inválidas." });
     }
 
-    const ok = await bcrypt.compare(
-      password,
-      user.password_hash
-    );
+    if (user.status === 'PENDING') {
+      return res.status(401).json({ error: "Conta ainda não ativada. Verifique seu e-mail." });
+    }
+
+    if (user.status === 'DISABLED') {
+      return res.status(401).json({ error: "Conta desativada. Contate o administrador." });
+    }
+
+    if (!user.password_hash) {
+      return res.status(401).json({ error: "Conta ainda não ativada." });
+    }
+
+    const ok = await bcrypt.compare(password, user.password_hash);
 
     if (!ok) {
-      return res
-        .status(401)
-        .json({ error: "Credenciais inválidas." });
+      await audit(user.id, 'LOGIN_FAILED', 'SystemUser', user.id, { reason: 'wrong_password' }, req);
+      return res.status(401).json({ error: "Credenciais inválidas." });
     }
 
+    // Atualizar last_login_at
+    user.last_login_at = new Date();
+    await user.save();
+
     const token = jwt.sign(
-      {
-        id: user.id,
-        email: user.email,
-        is_admin: user.is_admin,
-      },
-      process.env.JWT_SECRET || "default_secret_token",
-      {
-        expiresIn: "24h",
-      }
+      { id: user.id, email: user.email, is_admin: user.is_admin },
+      JWT_SECRET,
+      { expiresIn: "24h" }
     );
+
+    await audit(user.id, 'LOGIN', 'SystemUser', user.id, {}, req);
 
     res.json({
       token,
@@ -63,52 +65,221 @@ router.post("/login", async (req, res) => {
         email: user.email,
         name: user.name,
         is_admin: user.is_admin,
+        status: user.status,
       },
     });
   } catch (err) {
     console.error("Erro no login:", err);
-    res
-      .status(500)
-      .json({ error: "Erro ao fazer login." });
+    res.status(500).json({ error: "Erro ao fazer login." });
   }
 });
 
 /**
  * GET /api/auth/me
- * Retorna dados do usuário autenticado
- * (usado apenas se você quiser consultar no front)
  */
 router.get("/me", async (req, res) => {
   try {
     const header = req.headers.authorization;
-
-    if (!header) {
-      return res.status(401).json({ error: "Token ausente." });
-    }
+    if (!header) return res.status(401).json({ error: "Token ausente." });
 
     const [, token] = header.split(" ");
-
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "default_secret_token"
-    );
+    const decoded = jwt.verify(token, JWT_SECRET);
 
     const user = await SystemUser.findByPk(decoded.id, {
-      attributes: ["id", "name", "email", "is_admin"],
+      attributes: ["id", "name", "email", "is_admin", "status"],
     });
 
-    if (!user) {
-      return res
-        .status(404)
-        .json({ error: "Usuário não encontrado." });
-    }
+    if (!user) return res.status(404).json({ error: "Usuário não encontrado." });
 
     res.json(user);
   } catch (err) {
-    console.error("Erro no /me:", err);
-    res
-      .status(401)
-      .json({ error: "Token inválido ou expirado." });
+    res.status(401).json({ error: "Token inválido ou expirado." });
+  }
+});
+
+/**
+ * GET /api/auth/activate-info?token=xxx
+ * Retorna informações públicas do convite (para exibir na tela de ativação)
+ */
+router.get("/activate-info", async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) return res.status(400).json({ error: "Token ausente." });
+
+    const tokenHash = hashToken(token);
+
+    const invitation = await UserInvitation.findOne({
+      where: { token_hash: tokenHash },
+    });
+
+    if (!invitation) {
+      return res.status(404).json({ error: "Convite não encontrado." });
+    }
+
+    if (invitation.status !== 'PENDING') {
+      return res.status(400).json({ error: "Convite já utilizado ou revogado." });
+    }
+
+    if (new Date() > invitation.expires_at) {
+      return res.status(400).json({ error: "Convite expirado." });
+    }
+
+    if (invitation.attempts >= 5) {
+      return res.status(400).json({ error: "Convite bloqueado por tentativas." });
+    }
+
+    const user = await SystemUser.findByPk(invitation.user_id, {
+      attributes: ['name', 'email'],
+    });
+
+    res.json({
+      name: user?.name || '',
+      email: invitation.email,
+      expires_at: invitation.expires_at,
+    });
+  } catch (err) {
+    console.error("Erro em activate-info:", err);
+    res.status(500).json({ error: "Erro ao buscar informações." });
+  }
+});
+
+/**
+ * POST /api/auth/activate
+ * Ativar conta com token de convite
+ * Body: { token, password, password_confirmation }
+ */
+router.post("/activate", async (req, res) => {
+  try {
+    const { token, password, password_confirmation } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ error: "Token e senha são obrigatórios." });
+    }
+
+    if (password !== password_confirmation) {
+      return res.status(400).json({ error: "Senhas não conferem." });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ error: "Senha deve ter pelo menos 8 caracteres." });
+    }
+
+    if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return res.status(400).json({ error: "Senha deve conter pelo menos 1 letra e 1 número." });
+    }
+
+    const tokenHash = hashToken(token);
+
+    const invitation = await UserInvitation.findOne({
+      where: { token_hash: tokenHash },
+    });
+
+    if (!invitation) {
+      return res.status(404).json({ error: "Convite não encontrado." });
+    }
+
+    if (invitation.status !== 'PENDING') {
+      return res.status(400).json({ error: "Convite já utilizado ou revogado." });
+    }
+
+    if (new Date() > invitation.expires_at) {
+      invitation.status = 'EXPIRED';
+      await invitation.save();
+      return res.status(400).json({ error: "Convite expirado. Solicite um novo." });
+    }
+
+    if (invitation.attempts >= 5) {
+      invitation.status = 'REVOKED';
+      await invitation.save();
+      return res.status(400).json({ error: "Convite bloqueado. Solicite um novo." });
+    }
+
+    // Hash a senha e ativar
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const user = await SystemUser.findByPk(invitation.user_id);
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado." });
+    }
+
+    user.password_hash = passwordHash;
+    user.status = 'ACTIVE';
+    user.activated_at = new Date();
+    await user.save();
+
+    // Marcar convite como usado
+    invitation.status = 'USED';
+    invitation.used_at = new Date();
+    await invitation.save();
+
+    await audit(user.id, 'ACTIVATE_USER', 'SystemUser', user.id, {}, req);
+
+    // Retornar JWT para login automático
+    const jwtToken = jwt.sign(
+      { id: user.id, email: user.email, is_admin: user.is_admin },
+      JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    res.json({
+      token: jwtToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        is_admin: user.is_admin,
+        status: 'ACTIVE',
+      },
+    });
+  } catch (err) {
+    console.error("Erro na ativação:", err);
+    res.status(500).json({ error: "Erro ao ativar conta." });
+  }
+});
+
+/**
+ * POST /api/auth/change-password
+ * Body: { current_password, new_password }
+ */
+router.post("/change-password", async (req, res) => {
+  try {
+    const header = req.headers.authorization;
+    if (!header) return res.status(401).json({ error: "Token ausente." });
+
+    const [, token] = header.split(" ");
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const user = await SystemUser.findByPk(decoded.id);
+    if (!user) return res.status(404).json({ error: "Usuário não encontrado." });
+
+    const { current_password, new_password } = req.body;
+
+    if (!current_password || !new_password) {
+      return res.status(400).json({ error: "Senha atual e nova são obrigatórias." });
+    }
+
+    const ok = await bcrypt.compare(current_password, user.password_hash);
+    if (!ok) {
+      return res.status(401).json({ error: "Senha atual incorreta." });
+    }
+
+    if (new_password.length < 8) {
+      return res.status(400).json({ error: "Nova senha deve ter pelo menos 8 caracteres." });
+    }
+
+    if (!/[a-zA-Z]/.test(new_password) || !/[0-9]/.test(new_password)) {
+      return res.status(400).json({ error: "Nova senha deve conter pelo menos 1 letra e 1 número." });
+    }
+
+    user.password_hash = await bcrypt.hash(new_password, 10);
+    await user.save();
+
+    await audit(user.id, 'CHANGE_PASSWORD', 'SystemUser', user.id, {}, req);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Erro ao trocar senha:", err);
+    res.status(500).json({ error: "Erro ao trocar senha." });
   }
 });
 
