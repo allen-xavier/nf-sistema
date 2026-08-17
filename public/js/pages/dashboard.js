@@ -1,27 +1,51 @@
 /* Dashboard Page */
 
 import { reports } from '../api.js';
-import { formatCurrency, formatDate, showNotification } from '../ui.js';
+import { formatCurrency, showNotification } from '../ui.js';
 import { setData, setLoading } from '../state.js';
 
 let dashboardCharts = {};
 
 export async function setupDashboardPage(pageEl) {
   pageEl.innerHTML = '';
+  renderDateFilter(pageEl);
   await loadDashboard(pageEl);
+}
+
+function renderDateFilter(pageEl) {
+  const today = new Date();
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+  const lastDay = today.toISOString().split('T')[0];
+
+  const filterHtml = `
+    <div class="card" style="margin-bottom: 16px">
+      <div class="form-row" style="gap: 10px; align-items: flex-end; margin: 0">
+        <div class="form-group" style="max-width: 160px">
+          <label>Data inicial</label>
+          <input type="date" id="dashDataIni" value="${firstDay}" />
+        </div>
+        <div class="form-group" style="max-width: 160px">
+          <label>Data final</label>
+          <input type="date" id="dashDataFim" value="${lastDay}" />
+        </div>
+        <button class="btn btn-primary" id="dashApplyFilter">Aplicar</button>
+      </div>
+    </div>
+    <div id="dashContent"></div>
+  `;
+
+  pageEl.innerHTML = filterHtml;
+
+  document.getElementById('dashApplyFilter').addEventListener('click', () => loadDashboard(pageEl));
 }
 
 async function loadDashboard(pageEl) {
   setLoading('reports', true);
 
+  const startDate = document.getElementById('dashDataIni')?.value || '';
+  const endDate = document.getElementById('dashDataFim')?.value || '';
+
   try {
-    const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-    const startDate = firstDayOfMonth.toISOString().split('T')[0];
-    const endDate = lastDayOfMonth.toISOString().split('T')[0];
-
     const data = await reports.summary({
       start: startDate,
       end: endDate,
@@ -29,24 +53,28 @@ async function loadDashboard(pageEl) {
     });
 
     setData('reports', data);
-    renderDashboard(pageEl, data, { startDate, endDate });
+    renderDashboard(pageEl, data);
   } catch (error) {
     console.error('Erro ao carregar dashboard:', error);
     showNotification('Erro ao carregar dashboard', 'error');
-    pageEl.innerHTML = '<div class="card"><p>Erro ao carregar dados. Verifique a conexão.</p></div>';
+    const content = document.getElementById('dashContent');
+    if (content) content.innerHTML = '<div class="card"><p>Erro ao carregar dados.</p></div>';
   } finally {
     setLoading('reports', false);
   }
 }
 
-function renderDashboard(pageEl, data, dateRange) {
+function renderDashboard(pageEl, data) {
   const { totals = {}, porDia = [], porCliente = [] } = data;
 
   const totalNotas = Number(totals.total_notas) || 0;
   const totalValor = parseFloat(totals.soma_valor_total) || 0;
   const totalTaxas = parseFloat(totals.soma_taxas) || 0;
 
-  const html = `
+  const contentEl = document.getElementById('dashContent');
+  if (!contentEl) return;
+
+  contentEl.innerHTML = `
     <!-- KPI METRICS -->
     <div class="grid grid-3">
       <div class="card metric-card">
@@ -112,9 +140,6 @@ function renderDashboard(pageEl, data, dateRange) {
     ` : ''}
   `;
 
-  pageEl.innerHTML = html;
-
-  // Render chart
   renderDailyChart(porDia);
 }
 

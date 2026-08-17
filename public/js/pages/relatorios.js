@@ -8,17 +8,43 @@ let relChart = null;
 
 export async function setupRelatoriosPage(pageEl) {
   pageEl.innerHTML = '';
+  renderDateFilter(pageEl);
   await loadRelatorios(pageEl);
 }
 
+function renderDateFilter(pageEl) {
+  const today = new Date();
+  const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const startDate = thirtyDaysAgo.toISOString().split('T')[0];
+  const endDate = today.toISOString().split('T')[0];
+
+  const filterHtml = `
+    <div class="card" style="margin-bottom: 16px">
+      <div class="form-row" style="gap: 10px; align-items: flex-end; margin: 0">
+        <div class="form-group" style="max-width: 160px">
+          <label>Data inicial</label>
+          <input type="date" id="relDataIni" value="${startDate}" />
+        </div>
+        <div class="form-group" style="max-width: 160px">
+          <label>Data final</label>
+          <input type="date" id="relDataFim" value="${endDate}" />
+        </div>
+        <button class="btn btn-primary" id="relApplyFilter">Aplicar</button>
+      </div>
+    </div>
+    <div id="relContent"></div>
+  `;
+
+  pageEl.innerHTML = filterHtml;
+
+  document.getElementById('relApplyFilter').addEventListener('click', () => loadRelatorios(pageEl));
+}
+
 async function loadRelatorios(pageEl) {
+  const startDate = document.getElementById('relDataIni')?.value || '';
+  const endDate = document.getElementById('relDataFim')?.value || '';
+
   try {
-    const today = new Date();
-    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-    const startDate = thirtyDaysAgo.toISOString().split('T')[0];
-    const endDate = today.toISOString().split('T')[0];
-
     const data = await reports.summary({
       start: startDate,
       end: endDate,
@@ -26,30 +52,27 @@ async function loadRelatorios(pageEl) {
     });
 
     setData('reports', data);
-    renderRelatorios(pageEl, data);
+    renderRelatorios(data);
   } catch (error) {
     console.error('Erro ao carregar relatórios:', error);
     showNotification('Erro ao carregar relatórios', 'error');
-    pageEl.innerHTML = '<div class="card"><p>Erro ao carregar dados</p></div>';
+    const content = document.getElementById('relContent');
+    if (content) content.innerHTML = '<div class="card"><p>Erro ao carregar dados</p></div>';
   }
 }
 
-function renderRelatorios(pageEl, data) {
+function renderRelatorios(data) {
   const { totals = {}, porDia = [], porCliente = [], porEmpresa = [] } = data;
 
   const totalNotas = Number(totals.total_notas) || 0;
   const totalValor = parseFloat(totals.soma_valor_total) || 0;
   const totalTaxas = parseFloat(totals.soma_taxas) || 0;
 
-  const html = `
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Relatórios</div>
-          <div class="card-subtitle">Análise dos últimos 30 dias</div>
-        </div>
-      </div>
+  const contentEl = document.getElementById('relContent');
+  if (!contentEl) return;
 
+  contentEl.innerHTML = `
+    <div class="card">
       <!-- TABS -->
       <div class="tabs" style="margin-bottom: 20px">
         <button class="tab-button active" data-tab="geral">Geral</button>
@@ -64,17 +87,14 @@ function renderRelatorios(pageEl, data) {
           <div style="padding: 16px; border-radius: 8px; background: var(--bg-input)">
             <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px">Total de NFs</div>
             <div style="font-size: 24px; font-weight: 600">${totalNotas}</div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px">Últimos 30 dias</div>
           </div>
           <div style="padding: 16px; border-radius: 8px; background: var(--bg-input)">
             <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px">Valor Total</div>
             <div style="font-size: 24px; font-weight: 600">${formatCurrency(totalValor)}</div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px">Faturamento bruto</div>
           </div>
           <div style="padding: 16px; border-radius: 8px; background: var(--bg-input)">
             <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px">Total de Taxas</div>
             <div style="font-size: 24px; font-weight: 600">${formatCurrency(totalTaxas)}</div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px">Comissões geradas</div>
           </div>
         </div>
       </div>
@@ -102,7 +122,7 @@ function renderRelatorios(pageEl, data) {
             </tbody>
           </table>
         </div>
-        ` : '<p style="text-align: center; color: var(--text-muted); padding: 24px">Sem dados de clientes</p>'}
+        ` : '<p style="text-align: center; color: var(--text-muted); padding: 24px">Sem dados</p>'}
       </div>
 
       <!-- TAB: EMPRESAS -->
@@ -128,7 +148,7 @@ function renderRelatorios(pageEl, data) {
             </tbody>
           </table>
         </div>
-        ` : '<p style="text-align: center; color: var(--text-muted); padding: 24px">Sem dados de empresas</p>'}
+        ` : '<p style="text-align: center; color: var(--text-muted); padding: 24px">Sem dados</p>'}
       </div>
 
       <!-- TAB: TENDÊNCIA -->
@@ -140,20 +160,17 @@ function renderRelatorios(pageEl, data) {
     </div>
   `;
 
-  pageEl.innerHTML = html;
-
   // Tab switching
-  pageEl.querySelectorAll('.tab-button').forEach((btn) => {
+  contentEl.querySelectorAll('.tab-button').forEach((btn) => {
     btn.addEventListener('click', () => {
-      pageEl.querySelectorAll('.tab-content').forEach((el) => el.classList.add('hidden'));
-      pageEl.querySelectorAll('.tab-button').forEach((el) => el.classList.remove('active'));
+      contentEl.querySelectorAll('.tab-content').forEach((el) => el.classList.add('hidden'));
+      contentEl.querySelectorAll('.tab-button').forEach((el) => el.classList.remove('active'));
       btn.classList.add('active');
       const tabEl = document.getElementById(`tab-${btn.dataset.tab}`);
       if (tabEl) tabEl.classList.remove('hidden');
     });
   });
 
-  // Render chart for tendência tab
   renderTendenciaChart(porDia);
 }
 

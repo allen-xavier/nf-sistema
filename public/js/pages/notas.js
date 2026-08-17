@@ -207,7 +207,18 @@ function updateCounter(current, total) {
 function setupFilterListeners(pageEl) {
   const applyBtn = document.getElementById('notasApplyFilters');
   const clearBtn = document.getElementById('notasClearFilters');
+  const searchInput = document.getElementById('notasSearch');
 
+  // Filtro em tempo real ao digitar
+  searchInput?.addEventListener('input', debounce((e) => {
+    const query = e.target.value.toLowerCase();
+    document.querySelectorAll('#notasTableBody tr').forEach((row) => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(query) ? '' : 'none';
+    });
+  }, 150));
+
+  // Botão aplicar (para filtros de data que precisam ir à API)
   applyBtn?.addEventListener('click', async () => {
     notasState.page = 1;
     notasState.exhausted = false;
@@ -223,6 +234,11 @@ function setupFilterListeners(pageEl) {
     if (search) search.value = '';
     if (startDate) startDate.value = '';
     if (endDate) endDate.value = '';
+
+    // Show all rows again
+    document.querySelectorAll('#notasTableBody tr').forEach((row) => {
+      row.style.display = '';
+    });
 
     notasState.page = 1;
     notasState.exhausted = false;
