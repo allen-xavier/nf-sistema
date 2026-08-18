@@ -56,7 +56,7 @@ router.get("/summary", async (req, res) => {
       attributes: [
         [fn("COUNT", col("id")), "total_notas"],
         [fn("SUM", col("total_amount")), "soma_valor_total"],
-        [fn("SUM", col("fee_value")), "soma_taxas"],
+        [fn("SUM", col("paid_amount")), "soma_taxas"],
       ],
       raw: true,
     });
@@ -88,7 +88,7 @@ router.get("/summary", async (req, res) => {
         [literal(dateFormat), "label"],
         [fn("COUNT", col("id")), "total_notas"],
         [fn("SUM", col("total_amount")), "soma_valor_total"],
-        [fn("SUM", col("fee_value")), "soma_taxas"],
+        [fn("SUM", col("paid_amount")), "soma_taxas"],
       ],
       group: ["label"],
       raw: true,
@@ -195,7 +195,7 @@ router.get("/cliente/:id", async (req, res) => {
       attributes: [
         [fn("COUNT", col("id")), "total_notas"],
         [fn("SUM", col("total_amount")), "soma_valor_total"],
-        [fn("SUM", col("fee_value")), "soma_taxas"],
+        [fn("SUM", col("paid_amount")), "soma_taxas"],
       ],
       raw: true,
     });

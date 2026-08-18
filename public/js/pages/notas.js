@@ -115,7 +115,7 @@ function renderNotas(pageEl, notes, total) {
               <th>CPF</th>
               <th>Valor</th>
               <th>Taxa (%)</th>
-              <th>Taxa (R$)</th>
+              <th>Valor Pago</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -172,7 +172,7 @@ function appendRows(notes) {
     // Sequelize DECIMAL fields come as strings
     const totalAmount = parseFloat(nota.total_amount) || 0;
     const feePercent = parseFloat(nota.fee_percent) || 0;
-    const feeValue = parseFloat(nota.fee_value) || 0;
+    const paidAmount = parseFloat(nota.paid_amount) || 0;
 
     tr.innerHTML = `
       <td><strong>#${nota.id}</strong></td>
@@ -183,7 +183,7 @@ function appendRows(notes) {
       <td>${nota.buyer_cpf || '—'}</td>
       <td>${formatCurrency(totalAmount)}</td>
       <td>${feePercent.toFixed(2)}%</td>
-      <td>${formatCurrency(feeValue)}</td>
+      <td>${formatCurrency(paidAmount)}</td>
       <td style="display: flex; gap: 4px">
         <button class="btn btn-ghost" data-action="view" data-id="${nota.id}">👁</button>
         ${isAdmin ? `<button class="btn btn-danger" data-action="delete" data-id="${nota.id}">✕</button>` : ''}
