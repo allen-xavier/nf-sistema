@@ -20,7 +20,10 @@ function buildDateWhere(base = {}, start, end) {
     if (!parsed) throw createDateError("Data final inválida.");
     issuedFilter[Op.lte] = parsed;
   }
-  if (Object.keys(issuedFilter).length) {
+  // Os operadores do Sequelize (Op.gte/Op.lte) são Symbols e, por isso,
+  // não aparecem em Object.keys(). Verificamos os parâmetros recebidos para
+  // garantir que o período seja realmente anexado à consulta.
+  if (start || end) {
     where.issued_at = issuedFilter;
   }
   return where;
