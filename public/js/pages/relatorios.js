@@ -1,7 +1,7 @@
 /* Relatórios Page */
 
 import { reports } from '../api.js';
-import { showNotification, formatCurrency } from '../ui.js';
+import { showNotification, formatCurrency, formatDateInput, escapeHtml } from '../ui.js';
 import { setData } from '../state.js';
 
 let relChart = null;
@@ -15,8 +15,8 @@ export async function setupRelatoriosPage(pageEl) {
 function renderDateFilter(pageEl) {
   const today = new Date();
   const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const startDate = thirtyDaysAgo.toISOString().split('T')[0];
-  const endDate = today.toISOString().split('T')[0];
+  const startDate = formatDateInput(thirtyDaysAgo);
+  const endDate = formatDateInput(today);
 
   const filterHtml = `
     <div class="card" style="margin-bottom: 16px">
@@ -114,7 +114,7 @@ function renderRelatorios(data) {
             <tbody>
               ${porCliente.map((c) => `
                 <tr>
-                  <td>${c.name || 'ID: ' + c.customer_id}</td>
+                  <td>${escapeHtml(c.name || 'ID: ' + c.customer_id)}</td>
                   <td>${c.total_notas}</td>
                   <td>${formatCurrency(parseFloat(c.soma_valor_total) || 0)}</td>
                 </tr>
@@ -140,7 +140,7 @@ function renderRelatorios(data) {
             <tbody>
               ${porEmpresa.map((e) => `
                 <tr>
-                  <td>${e.name || 'ID: ' + e.company_id}</td>
+                  <td>${escapeHtml(e.name || 'ID: ' + e.company_id)}</td>
                   <td>${e.total_notas}</td>
                   <td>${formatCurrency(parseFloat(e.soma_valor_total) || 0)}</td>
                 </tr>
@@ -187,7 +187,11 @@ function renderTendenciaChart(porDia) {
     return;
   }
 
-  const labels = porDia.map((d) => d.label);
+  const labels = porDia.map((d) => {
+    if (!d.period_key) return d.label;
+    const [year, month, day] = d.period_key.split('-');
+    return `${day}/${month}/${year}`;
+  });
   const counts = porDia.map((d) => Number(d.total_notas) || 0);
 
   relChart = new Chart(ctx, {

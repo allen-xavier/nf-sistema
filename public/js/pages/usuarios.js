@@ -1,7 +1,7 @@
 /* Usuarios Page - Admin only */
 
 import { users } from '../api.js';
-import { formatDate, showNotification, showConfirmDialog, showModal, createEmptyState } from '../ui.js';
+import { formatDate, showNotification, showConfirmDialog, showModal, createEmptyState, escapeHtml } from '../ui.js';
 import { setData, getData, getState } from '../state.js';
 
 export async function setupUsuariosPage(pageEl) {
@@ -77,10 +77,10 @@ function renderUsuarios(pageEl, usersList) {
     const isMe = user.id === currentUser?.id;
 
     tr.innerHTML = `
-      <td><strong>${user.name}</strong>${isMe ? ' <span style="font-size:10px;color:var(--text-muted)">(você)</span>' : ''}</td>
-      <td>${user.email}</td>
+      <td><strong>${escapeHtml(user.name)}</strong>${isMe ? ' <span style="font-size:10px;color:var(--text-muted)">(você)</span>' : ''}</td>
+      <td>${escapeHtml(user.email)}</td>
       <td><span class="tag ${user.is_admin ? 'tag-success' : ''}">${user.is_admin ? 'Admin' : 'Operador'}</span></td>
-      <td><span class="tag ${statusClass}">${statusLabel}</span></td>
+      <td><span class="tag ${statusClass}">${escapeHtml(statusLabel)}</span></td>
       <td>${user.last_login_at ? formatDate(user.last_login_at) : '—'}</td>
       <td>${formatDate(user.created_at)}</td>
       <td style="display: flex; gap: 4px; flex-wrap: wrap">
@@ -168,13 +168,14 @@ async function handleInvite(overlay, pageEl) {
       resultEl.innerHTML = `
         <p style="margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--success)">✓ Usuário criado</p>
         <p style="margin: 0 0 4px; font-size: 12px; color: var(--text-muted)">E-mail não pôde ser enviado. Copie o link abaixo e envie manualmente:</p>
-        <input type="text" value="${response.invitation.activation_url}" readonly style="width: 100%; font-size: 11px; padding: 6px" onclick="this.select()" />
+        <input type="text" value="${escapeHtml(response.invitation.activation_url)}" readonly style="width: 100%; font-size: 11px; padding: 6px" />
         <p style="margin: 4px 0 0; font-size: 11px; color: var(--text-muted)">Válido por 24 horas.</p>
       `;
       resultEl.style.display = 'block';
+      resultEl.querySelector('input')?.addEventListener('click', (event) => event.currentTarget.select());
     } else {
       resultEl.innerHTML = `
-        <p style="margin: 0; font-size: 13px; color: var(--success)">✓ Convite enviado para ${email}</p>
+        <p style="margin: 0; font-size: 13px; color: var(--success)">✓ Convite enviado para ${escapeHtml(email)}</p>
       `;
       resultEl.style.display = 'block';
       setTimeout(() => {
@@ -197,10 +198,11 @@ async function resendInvite(id, pageEl) {
     if (response.activation_url) {
       const content = `
         <p style="font-size: 13px">E-mail não pôde ser enviado. Copie o link:</p>
-        <input type="text" value="${response.activation_url}" readonly style="width: 100%; font-size: 11px; padding: 6px" onclick="this.select()" />
+        <input type="text" value="${escapeHtml(response.activation_url)}" readonly style="width: 100%; font-size: 11px; padding: 6px" />
         <p style="font-size: 11px; color: var(--text-muted)">Válido por 24 horas.</p>
       `;
-      showModal('Link de ativação', content, [{ label: 'Fechar' }]);
+      const overlay = showModal('Link de ativação', content, [{ label: 'Fechar' }]);
+      overlay.querySelector('input')?.addEventListener('click', (event) => event.currentTarget.select());
     } else {
       showNotification('Convite reenviado por e-mail', 'success');
     }

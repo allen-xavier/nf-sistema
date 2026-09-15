@@ -1,7 +1,7 @@
 /* Clientes Page - Full CRUD */
 
 import { customers } from '../api.js';
-import { formatDate, showNotification, showConfirmDialog, createEmptyState, formatPhoneNumber, debounce } from '../ui.js';
+import { formatDate, showNotification, showConfirmDialog, formatPhoneNumber, debounce, escapeHtml } from '../ui.js';
 import { setData, getData, getState } from '../state.js';
 
 let currentEditId = null;
@@ -24,24 +24,6 @@ async function loadClientes(pageEl) {
 }
 
 function renderClientes(pageEl, clientesList) {
-  if (!clientesList || clientesList.length === 0) {
-    const empty = createEmptyState(
-      '👥',
-      'Nenhum cliente cadastrado',
-      'Comece adicionando seu primeiro cliente',
-      {
-        label: '+ Novo cliente',
-        onClick: () => toggleForm(true),
-      }
-    );
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.appendChild(empty);
-    pageEl.innerHTML = '';
-    pageEl.appendChild(card);
-    return;
-  }
-
   const html = `
     <div class="card">
       <div class="card-header">
@@ -132,23 +114,28 @@ function renderClientes(pageEl, clientesList) {
     const canEdit = isAdmin || cliente.created_by_user_id === currentUser?.id;
     const ownerName = cliente.CreatedBy?.name || '';
     const tr = document.createElement('tr');
+    tr.dataset.customerId = String(cliente.id);
     tr.innerHTML = `
-      <td><strong>${cliente.name}</strong></td>
-      <td>${formatPhoneNumber(cliente.whatsapp_number)}</td>
+      <td><strong>${escapeHtml(cliente.name)}</strong></td>
+      <td>${escapeHtml(formatPhoneNumber(cliente.whatsapp_number))}</td>
       <td><span class="tag ${cliente.uses_nf ? 'tag-success' : 'tag-muted'}">${cliente.uses_nf ? 'Sim' : 'Não'}</span></td>
-      <td>${cliente.fee_percent || '—'}%</td>
+      <td>${escapeHtml(cliente.fee_percent || '—')}%</td>
       <td><span class="status-pill status-${cliente.is_active ? 'paga' : 'cancelada'}">${cliente.is_active ? '✓ Ativo' : '✗ Inativo'}</span></td>
       <td>${formatDate(cliente.created_at)}</td>
       <td style="display: flex; gap: 4px; align-items: center">
         ${canEdit
           ? `<button class="btn btn-ghost" data-action="edit" data-id="${cliente.id}">Editar</button>
              <button class="btn btn-danger" data-action="delete" data-id="${cliente.id}">✕</button>`
-          : `<span style="font-size: 11px; color: var(--text-muted)">🔒 ${ownerName}</span>`
+          : `<span style="font-size: 11px; color: var(--text-muted)">🔒 ${escapeHtml(ownerName)}</span>`
         }
       </td>
     `;
     tbody.appendChild(tr);
   });
+
+  if (!clientesList.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px">Nenhum cliente cadastrado</td></tr>`;
+  }
 
   // Action delegation
   tbody.addEventListener('click', (e) => {
@@ -244,7 +231,8 @@ async function saveCliente() {
   const whatsapp_number = document.getElementById('clienteWhats').value.trim();
   const is_active = document.getElementById('clienteAtivo').value === 'true';
   const uses_nf = document.getElementById('clienteUsaNF').checked;
-  const fee_percent = parseFloat(document.getElementById('clienteTaxa').value) || 0;
+  const feeRaw = document.getElementById('clienteTaxa').value.trim();
+  const fee_percent = Number(feeRaw);
   const errorEl = document.getElementById('clienteFormError');
 
   if (!name || !whatsapp_number) {
@@ -253,7 +241,7 @@ async function saveCliente() {
     return;
   }
 
-  if (fee_percent == null || isNaN(fee_percent)) {
+  if (!feeRaw || !Number.isFinite(fee_percent) || fee_percent < 0) {
     errorEl.textContent = 'Taxa é obrigatória';
     errorEl.style.display = 'block';
     return;
@@ -333,10 +321,7 @@ function filterByStatus(status) {
     .map((c) => c.id);
 
   document.querySelectorAll('#clientesTableBody tr').forEach((row) => {
-    const editBtn = row.querySelector('[data-action="edit"]');
-    if (editBtn) {
-      const id = parseInt(editBtn.dataset.id);
-      row.style.display = filteredIds.includes(id) ? '' : 'none';
-    }
+    const id = Number(row.dataset.customerId);
+    if (id) row.style.display = filteredIds.includes(id) ? '' : 'none';
   });
 }

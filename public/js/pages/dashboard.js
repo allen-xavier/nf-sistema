@@ -1,7 +1,7 @@
 /* Dashboard Page */
 
 import { reports } from '../api.js';
-import { formatCurrency, showNotification } from '../ui.js';
+import { formatCurrency, showNotification, formatDateInput, escapeHtml } from '../ui.js';
 import { setData, setLoading } from '../state.js';
 
 let dashboardCharts = {};
@@ -14,8 +14,8 @@ export async function setupDashboardPage(pageEl) {
 
 function renderDateFilter(pageEl) {
   const today = new Date();
-  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-  const lastDay = today.toISOString().split('T')[0];
+  const firstDay = formatDateInput(new Date(today.getFullYear(), today.getMonth(), 1));
+  const lastDay = formatDateInput(today);
 
   const filterHtml = `
     <div class="card" style="margin-bottom: 16px">
@@ -90,7 +90,7 @@ function renderDashboard(pageEl, data) {
       <div class="card metric-card">
         <div class="metric-label">Total taxas</div>
         <div class="metric-value">${formatCurrency(totalTaxas)}</div>
-        <div class="metric-detail">Comissões geradas no período</div>
+        <div class="metric-detail">Taxas recebidas no período</div>
       </div>
     </div>
 
@@ -128,7 +128,7 @@ function renderDashboard(pageEl, data) {
           <tbody>
             ${porCliente.slice(0, 5).map((c) => `
               <tr>
-                <td>${c.name || 'ID: ' + c.customer_id}</td>
+                <td>${escapeHtml(c.name || 'ID: ' + c.customer_id)}</td>
                 <td>${c.total_notas}</td>
                 <td>${formatCurrency(parseFloat(c.soma_valor_total) || 0)}</td>
               </tr>
@@ -156,7 +156,7 @@ function renderDailyChart(porDia) {
     return;
   }
 
-  const labels = porDia.map((d) => d.label);
+  const labels = porDia.map((d) => formatPeriodLabel(d));
   const counts = porDia.map((d) => Number(d.total_notas) || 0);
 
   dashboardCharts.daily = new Chart(ctx, {
@@ -197,4 +197,10 @@ function renderDailyChart(porDia) {
       },
     },
   });
+}
+
+function formatPeriodLabel(item) {
+  if (!item.period_key) return item.label;
+  const [year, month, day] = item.period_key.split('-');
+  return `${day}/${month}/${year}`;
 }

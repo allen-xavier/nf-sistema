@@ -1,10 +1,12 @@
 const jwt = require("jsonwebtoken");
+const { SystemUser } = require("../models");
+const { getJwtSecret } = require("../config/security");
 
 /**
  * Middleware padrão de autenticação.
  * Verifica se o token JWT é válido.
  */
-function authMiddleware(req, res, next) {
+async function authMiddleware(req, res, next) {
   try {
     const header = req.headers.authorization;
 
@@ -22,12 +24,27 @@ function authMiddleware(req, res, next) {
       });
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "default_secret_token"
-    );
+    const decoded = jwt.verify(token, getJwtSecret());
 
-    req.user = decoded; // {id, email, is_admin}
+    const user = await SystemUser.findByPk(decoded.id, {
+      attributes: ["id", "email", "is_admin", "status"],
+    });
+
+    if (!user || user.status !== "ACTIVE") {
+      return res.status(401).json({
+        error: "Usuário inexistente ou desativado.",
+      });
+    }
+
+    // Permissões são sempre obtidas do banco para que desativações e
+    // alterações de perfil tenham efeito imediatamente.
+    req.user = {
+      ...decoded,
+      id: user.id,
+      email: user.email,
+      is_admin: user.is_admin,
+      status: user.status,
+    };
 
     next();
   } catch (err) {

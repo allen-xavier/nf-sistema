@@ -3,7 +3,7 @@
 import { apiFetch, setAuthToken, clearAuthToken, auth, customers, companies, invoices, reports } from './api.js';
 import { getState, setUser, setCurrentPage, setTheme, getTheme, setState, setData, setLoading } from './state.js';
 import { setupNavigation, selectPage, registerPageLoader } from './router.js';
-import { showNotification, showConfirmDialog, showModal, formatCurrency, formatDate, createEmptyState } from './ui.js';
+import { showNotification, showConfirmDialog, showModal, formatCurrency, formatDate, createEmptyState, escapeHtml } from './ui.js';
 
 // Pages
 import { setupDashboardPage } from './pages/dashboard.js';
@@ -19,6 +19,11 @@ async function initApp() {
   // Verificar se é ativação de conta (?token=xxx)
   const urlParams = new URLSearchParams(window.location.search);
   const activationToken = urlParams.get('token');
+
+  if (window.location.pathname === '/reset-password') {
+    await handlePasswordReset(activationToken);
+    return;
+  }
 
   if (activationToken) {
     await handleActivation(activationToken);
@@ -168,10 +173,11 @@ async function handleActivation(token) {
       <div style="text-align: center; padding: 20px">
         <div style="font-size: 48px; margin-bottom: 16px">⚠️</div>
         <h2 style="margin: 0 0 8px">Link inválido</h2>
-        <p style="color: var(--text-muted); font-size: 13px">${error.message || 'Este link de ativação é inválido, expirado ou já foi usado.'}</p>
-        <button class="btn btn-primary" style="margin-top: 16px" onclick="window.location.href='/'">Ir para login</button>
+        <p style="color: var(--text-muted); font-size: 13px">${escapeHtml(error.message || 'Este link de ativação é inválido, expirado ou já foi usado.')}</p>
+        <button id="activationBackLogin" class="btn btn-primary" style="margin-top: 16px">Ir para login</button>
       </div>
     `;
+    document.getElementById('activationBackLogin').onclick = () => window.location.assign('/');
   }
 }
 
@@ -179,7 +185,7 @@ function renderActivationForm(overlay, info, token) {
   overlay.querySelector('.login-card').innerHTML = `
     <div style="text-align: center; margin-bottom: 16px">
       <div style="font-size: 36px; margin-bottom: 8px">🎉</div>
-      <h2 style="margin: 0 0 4px; font-size: 18px">Bem-vindo, ${info.name}!</h2>
+      <h2 style="margin: 0 0 4px; font-size: 18px">Bem-vindo, ${escapeHtml(info.name)}!</h2>
       <p style="color: var(--text-muted); font-size: 12px; margin: 0">Defina sua senha para ativar sua conta</p>
     </div>
     <div class="form-group" style="margin-bottom: 8px">
@@ -201,6 +207,92 @@ function renderActivationForm(overlay, info, token) {
   document.getElementById('activatePasswordConfirm').onkeydown = (e) => {
     if (e.key === 'Enter') submitActivation(token);
   };
+}
+
+// ============ RECUPERAÇÃO DE SENHA ============
+
+async function handlePasswordReset(token) {
+  const overlay = document.getElementById('activationOverlay');
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('appShell').style.display = 'none';
+  overlay.style.display = 'flex';
+
+  if (!token) {
+    renderInvalidResetLink(overlay, 'Token de recuperação ausente.');
+    return;
+  }
+
+  try {
+    await auth.resetPasswordInfo(token);
+    overlay.querySelector('.login-card').innerHTML = `
+      <div style="text-align: center; margin-bottom: 16px">
+        <h2 style="margin: 0 0 4px; font-size: 18px">Redefinir senha</h2>
+        <p style="color: var(--text-muted); font-size: 12px; margin: 0">Informe uma nova senha para sua conta</p>
+      </div>
+      <div class="form-group" style="margin-bottom: 8px">
+        <label>Nova senha</label>
+        <input type="password" id="resetPassword" placeholder="Mínimo 8 caracteres" />
+      </div>
+      <div class="form-group" style="margin-bottom: 8px">
+        <label>Confirmar senha</label>
+        <input type="password" id="resetPasswordConfirm" placeholder="Repita a senha" />
+      </div>
+      <div id="resetError" class="error-text" style="display: none"></div>
+      <button id="btnResetPassword" class="btn btn-primary" style="width: 100%; margin-top: 10px">Salvar nova senha</button>
+      <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center">
+        Mínimo 8 caracteres, com letras e números
+      </p>
+    `;
+
+    document.getElementById('btnResetPassword').onclick = () => submitPasswordReset(token, overlay);
+    document.getElementById('resetPasswordConfirm').onkeydown = (event) => {
+      if (event.key === 'Enter') submitPasswordReset(token, overlay);
+    };
+  } catch (error) {
+    renderInvalidResetLink(overlay, error.message || 'Este link é inválido ou expirou.');
+  }
+}
+
+function renderInvalidResetLink(overlay, message) {
+  overlay.querySelector('.login-card').innerHTML = `
+    <div style="text-align: center; padding: 20px">
+      <div style="font-size: 48px; margin-bottom: 16px">⚠️</div>
+      <h2 style="margin: 0 0 8px">Link inválido</h2>
+      <p style="color: var(--text-muted); font-size: 13px">${escapeHtml(message)}</p>
+      <button id="resetBackLogin" class="btn btn-primary" style="margin-top: 16px">Ir para login</button>
+    </div>
+  `;
+  document.getElementById('resetBackLogin').onclick = () => window.location.assign('/');
+}
+
+async function submitPasswordReset(token, overlay) {
+  const password = document.getElementById('resetPassword').value;
+  const confirmation = document.getElementById('resetPasswordConfirm').value;
+  const errorEl = document.getElementById('resetError');
+
+  if (!password || password !== confirmation) {
+    errorEl.textContent = !password ? 'Preencha os dois campos.' : 'Senhas não conferem.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  try {
+    errorEl.style.display = 'none';
+    await auth.resetPassword(token, password, confirmation);
+    overlay.querySelector('.login-card').innerHTML = `
+      <div style="text-align: center; padding: 20px">
+        <div style="font-size: 48px; margin-bottom: 16px">✅</div>
+        <h2 style="margin: 0 0 8px">Senha redefinida</h2>
+        <p style="color: var(--text-muted); font-size: 13px">Você já pode entrar com a nova senha.</p>
+        <button id="resetSuccessLogin" class="btn btn-primary" style="margin-top: 16px">Ir para login</button>
+      </div>
+    `;
+    document.getElementById('resetSuccessLogin').onclick = () => window.location.assign('/');
+    window.history.replaceState({}, '', '/');
+  } catch (error) {
+    errorEl.textContent = error.message || 'Erro ao redefinir senha.';
+    errorEl.style.display = 'block';
+  }
 }
 
 async function submitActivation(token) {
@@ -293,7 +385,14 @@ window.app = {
 
 window.addEventListener('error', (e) => {
   console.error('[NF] Uncaught error:', e.message, e.filename, e.lineno);
-  document.body.innerHTML = `<div style="padding:40px;font-family:monospace;color:red"><h2>Erro ao carregar</h2><pre>${e.message}\n${e.filename}:${e.lineno}</pre></div>`;
+  const errorPanel = document.createElement('div');
+  errorPanel.style.cssText = 'padding:40px;font-family:monospace;color:red';
+  const title = document.createElement('h2');
+  title.textContent = 'Erro ao carregar';
+  const details = document.createElement('pre');
+  details.textContent = `${e.message}\n${e.filename}:${e.lineno}`;
+  errorPanel.append(title, details);
+  document.body.replaceChildren(errorPanel);
 });
 
 document.addEventListener('DOMContentLoaded', initApp);

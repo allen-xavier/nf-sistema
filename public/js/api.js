@@ -32,7 +32,7 @@ export async function apiFetch(endpoint, options = {}) {
 
     if (!response.ok) {
       throw new APIError(
-        data?.message || `API Error: ${response.statusText}`,
+        data?.error || data?.message || `Erro na API: ${response.statusText}`,
         response.status,
         data
       );
@@ -72,6 +72,15 @@ export const auth = {
     apiFetch('/auth/forgot-password', {
       method: 'POST',
       body: JSON.stringify({ email }),
+    }),
+
+  resetPasswordInfo: (token) =>
+    apiFetch(`/auth/reset-password-info?token=${encodeURIComponent(token)}`),
+
+  resetPassword: (token, password, password_confirmation) =>
+    apiFetch('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password, password_confirmation }),
     }),
 
   activateInfo: (token) =>

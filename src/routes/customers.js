@@ -1,6 +1,7 @@
 const express = require("express");
 const { Customer, SystemUser } = require("../models");
 const { authMiddleware } = require("../middleware/auth");
+const { audit } = require("../middleware/audit");
 
 const router = express.Router();
 
@@ -61,6 +62,11 @@ router.post("/", async (req, res) => {
       });
     }
 
+    fee_percent = Number(fee_percent);
+    if (!Number.isFinite(fee_percent) || fee_percent < 0 || fee_percent > 999.99) {
+      return res.status(400).json({ error: "Informe uma taxa válida." });
+    }
+
     // Não-admin: taxa mínima 2%
     if (!req.user.is_admin && parseFloat(fee_percent) < MIN_FEE_PERCENT) {
       return res.status(400).json({
@@ -79,6 +85,12 @@ router.post("/", async (req, res) => {
       uses_pos: uses_pos ?? true,
       created_by_user_id: req.user.id,
     });
+
+    await audit(req.user.id, "CREATE_CUSTOMER", "Customer", customer.id, {
+      name: customer.name,
+      whatsapp_number: customer.whatsapp_number,
+      fee_percent: customer.fee_percent,
+    }, req);
 
     res.status(201).json(customer);
   } catch (err) {
@@ -122,6 +134,11 @@ router.put("/:id", async (req, res) => {
       });
     }
 
+    fee_percent = Number(fee_percent);
+    if (!Number.isFinite(fee_percent) || fee_percent < 0 || fee_percent > 999.99) {
+      return res.status(400).json({ error: "Informe uma taxa válida." });
+    }
+
     // Não-admin: taxa mínima 2%
     if (!req.user.is_admin && parseFloat(fee_percent) < MIN_FEE_PERCENT) {
       return res.status(400).json({
@@ -139,6 +156,13 @@ router.put("/:id", async (req, res) => {
     if (uses_pos != null) customer.uses_pos = uses_pos;
 
     await customer.save();
+
+    await audit(req.user.id, "UPDATE_CUSTOMER", "Customer", customer.id, {
+      name: customer.name,
+      whatsapp_number: customer.whatsapp_number,
+      fee_percent: customer.fee_percent,
+      is_active: customer.is_active,
+    }, req);
 
     res.json(customer);
   } catch (err) {
@@ -174,6 +198,10 @@ router.delete("/:id", async (req, res) => {
     }
 
     await customer.destroy();
+    await audit(req.user.id, "DELETE_CUSTOMER", "Customer", id, {
+      name: customer.name,
+      whatsapp_number: customer.whatsapp_number,
+    }, req);
     res.json({ success: true });
   } catch (err) {
     console.error("Erro ao excluir cliente:", err);

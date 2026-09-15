@@ -26,7 +26,7 @@ const sequelize = new Sequelize(database, username, password, {
   host,
   port,
   dialect: "postgres",
-  logging: console.log, // coloque true se quiser ver as queries no log
+  logging: process.env.DB_LOG_SQL === "1" ? console.log : false,
   timezone: "America/Sao_Paulo",
   define: {
     underscored: true,

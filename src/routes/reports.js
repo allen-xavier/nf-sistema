@@ -1,5 +1,5 @@
 ﻿const express = require("express");
-const { Op, fn, col, literal, where: whereFn } = require("sequelize");
+const { Op, fn, col, literal } = require("sequelize");
 const { Invoice, Customer, Company } = require("../models");
 const { authMiddleware } = require("../middleware/auth");
 
@@ -9,25 +9,34 @@ router.use(authMiddleware);
 
 function buildDateWhere(base = {}, start, end) {
   const where = { ...base };
-  const and = where[Op.and] ? [...where[Op.and]] : [];
-
   const issuedFilter = {};
   if (start) {
-    and.push(whereFn(fn("DATE", col("issued_at")), ">=", start));
-    issuedFilter[Op.gte] = new Date(`${start}T00:00:00`);
+    const parsed = parseDateBoundary(start);
+    if (!parsed) throw createDateError("Data inicial inválida.");
+    issuedFilter[Op.gte] = parsed;
   }
   if (end) {
-    and.push(whereFn(fn("DATE", col("issued_at")), "<=", end));
-    issuedFilter[Op.lte] = new Date(`${end}T23:59:59.999`);
+    const parsed = parseDateBoundary(end, true);
+    if (!parsed) throw createDateError("Data final inválida.");
+    issuedFilter[Op.lte] = parsed;
   }
   if (Object.keys(issuedFilter).length) {
-    and.push({ issued_at: issuedFilter });
-  }
-
-  if (and.length) {
-    where[Op.and] = and;
+    where.issued_at = issuedFilter;
   }
   return where;
+}
+
+function parseDateBoundary(value, endOfDay = false) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ""))) return null;
+  const time = endOfDay ? "T23:59:59.999-03:00" : "T00:00:00-03:00";
+  const parsed = new Date(`${value}${time}`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function createDateError(message) {
+  const error = new Error(message);
+  error.status = 400;
+  return error;
 }
 
 /**
@@ -69,9 +78,10 @@ router.get("/summary", async (req, res) => {
       where,
       attributes: [
         [literal("TO_CHAR(issued_at, 'DD/MM')"), "label"],
+        [literal("TO_CHAR(issued_at, 'YYYY-MM-DD')"), "period_key"],
         [fn("COUNT", col("id")), "total_notas"],
       ],
-      group: ["label"],
+      group: ["label", "period_key"],
       raw: true,
       order: [literal("MIN(issued_at)")],
     });
@@ -81,16 +91,21 @@ router.get("/summary", async (req, res) => {
       group_by === "month"
         ? "TO_CHAR(issued_at, 'MM/YYYY')"
         : "TO_CHAR(issued_at, 'DD/MM')";
+    const periodKeyFormat =
+      group_by === "month"
+        ? "TO_CHAR(issued_at, 'YYYY-MM')"
+        : "TO_CHAR(issued_at, 'YYYY-MM-DD')";
 
     const porPeriodo = await Invoice.findAll({
       where,
       attributes: [
         [literal(dateFormat), "label"],
+        [literal(periodKeyFormat), "period_key"],
         [fn("COUNT", col("id")), "total_notas"],
         [fn("SUM", col("total_amount")), "soma_valor_total"],
         [fn("SUM", col("paid_amount")), "soma_taxas"],
       ],
-      group: ["label"],
+      group: ["label", "period_key"],
       raw: true,
       order: [literal("MIN(issued_at)")],
     });
@@ -160,7 +175,7 @@ router.get("/summary", async (req, res) => {
     });
   } catch (err) {
     console.error("Erro em /api/reports/summary:", err);
-    res.status(500).json({ error: "Erro ao gerar resumo" });
+    res.status(err.status || 500).json({ error: err.status ? err.message : "Erro ao gerar resumo" });
   }
 });
 
@@ -205,15 +220,20 @@ router.get("/cliente/:id", async (req, res) => {
       group_by === "month"
         ? "TO_CHAR(issued_at, 'MM/YYYY')"
         : "TO_CHAR(issued_at, 'DD/MM')";
+    const periodKeyFormat =
+      group_by === "month"
+        ? "TO_CHAR(issued_at, 'YYYY-MM')"
+        : "TO_CHAR(issued_at, 'YYYY-MM-DD')";
 
     const porPeriodo = await Invoice.findAll({
       where,
       attributes: [
         [literal(dateFormat), "label"],
+        [literal(periodKeyFormat), "period_key"],
         [fn("COUNT", col("id")), "total_notas"],
         [fn("SUM", col("total_amount")), "soma_valor_total"],
       ],
-      group: ["label"],
+      group: ["label", "period_key"],
       raw: true,
       order: [literal("label ASC")],
     });
@@ -249,7 +269,7 @@ router.get("/cliente/:id", async (req, res) => {
     });
   } catch (err) {
     console.error("Erro em /api/reports/cliente/:id", err);
-    res.status(500).json({ error: "Erro ao gerar relatório do cliente" });
+    res.status(err.status || 500).json({ error: err.status ? err.message : "Erro ao gerar relatório do cliente" });
   }
 });
 
@@ -293,15 +313,20 @@ router.get("/empresa/:id", async (req, res) => {
       group_by === "month"
         ? "TO_CHAR(issued_at, 'MM/YYYY')"
         : "TO_CHAR(issued_at, 'DD/MM')";
+    const periodKeyFormat =
+      group_by === "month"
+        ? "TO_CHAR(issued_at, 'YYYY-MM')"
+        : "TO_CHAR(issued_at, 'YYYY-MM-DD')";
 
     const porPeriodo = await Invoice.findAll({
       where,
       attributes: [
         [literal(dateFormat), "label"],
+        [literal(periodKeyFormat), "period_key"],
         [fn("COUNT", col("id")), "total_notas"],
         [fn("SUM", col("total_amount")), "soma_valor_total"],
       ],
-      group: ["label"],
+      group: ["label", "period_key"],
       raw: true,
       order: [literal("label ASC")],
     });
@@ -337,7 +362,7 @@ router.get("/empresa/:id", async (req, res) => {
     });
   } catch (err) {
     console.error("Erro em /api/reports/empresa/:id", err);
-    res.status(500).json({ error: "Erro ao gerar relatório da empresa" });
+    res.status(err.status || 500).json({ error: err.status ? err.message : "Erro ao gerar relatório da empresa" });
   }
 });
 

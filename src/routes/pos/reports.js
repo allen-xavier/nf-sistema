@@ -8,8 +8,12 @@ const router = express.Router();
 router.use(authMiddleware);
 router.use(adminOnly);
 
-// Garante colunas de pagamento em bases antigas
+// Garante colunas de pagamento em bases antigas uma única vez por processo.
+let paidColumnsEnsured = false;
+
 async function ensurePaidColumns(req, res, next) {
+  if (paidColumnsEnsured) return next();
+
   try {
     await PosSale.sequelize.query(
       "ALTER TABLE pos_sales ADD COLUMN IF NOT EXISTS paid BOOLEAN DEFAULT FALSE;"
@@ -20,6 +24,7 @@ async function ensurePaidColumns(req, res, next) {
     await PosSale.sequelize.query(
       "ALTER TABLE pos_sales ADD COLUMN IF NOT EXISTS payment_batch VARCHAR(100) NULL;"
     );
+    paidColumnsEnsured = true;
   } catch (err) {
     console.error("Nao foi possivel garantir colunas de pagamento:", err);
   }

@@ -3,11 +3,48 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { SystemUser, UserInvitation } = require("../models");
 const { audit } = require("../middleware/audit");
-const { hashToken, safeCompare } = require("../utils/tokens");
+const { authMiddleware } = require("../middleware/auth");
+const { hashToken } = require("../utils/tokens");
+const { getJwtSecret, getJwtExpiresIn } = require("../config/security");
 
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || "default_secret_token";
+const loginFailures = new Map();
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_MAX_FAILURES = 10;
+
+function loginAttemptKey(req, email) {
+  return `${req.ip}:${String(email || "").trim().toLowerCase()}`;
+}
+
+function isLoginBlocked(key) {
+  const entry = loginFailures.get(key);
+  if (!entry) return false;
+  if (Date.now() - entry.startedAt >= LOGIN_WINDOW_MS) {
+    loginFailures.delete(key);
+    return false;
+  }
+  return entry.count >= LOGIN_MAX_FAILURES;
+}
+
+function registerLoginFailure(key) {
+  const current = loginFailures.get(key);
+  if (!current || Date.now() - current.startedAt >= LOGIN_WINDOW_MS) {
+    loginFailures.set(key, { count: 1, startedAt: Date.now() });
+  } else {
+    current.count += 1;
+  }
+
+  if (loginFailures.size > 5000) {
+    const now = Date.now();
+    for (const [entryKey, entry] of loginFailures) {
+      if (now - entry.startedAt >= LOGIN_WINDOW_MS) loginFailures.delete(entryKey);
+    }
+    while (loginFailures.size > 5000) {
+      loginFailures.delete(loginFailures.keys().next().value);
+    }
+  }
+}
 
 /**
  * POST /api/auth/login
@@ -20,9 +57,17 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ error: "E-mail e senha são obrigatórios." });
     }
 
+    const attemptKey = loginAttemptKey(req, email);
+    if (isLoginBlocked(attemptKey)) {
+      return res.status(429).json({
+        error: "Muitas tentativas de acesso. Aguarde alguns minutos.",
+      });
+    }
+
     const user = await SystemUser.findOne({ where: { email } });
 
     if (!user) {
+      registerLoginFailure(attemptKey);
       await audit(null, 'LOGIN_FAILED', 'SystemUser', null, { email, reason: 'not_found' }, req);
       return res.status(401).json({ error: "Credenciais inválidas." });
     }
@@ -42,6 +87,7 @@ router.post("/login", async (req, res) => {
     const ok = await bcrypt.compare(password, user.password_hash);
 
     if (!ok) {
+      registerLoginFailure(attemptKey);
       await audit(user.id, 'LOGIN_FAILED', 'SystemUser', user.id, { reason: 'wrong_password' }, req);
       return res.status(401).json({ error: "Credenciais inválidas." });
     }
@@ -49,11 +95,12 @@ router.post("/login", async (req, res) => {
     // Atualizar last_login_at
     user.last_login_at = new Date();
     await user.save();
+    loginFailures.delete(attemptKey);
 
     const token = jwt.sign(
       { id: user.id, email: user.email, is_admin: user.is_admin },
-      JWT_SECRET,
-      { expiresIn: "24h" }
+      getJwtSecret(),
+      { expiresIn: getJwtExpiresIn() }
     );
 
     await audit(user.id, 'LOGIN', 'SystemUser', user.id, {}, req);
@@ -77,15 +124,9 @@ router.post("/login", async (req, res) => {
 /**
  * GET /api/auth/me
  */
-router.get("/me", async (req, res) => {
+router.get("/me", authMiddleware, async (req, res) => {
   try {
-    const header = req.headers.authorization;
-    if (!header) return res.status(401).json({ error: "Token ausente." });
-
-    const [, token] = header.split(" ");
-    const decoded = jwt.verify(token, JWT_SECRET);
-
-    const user = await SystemUser.findByPk(decoded.id, {
+    const user = await SystemUser.findByPk(req.user.id, {
       attributes: ["id", "name", "email", "is_admin", "status"],
     });
 
@@ -93,7 +134,8 @@ router.get("/me", async (req, res) => {
 
     res.json(user);
   } catch (err) {
-    res.status(401).json({ error: "Token inválido ou expirado." });
+    console.error("Erro ao consultar usuário autenticado:", err);
+    res.status(500).json({ error: "Erro ao consultar usuário." });
   }
 });
 
@@ -217,8 +259,8 @@ router.post("/activate", async (req, res) => {
     // Retornar JWT para login automático
     const jwtToken = jwt.sign(
       { id: user.id, email: user.email, is_admin: user.is_admin },
-      JWT_SECRET,
-      { expiresIn: "24h" }
+      getJwtSecret(),
+      { expiresIn: getJwtExpiresIn() }
     );
 
     res.json({
@@ -241,15 +283,9 @@ router.post("/activate", async (req, res) => {
  * POST /api/auth/change-password
  * Body: { current_password, new_password }
  */
-router.post("/change-password", async (req, res) => {
+router.post("/change-password", authMiddleware, async (req, res) => {
   try {
-    const header = req.headers.authorization;
-    if (!header) return res.status(401).json({ error: "Token ausente." });
-
-    const [, token] = header.split(" ");
-    const decoded = jwt.verify(token, JWT_SECRET);
-
-    const user = await SystemUser.findByPk(decoded.id);
+    const user = await SystemUser.findByPk(req.user.id);
     if (!user) return res.status(404).json({ error: "Usuário não encontrado." });
 
     const { current_password, new_password } = req.body;

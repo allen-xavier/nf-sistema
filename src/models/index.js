@@ -5,6 +5,7 @@ const Company = require("./Company");
 const SystemUser = require("./SystemUser");
 const UserInvitation = require("./UserInvitation");
 const AuditLog = require("./AuditLog");
+const PasswordResetToken = require("./PasswordResetToken");
 const PosCompany = require("./PosCompany");
 const PosTerminal = require("./PosTerminal");
 const PosCustomerRate = require("./PosCustomerRate");
@@ -32,6 +33,10 @@ UserInvitation.belongsTo(SystemUser, { foreignKey: "created_by_user_id", as: "In
 
 // --- AUDITORIA -> USUARIO
 AuditLog.belongsTo(SystemUser, { foreignKey: "user_id", as: "User" });
+
+// --- RECUPERAÇÃO DE SENHA -> USUÁRIO
+PasswordResetToken.belongsTo(SystemUser, { foreignKey: "user_id", as: "User" });
+SystemUser.hasMany(PasswordResetToken, { foreignKey: "user_id", as: "PasswordResetTokens" });
 
 // --- POS COMPANY -> POS TERMINAL
 PosCompany.hasMany(PosTerminal, { foreignKey: "pos_company_id", as: "Terminals" });
@@ -65,6 +70,7 @@ module.exports = {
   SystemUser,
   UserInvitation,
   AuditLog,
+  PasswordResetToken,
   PosCompany,
   PosTerminal,
   PosCustomerRate,

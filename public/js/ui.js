@@ -83,7 +83,10 @@ export function showModal(title, content, actions = []) {
 
 export function showConfirmDialog(title, message, onConfirm, onCancel) {
   const content = document.createElement('div');
-  content.innerHTML = `<p style="margin: 0; color: var(--text-muted); font-size: 13px;">${message}</p>`;
+  const messageEl = document.createElement('p');
+  messageEl.style.cssText = 'margin: 0; color: var(--text-muted); font-size: 13px;';
+  messageEl.textContent = message;
+  content.appendChild(messageEl);
 
   showModal(title, content, [
     {
@@ -109,6 +112,33 @@ export function formatDate(dateString) {
   if (!dateString) return '—';
   const date = new Date(dateString);
   return new Intl.DateTimeFormat('pt-BR').format(date);
+}
+
+export function formatDateInput(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+export function safeExternalUrl(value) {
+  if (!value) return '';
+
+  try {
+    const url = new URL(String(value), window.location.origin);
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+  } catch (_error) {
+    return '';
+  }
 }
 
 export function formatPhoneNumber(phone) {
@@ -226,7 +256,8 @@ export function createTable(headers, rows, onRowClick = null) {
 
 export function createStatusBadge(status) {
   const badge = document.createElement('span');
-  badge.className = `status-pill status-${status?.toLowerCase() || 'emitida'}`;
+  const safeStatus = String(status || 'emitida').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  badge.className = `status-pill status-${safeStatus}`;
   badge.textContent = {
     EMITIDA: '📤 Emitida',
     PAGA: '✅ Paga',

@@ -1,6 +1,7 @@
 const express = require("express");
 const { Company } = require("../models");
 const { authMiddleware, adminOnly } = require("../middleware/auth");
+const { audit } = require("../middleware/audit");
 
 const router = express.Router();
 
@@ -56,6 +57,12 @@ router.post("/", adminOnly, async (req, res) => {
       is_active: is_active ?? true,
     });
 
+    await audit(req.user.id, "CREATE_COMPANY", "Company", empresa.id, {
+      name: empresa.name,
+      cnpj: empresa.cnpj,
+      is_active: empresa.is_active,
+    }, req);
+
     res.status(201).json(empresa);
   } catch (err) {
     console.error("Erro ao criar empresa:", err);
@@ -88,6 +95,11 @@ router.put("/:id", adminOnly, async (req, res) => {
     company.is_active = is_active ?? company.is_active;
 
     await company.save();
+    await audit(req.user.id, "UPDATE_COMPANY", "Company", company.id, {
+      name: company.name,
+      cnpj: company.cnpj,
+      is_active: company.is_active,
+    }, req);
     res.json(company);
   } catch (err) {
     console.error("Erro ao atualizar empresa:", err);
@@ -109,6 +121,10 @@ router.delete("/:id", adminOnly, async (req, res) => {
     if (!company) return res.status(404).json({ error: "Empresa não encontrada." });
 
     await company.destroy();
+    await audit(req.user.id, "DELETE_COMPANY", "Company", id, {
+      name: company.name,
+      cnpj: company.cnpj,
+    }, req);
     res.json({ success: true });
   } catch (err) {
     console.error("Erro ao excluir empresa:", err);

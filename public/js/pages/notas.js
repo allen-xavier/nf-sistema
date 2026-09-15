@@ -1,7 +1,7 @@
 /* Notas Page - Full with infinite scroll and filters */
 
 import { invoices } from '../api.js';
-import { formatDate, showNotification, formatCurrency, createEmptyState, showModal, showConfirmDialog, debounce } from '../ui.js';
+import { formatDate, showNotification, formatCurrency, showModal, showConfirmDialog, debounce, escapeHtml, safeExternalUrl } from '../ui.js';
 import { setData, getData, getState } from '../state.js';
 
 let notasState = {
@@ -44,7 +44,14 @@ async function loadNotas(pageEl, append = false) {
     setData('invoices', notasState.data);
 
     if (!append) {
-      renderNotas(pageEl, notasState.data, total);
+      const existingBody = pageEl.querySelector('#notasTableBody');
+      if (existingBody) {
+        existingBody.innerHTML = '';
+        appendRows(notes);
+        updateCounter(notasState.data.length, total);
+      } else {
+        renderNotas(pageEl, notasState.data, total);
+      }
     } else {
       appendRows(notes);
       updateCounter(notasState.data.length, total);
@@ -73,24 +80,6 @@ function getActiveFilters() {
 }
 
 function renderNotas(pageEl, notes, total) {
-  if (!notes || notes.length === 0) {
-    const card = document.createElement('div');
-    card.className = 'card';
-
-    // Still show filters
-    const filterHtml = getFiltersHtml();
-    card.innerHTML = filterHtml;
-    card.appendChild(createEmptyState(
-      '📄',
-      'Nenhuma nota encontrada',
-      'Ajuste os filtros ou emita uma nova nota fiscal'
-    ));
-    pageEl.innerHTML = '';
-    pageEl.appendChild(card);
-    setupFilterListeners(pageEl);
-    return;
-  }
-
   const html = `
     <div class="card">
       <div class="card-header">
@@ -165,6 +154,13 @@ function appendRows(notes) {
 
   const isAdmin = getState().currentUser?.is_admin;
 
+  if (!notes.length && notasState.data.length === 0) {
+    tbody.innerHTML = `<tr data-empty-row><td colspan="10" style="text-align:center; color:var(--text-muted); padding:32px">Nenhuma nota encontrada para os filtros informados</td></tr>`;
+    return;
+  }
+
+  tbody.querySelector('[data-empty-row]')?.remove();
+
   notes.forEach((nota) => {
     const tr = document.createElement('tr');
     tr.style.cursor = 'pointer';
@@ -177,10 +173,10 @@ function appendRows(notes) {
     tr.innerHTML = `
       <td><strong>#${nota.id}</strong></td>
       <td>${formatDate(nota.issued_at || nota.created_at)}</td>
-      <td>${nota.Customer?.name || nota.customer?.name || '—'}</td>
-      <td>${nota.Company?.name || nota.company?.name || '—'}</td>
-      <td>${nota.buyer_name || '—'}</td>
-      <td>${nota.buyer_cpf || '—'}</td>
+      <td>${escapeHtml(nota.Customer?.name || nota.customer?.name || '—')}</td>
+      <td>${escapeHtml(nota.Company?.name || nota.company?.name || '—')}</td>
+      <td>${escapeHtml(nota.buyer_name || '—')}</td>
+      <td>${escapeHtml(nota.buyer_cpf || '—')}</td>
       <td>${formatCurrency(totalAmount)}</td>
       <td>${feePercent.toFixed(2)}%</td>
       <td>${formatCurrency(paidAmount)}</td>
@@ -220,14 +216,13 @@ function setupFilterListeners(pageEl) {
   const clearBtn = document.getElementById('notasClearFilters');
   const searchInput = document.getElementById('notasSearch');
 
-  // Filtro em tempo real ao digitar
-  searchInput?.addEventListener('input', debounce((e) => {
-    const query = e.target.value.toLowerCase();
-    document.querySelectorAll('#notasTableBody tr').forEach((row) => {
-      const text = row.textContent.toLowerCase();
-      row.style.display = text.includes(query) ? '' : 'none';
-    });
-  }, 150));
+  // Filtro em tempo real consultando todo o banco, não apenas a página carregada.
+  searchInput?.addEventListener('input', debounce(async () => {
+    notasState.page = 1;
+    notasState.exhausted = false;
+    notasState.data = [];
+    await loadNotas(pageEl, false);
+  }, 300));
 
   // Botão aplicar (para filtros de data que precisam ir à API)
   applyBtn?.addEventListener('click', async () => {
@@ -245,11 +240,6 @@ function setupFilterListeners(pageEl) {
     if (search) search.value = '';
     if (startDate) startDate.value = '';
     if (endDate) endDate.value = '';
-
-    // Show all rows again
-    document.querySelectorAll('#notasTableBody tr').forEach((row) => {
-      row.style.display = '';
-    });
 
     notasState.page = 1;
     notasState.exhausted = false;
@@ -277,6 +267,8 @@ function viewNotaDetail(nota) {
   const saleAmount = parseFloat(nota.sale_amount) || 0;
   const feePercent = parseFloat(nota.fee_percent) || 0;
   const feeValue = parseFloat(nota.fee_value) || 0;
+  const safeNfLink = safeExternalUrl(nota.nf_link);
+  const safeStatus = String(nota.status || 'EMITIDA').toLowerCase().replace(/[^a-z0-9_-]/g, '');
 
   const content = `
     <div class="modal-grid">
@@ -286,23 +278,23 @@ function viewNotaDetail(nota) {
       </div>
       <div class="modal-field">
         <label>Status</label>
-        <div class="value"><span class="status-pill status-${(nota.status || 'emitida').toLowerCase()}">${nota.status || 'EMITIDA'}</span></div>
+        <div class="value"><span class="status-pill status-${safeStatus}">${escapeHtml(nota.status || 'EMITIDA')}</span></div>
       </div>
       <div class="modal-field">
         <label>Cliente</label>
-        <div class="value">${nota.Customer?.name || nota.customer?.name || '—'}</div>
+        <div class="value">${escapeHtml(nota.Customer?.name || nota.customer?.name || '—')}</div>
       </div>
       <div class="modal-field">
         <label>Empresa</label>
-        <div class="value">${nota.Company?.name || nota.company?.name || '—'}</div>
+        <div class="value">${escapeHtml(nota.Company?.name || nota.company?.name || '—')}</div>
       </div>
       <div class="modal-field">
         <label>Comprador</label>
-        <div class="value">${nota.buyer_name || '—'}</div>
+        <div class="value">${escapeHtml(nota.buyer_name || '—')}</div>
       </div>
       <div class="modal-field">
         <label>CPF Comprador</label>
-        <div class="value">${nota.buyer_cpf || '—'}</div>
+        <div class="value">${escapeHtml(nota.buyer_cpf || '—')}</div>
       </div>
       <div class="modal-field">
         <label>Valor Total</label>
@@ -337,13 +329,13 @@ function viewNotaDetail(nota) {
       ${nota.nsu ? `
         <div class="modal-field">
           <label>NSU</label>
-          <div class="value">${nota.nsu}</div>
+        <div class="value">${escapeHtml(nota.nsu)}</div>
         </div>
       ` : ''}
-      ${nota.nf_link ? `
+      ${safeNfLink ? `
         <div class="modal-field" style="grid-column: 1 / -1">
           <label>Link NF</label>
-          <div class="value"><a href="${nota.nf_link}" target="_blank" style="color: var(--primary)">${nota.nf_link}</a></div>
+          <div class="value"><a href="${escapeHtml(safeNfLink)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary)">${escapeHtml(nota.nf_link)}</a></div>
         </div>
       ` : ''}
     </div>

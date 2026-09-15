@@ -4,9 +4,29 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const path = require("path");
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || process.env.APP_PORT || 3000;
+const { getJwtSecret } = require("./config/security");
 
 const { sequelize, Customer, Company, Invoice, SystemUser } = require("./models");
+
+function getCorsOptions() {
+  const configured = process.env.CORS_ORIGINS || process.env.APP_URL || "";
+  const allowedOrigins = configured
+    .split(",")
+    .map((origin) => origin.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+
+  // Mantém compatibilidade quando ainda não há origens configuradas.
+  if (!allowedOrigins.length || allowedOrigins.includes("*")) return {};
+
+  return {
+    origin(origin, callback) {
+      const normalizedOrigin = String(origin || "").replace(/\/$/, "");
+      if (!origin || allowedOrigins.includes(normalizedOrigin)) return callback(null, true);
+      return callback(new Error("Origem não permitida pelo CORS."));
+    },
+  };
+}
 
 // Rotas padrão existentes
 const customersRoutes = require("./routes/customers");
@@ -31,10 +51,14 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+  );
   next();
 });
 
-app.use(cors());
+app.use(cors(getCorsOptions()));
 app.use(express.json({ limit: '10mb' }));
 
 // Rotas API
@@ -52,6 +76,11 @@ app.use("/api/pos/rates", posRatesRoutes);
 app.use("/api/pos/sales", posSalesRoutes);
 app.use("/api/pos/reports", posReportsRoutes);
 
+// Permite abrir diretamente o link enviado por e-mail para redefinição.
+app.get("/reset-password", (_req, res) => {
+  res.sendFile(path.join(__dirname, "..", "public", "index.html"));
+});
+
 // Arquivos estáticos (frontend)
 app.use(express.static(path.join(__dirname, "..", "public")));
 
@@ -65,13 +94,21 @@ app.get("/health", (req, res) => {
  */
 async function start() {
   try {
+    // Falha cedo em vez de iniciar com um segredo JWT conhecido/inseguro.
+    getJwtSecret();
+
     // Teste de conexão
     await sequelize.authenticate();
     console.log("Conectado ao banco de dados");
 
     // Sincroniza modelos
-    await sequelize.sync({ alter: true });
-    console.log("Models sincronizados com o banco (alter: true)");
+    const alterSchema = process.env.DB_SYNC_ALTER === "1";
+    await sequelize.sync({ alter: alterSchema });
+    console.log(
+      alterSchema
+        ? "Models sincronizados com o banco (alter habilitado)"
+        : "Models verificados sem alteração automática de tabelas existentes"
+    );
 
     // ---------------------------------------------
     // 1) Criar administrador se não existir

@@ -1,8 +1,8 @@
 /* Empresas Page - Full CRUD */
 
 import { companies } from '../api.js';
-import { formatDate, showNotification, showConfirmDialog, createEmptyState, formatCNPJ, debounce } from '../ui.js';
-import { setData, getData } from '../state.js';
+import { formatDate, showNotification, showConfirmDialog, formatCNPJ, debounce, escapeHtml } from '../ui.js';
+import { setData, getData, getState } from '../state.js';
 
 let currentEditId = null;
 
@@ -24,23 +24,7 @@ async function loadEmpresas(pageEl) {
 }
 
 function renderEmpresas(pageEl, empresasList) {
-  if (!empresasList || empresasList.length === 0) {
-    const empty = createEmptyState(
-      '🏢',
-      'Nenhuma empresa cadastrada',
-      'Comece adicionando sua primeira empresa emissora',
-      {
-        label: '+ Nova empresa',
-        onClick: () => toggleForm(true),
-      }
-    );
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.appendChild(empty);
-    pageEl.innerHTML = '';
-    pageEl.appendChild(card);
-    return;
-  }
+  const isAdmin = getState().currentUser?.is_admin === true;
 
   const html = `
     <div class="card">
@@ -49,7 +33,7 @@ function renderEmpresas(pageEl, empresasList) {
           <div class="card-title">Empresas Emissoras</div>
           <div class="card-subtitle">Cadastro das empresas autorizadas a emitir notas fiscais</div>
         </div>
-        <button class="btn btn-primary" id="btnAddEmpresa">+ Adicionar empresa</button>
+        ${isAdmin ? '<button class="btn btn-primary" id="btnAddEmpresa">+ Adicionar empresa</button>' : ''}
       </div>
 
       <div class="toolbar">
@@ -67,7 +51,7 @@ function renderEmpresas(pageEl, empresasList) {
       </div>
 
       <!-- FORM EMPRESA -->
-      <div id="empresaFormWrapper" style="display: none; margin-bottom: 10px">
+      ${isAdmin ? `<div id="empresaFormWrapper" style="display: none; margin-bottom: 10px">
         <div style="padding: 10px; border-radius: 12px; border: 1px dashed var(--border); background: color-mix(in srgb, var(--primary-soft) 25%, var(--bg-elevated) 75%)">
           <div class="form-row">
             <div class="form-group">
@@ -96,7 +80,7 @@ function renderEmpresas(pageEl, empresasList) {
           </div>
           <div id="empresaFormError" class="error-text" style="display: none"></div>
         </div>
-      </div>
+      </div>` : ''}
 
       <div class="table-wrapper">
         <table>
@@ -122,19 +106,26 @@ function renderEmpresas(pageEl, empresasList) {
   const tbody = document.getElementById('empresasTableBody');
   empresasList.forEach((empresa) => {
     const tr = document.createElement('tr');
+    tr.dataset.companyId = String(empresa.id);
     tr.innerHTML = `
-      <td><strong>${empresa.name}</strong></td>
-      <td>${formatCNPJ(empresa.cnpj)}</td>
-      <td><code style="font-size: 11px; background: var(--bg-input); padding: 2px 6px; border-radius: 4px;">${empresa.access_key ? empresa.access_key.substring(0, 16) + '...' : '—'}</code></td>
-      <td><span class="status-pill status-${empresa.active ? 'paga' : 'cancelada'}">${empresa.active ? '✓ Ativa' : '✗ Inativa'}</span></td>
+      <td><strong>${escapeHtml(empresa.name)}</strong></td>
+      <td>${escapeHtml(formatCNPJ(empresa.cnpj))}</td>
+      <td><code style="font-size: 11px; background: var(--bg-input); padding: 2px 6px; border-radius: 4px;">${isAdmin && empresa.access_key ? escapeHtml(empresa.access_key.substring(0, 16)) + '...' : 'Restrita'}</code></td>
+      <td><span class="status-pill status-${empresa.is_active ? 'paga' : 'cancelada'}">${empresa.is_active ? '✓ Ativa' : '✗ Inativa'}</span></td>
       <td>${formatDate(empresa.created_at)}</td>
       <td style="display: flex; gap: 4px">
-        <button class="btn btn-ghost" data-action="edit" data-id="${empresa.id}">Editar</button>
-        <button class="btn btn-danger" data-action="delete" data-id="${empresa.id}">✕</button>
+        ${isAdmin ? `
+          <button class="btn btn-ghost" data-action="edit" data-id="${empresa.id}">Editar</button>
+          <button class="btn btn-danger" data-action="delete" data-id="${empresa.id}">✕</button>
+        ` : '—'}
       </td>
     `;
     tbody.appendChild(tr);
   });
+
+  if (!empresasList.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px">Nenhuma empresa cadastrada</td></tr>`;
+  }
 
   // Action delegation
   tbody.addEventListener('click', (e) => {
@@ -147,9 +138,9 @@ function renderEmpresas(pageEl, empresasList) {
   });
 
   // Buttons
-  document.getElementById('btnAddEmpresa').addEventListener('click', () => toggleForm(true));
-  document.getElementById('btnCancelEmpresa').addEventListener('click', () => toggleForm(false));
-  document.getElementById('btnSaveEmpresa').addEventListener('click', saveEmpresa);
+  document.getElementById('btnAddEmpresa')?.addEventListener('click', () => toggleForm(true));
+  document.getElementById('btnCancelEmpresa')?.addEventListener('click', () => toggleForm(false));
+  document.getElementById('btnSaveEmpresa')?.addEventListener('click', saveEmpresa);
 
   // Search
   document.getElementById('empresaSearch').addEventListener('input', debounce((e) => {
@@ -203,23 +194,23 @@ function editEmpresa(id) {
   document.getElementById('empresaNome').value = empresa.name || '';
   document.getElementById('empresaCnpj').value = empresa.cnpj || '';
   document.getElementById('empresaChave').value = empresa.access_key || '';
-  document.getElementById('empresaAtiva').value = String(empresa.active);
+  document.getElementById('empresaAtiva').value = String(empresa.is_active);
 }
 
 async function saveEmpresa() {
   const name = document.getElementById('empresaNome').value.trim();
   const cnpj = document.getElementById('empresaCnpj').value.trim();
   const access_key = document.getElementById('empresaChave').value.trim();
-  const active = document.getElementById('empresaAtiva').value === 'true';
+  const is_active = document.getElementById('empresaAtiva').value === 'true';
   const errorEl = document.getElementById('empresaFormError');
 
-  if (!name || !cnpj) {
-    errorEl.textContent = 'Nome e CNPJ são obrigatórios';
+  if (!name || !cnpj || !access_key) {
+    errorEl.textContent = 'Nome, CNPJ e chave de acesso são obrigatórios';
     errorEl.style.display = 'block';
     return;
   }
 
-  const payload = { name, cnpj, access_key, active };
+  const payload = { name, cnpj, access_key, is_active };
 
   try {
     if (currentEditId) {
@@ -273,14 +264,11 @@ function filterByStatus(status) {
 
   const activeValue = status === 'true';
   const filteredIds = allEmpresas
-    .filter((e) => e.active === activeValue)
+    .filter((e) => e.is_active === activeValue)
     .map((e) => e.id);
 
   document.querySelectorAll('#empresasTableBody tr').forEach((row) => {
-    const editBtn = row.querySelector('[data-action="edit"]');
-    if (editBtn) {
-      const id = parseInt(editBtn.dataset.id);
-      row.style.display = filteredIds.includes(id) ? '' : 'none';
-    }
+    const id = Number(row.dataset.companyId);
+    if (id) row.style.display = filteredIds.includes(id) ? '' : 'none';
   });
 }

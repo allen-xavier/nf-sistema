@@ -1,0 +1,9 @@
+.git
+.github
+.env
+.env.*
+node_modules
+npm-debug.log*
+temp_script.js
+tmp_script.js
+test
