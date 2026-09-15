@@ -1,5 +1,6 @@
 const express = require("express");
-const { Company } = require("../models");
+const { Op } = require("sequelize");
+const { Company, Customer, Invoice, SystemUser, UserCompany, sequelize } = require("../models");
 const { authMiddleware, adminOnly } = require("../middleware/auth");
 const { audit } = require("../middleware/audit");
 
@@ -15,6 +16,7 @@ router.use(authMiddleware);
 router.get("/", async (req, res) => {
   try {
     const companies = await Company.findAll({
+      where: { id: { [Op.in]: req.user.company_ids || [] } },
       order: [["name", "ASC"]],
     });
     res.json(companies);
@@ -30,7 +32,9 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const company = await Company.findByPk(id);
+    const company = await Company.findOne({
+      where: { [Op.and]: [{ id }, { id: { [Op.in]: req.user.company_ids || [] } }] },
+    });
     if (!company) return res.status(404).json({ error: "Empresa não encontrada." });
     res.json(company);
   } catch (err) {
@@ -50,13 +54,29 @@ router.post("/", adminOnly, async (req, res) => {
       return res.status(400).json({ error: "CNPJ, nome e chave de acesso são obrigatórios." });
     }
 
-    const empresa = await Company.create({
-      cnpj,
-      name,
-      access_key,
-      is_active: is_active ?? true,
+    const empresa = await sequelize.transaction(async (transaction) => {
+      const created = await Company.create({
+        cnpj,
+        name,
+        access_key,
+        is_active: is_active ?? true,
+      }, { transaction });
+
+      await UserCompany.create({
+        user_id: req.user.id,
+        company_id: created.id,
+      }, { transaction });
+
+      const currentUser = await SystemUser.findByPk(req.user.id, { transaction });
+      if (currentUser && !currentUser.default_company_id) {
+        currentUser.default_company_id = created.id;
+        await currentUser.save({ transaction });
+      }
+
+      return created;
     });
 
+    req.companyId = empresa.id;
     await audit(req.user.id, "CREATE_COMPANY", "Company", empresa.id, {
       name: empresa.name,
       cnpj: empresa.cnpj,
@@ -79,7 +99,9 @@ router.post("/", adminOnly, async (req, res) => {
 router.put("/:id", adminOnly, async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const company = await Company.findByPk(id);
+    const company = await Company.findOne({
+      where: { [Op.and]: [{ id }, { id: { [Op.in]: req.user.company_ids || [] } }] },
+    });
 
     if (!company) return res.status(404).json({ error: "Empresa não encontrada." });
 
@@ -95,6 +117,7 @@ router.put("/:id", adminOnly, async (req, res) => {
     company.is_active = is_active ?? company.is_active;
 
     await company.save();
+    req.companyId = company.id;
     await audit(req.user.id, "UPDATE_COMPANY", "Company", company.id, {
       name: company.name,
       cnpj: company.cnpj,
@@ -116,11 +139,24 @@ router.put("/:id", adminOnly, async (req, res) => {
 router.delete("/:id", adminOnly, async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const company = await Company.findByPk(id);
+    const company = await Company.findOne({
+      where: { [Op.and]: [{ id }, { id: { [Op.in]: req.user.company_ids || [] } }] },
+    });
 
     if (!company) return res.status(404).json({ error: "Empresa não encontrada." });
 
+    const [customerCount, invoiceCount] = await Promise.all([
+      Customer.count({ where: { company_id: id } }),
+      Invoice.count({ where: { company_id: id } }),
+    ]);
+    if (customerCount || invoiceCount) {
+      return res.status(409).json({
+        error: "Esta empresa possui clientes ou notas. Desative-a em vez de excluir.",
+      });
+    }
+
     await company.destroy();
+    req.companyId = null;
     await audit(req.user.id, "DELETE_COMPANY", "Company", id, {
       name: company.name,
       cnpj: company.cnpj,

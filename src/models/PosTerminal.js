@@ -9,6 +9,10 @@ const PosTerminal = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    company_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     pos_company_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -44,8 +48,9 @@ const PosTerminal = sequelize.define(
     indexes: [
       {
         unique: true,
-        fields: ["pos_company_id", "terminal_code"],
+        fields: ["company_id", "pos_company_id", "terminal_code"],
       },
+      { name: "pos_terminals_company_id_idx", fields: ["company_id"] },
     ],
   }
 );

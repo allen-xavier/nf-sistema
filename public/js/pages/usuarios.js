@@ -2,7 +2,7 @@
 
 import { users } from '../api.js';
 import { formatDate, showNotification, showConfirmDialog, showModal, createEmptyState, escapeHtml } from '../ui.js';
-import { setData, getData, getState } from '../state.js';
+import { setData, getData, getState, getActiveCompanyId } from '../state.js';
 
 export async function setupUsuariosPage(pageEl) {
   pageEl.innerHTML = '';
@@ -52,6 +52,7 @@ function renderUsuarios(pageEl, usersList) {
               <th>Nome</th>
               <th>E-mail</th>
               <th>Tipo</th>
+              <th>Empresas</th>
               <th>Status</th>
               <th>Último login</th>
               <th>Criado em</th>
@@ -75,16 +76,21 @@ function renderUsuarios(pageEl, usersList) {
     const statusClass = user.status === 'ACTIVE' ? 'tag-success' : user.status === 'DISABLED' ? 'tag-danger' : 'tag-warning';
     const statusLabel = { ACTIVE: 'Ativo', PENDING: 'Pendente', DISABLED: 'Desativado' }[user.status] || user.status;
     const isMe = user.id === currentUser?.id;
+    const companyLabels = (user.companies || [])
+      .map((company) => `<span class="tag">${escapeHtml(company.name)} · ID ${company.id}</span>`)
+      .join(' ') || '—';
 
     tr.innerHTML = `
       <td><strong>${escapeHtml(user.name)}</strong>${isMe ? ' <span style="font-size:10px;color:var(--text-muted)">(você)</span>' : ''}</td>
       <td>${escapeHtml(user.email)}</td>
       <td><span class="tag ${user.is_admin ? 'tag-success' : ''}">${user.is_admin ? 'Admin' : 'Operador'}</span></td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">${companyLabels}</td>
       <td><span class="tag ${statusClass}">${escapeHtml(statusLabel)}</span></td>
       <td>${user.last_login_at ? formatDate(user.last_login_at) : '—'}</td>
       <td>${formatDate(user.created_at)}</td>
       <td style="display: flex; gap: 4px; flex-wrap: wrap">
         ${user.status === 'PENDING' ? `<button class="btn btn-ghost" data-action="resend" data-id="${user.id}">Reenviar</button>` : ''}
+        ${!isMe ? `<button class="btn btn-ghost" data-action="access" data-id="${user.id}">Acessos</button>` : ''}
         ${!isMe ? `<button class="btn btn-ghost" data-action="toggle" data-id="${user.id}">${user.status === 'DISABLED' ? 'Ativar' : 'Desativar'}</button>` : ''}
         ${!isMe ? `<button class="btn btn-danger" data-action="delete" data-id="${user.id}">✕</button>` : ''}
       </td>
@@ -100,6 +106,7 @@ function renderUsuarios(pageEl, usersList) {
     const id = parseInt(btn.dataset.id);
 
     if (action === 'resend') await resendInvite(id, pageEl);
+    if (action === 'access') showAccessModal(id, pageEl, usersList);
     if (action === 'toggle') await toggleUser(id, pageEl, usersList);
     if (action === 'delete') await deleteUser(id, pageEl, usersList);
   });
@@ -108,6 +115,8 @@ function renderUsuarios(pageEl, usersList) {
 }
 
 function showInviteModal(pageEl) {
+  const availableCompanies = getState().currentUser?.companies || [];
+  const selectedId = getActiveCompanyId();
   const formHtml = `
     <div class="form-group" style="margin-bottom: 8px">
       <label>Nome</label>
@@ -119,6 +128,17 @@ function showInviteModal(pageEl) {
     </div>
     <div class="form-group checkbox" style="margin-bottom: 8px">
       <label><input type="checkbox" id="inviteAdmin" /> Administrador</label>
+    </div>
+    <div class="form-group" style="margin-bottom: 8px">
+      <label>Empresas permitidas</label>
+      <div style="display:grid;gap:6px;margin-top:6px">
+        ${availableCompanies.map((company) => `
+          <label class="checkbox" style="display:flex;gap:7px;align-items:center">
+            <input type="checkbox" name="inviteCompany" value="${company.id}" ${Number(company.id) === Number(selectedId) ? 'checked' : ''} />
+            ${escapeHtml(company.name)} · ID ${company.id}
+          </label>
+        `).join('')}
+      </div>
     </div>
     <div id="inviteError" class="error-text" style="display: none"></div>
     <div id="inviteResult" style="display: none; margin-top: 12px; padding: 10px; border-radius: 8px; background: var(--success-soft); border: 1px solid var(--success)">
@@ -150,18 +170,20 @@ async function handleInvite(overlay, pageEl) {
   const name = document.getElementById('inviteNome')?.value.trim();
   const email = document.getElementById('inviteEmail')?.value.trim();
   const is_admin = document.getElementById('inviteAdmin')?.checked || false;
+  const company_ids = [...document.querySelectorAll('input[name="inviteCompany"]:checked')]
+    .map((input) => Number(input.value));
   const errorEl = document.getElementById('inviteError');
   const resultEl = document.getElementById('inviteResult');
 
-  if (!name || !email) {
-    errorEl.textContent = 'Nome e e-mail são obrigatórios';
+  if (!name || !email || !company_ids.length) {
+    errorEl.textContent = !company_ids.length ? 'Selecione pelo menos uma empresa' : 'Nome e e-mail são obrigatórios';
     errorEl.style.display = 'block';
     return;
   }
 
   try {
     errorEl.style.display = 'none';
-    const response = await users.create({ name, email, is_admin });
+    const response = await users.create({ name, email, is_admin, company_ids });
 
     if (response.invitation?.activation_url) {
       // E-mail não enviado — mostrar link manual
@@ -189,6 +211,53 @@ async function handleInvite(overlay, pageEl) {
     errorEl.textContent = error.message || 'Erro ao convidar';
     errorEl.style.display = 'block';
   }
+}
+
+function showAccessModal(id, pageEl, usersList) {
+  const user = usersList.find((item) => item.id === id);
+  if (!user) return;
+  const selected = new Set((user.companies || []).map((company) => Number(company.id)));
+  const availableCompanies = getState().currentUser?.companies || [];
+  const content = `
+    <p style="font-size:12px;color:var(--text-muted);margin-top:0">
+      Selecione as empresas que ${escapeHtml(user.name)} poderá acessar.
+    </p>
+    <div style="display:grid;gap:8px">
+      ${availableCompanies.map((company) => `
+        <label class="checkbox" style="display:flex;gap:7px;align-items:center">
+          <input type="checkbox" name="accessCompany" value="${company.id}" ${selected.has(Number(company.id)) ? 'checked' : ''} />
+          ${escapeHtml(company.name)} · ID ${company.id}
+        </label>
+      `).join('')}
+    </div>
+    <div id="accessError" class="error-text" style="display:none;margin-top:8px"></div>
+  `;
+
+  const overlay = showModal('Acesso às empresas', content, [
+    { label: 'Cancelar' },
+    { label: 'Salvar acessos', primary: true },
+  ]);
+  const saveBtn = overlay.querySelector('.btn-primary');
+  saveBtn.onclick = async (event) => {
+    event.stopPropagation();
+    const company_ids = [...overlay.querySelectorAll('input[name="accessCompany"]:checked')]
+      .map((input) => Number(input.value));
+    const errorEl = overlay.querySelector('#accessError');
+    if (!company_ids.length) {
+      errorEl.textContent = 'Selecione pelo menos uma empresa.';
+      errorEl.style.display = 'block';
+      return;
+    }
+    try {
+      await users.update(id, { company_ids });
+      overlay.remove();
+      showNotification('Acessos atualizados', 'success');
+      await loadUsuarios(pageEl);
+    } catch (error) {
+      errorEl.textContent = error.message || 'Erro ao atualizar acessos';
+      errorEl.style.display = 'block';
+    }
+  };
 }
 
 async function resendInvite(id, pageEl) {

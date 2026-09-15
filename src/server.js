@@ -7,7 +7,8 @@ const app = express();
 const PORT = process.env.PORT || process.env.APP_PORT || 3000;
 const { getJwtSecret } = require("./config/security");
 
-const { sequelize, Customer, Company, Invoice, SystemUser } = require("./models");
+const { sequelize, Customer, Company, Invoice, SystemUser, UserCompany } = require("./models");
+const { runMultiCompanyMigration } = require("./migrations/multiCompany");
 
 function getCorsOptions() {
   const configured = process.env.CORS_ORIGINS || process.env.APP_URL || "";
@@ -101,14 +102,27 @@ async function start() {
     await sequelize.authenticate();
     console.log("Conectado ao banco de dados");
 
-    // Sincroniza modelos
+    // A migração controlada prepara colunas e índices das tabelas antigas
+    // antes do Sequelize verificar/criar o restante da estrutura.
     const alterSchema = process.env.DB_SYNC_ALTER === "1";
-    await sequelize.sync({ alter: alterSchema });
+    const { legacyCompanyId } = await runMultiCompanyMigration(sequelize);
     console.log(
-      alterSchema
-        ? "Models sincronizados com o banco (alter habilitado)"
-        : "Models verificados sem alteração automática de tabelas existentes"
+      legacyCompanyId == null
+        ? "Estrutura multiempresa pronta"
+        : `Estrutura multiempresa pronta; dados legados vinculados à empresa ${legacyCompanyId}`
     );
+
+    await sequelize.sync();
+    // Em instalações novas, o sync pode ter acabado de criar tabelas opcionais.
+    // A segunda passagem é idempotente e garante os mesmos índices nelas.
+    await runMultiCompanyMigration(sequelize);
+
+    if (alterSchema) {
+      await sequelize.sync({ alter: true });
+      console.log("Models sincronizados com o banco (alter habilitado)");
+    } else {
+      console.log("Models verificados sem alteração automática de tabelas existentes");
+    }
 
     // ---------------------------------------------
     // 1) Criar administrador se não existir
@@ -124,14 +138,20 @@ async function start() {
 
       if (!existing) {
         const hash = await bcrypt.hash(adminPassword, 10);
-        await SystemUser.create({
+        const createdAdmin = await SystemUser.create({
           name: adminName,
           email: adminEmail,
           password_hash: hash,
           is_admin: true,
           status: "ACTIVE",
           activated_at: new Date(),
+          default_company_id: legacyCompanyId,
         });
+        if (legacyCompanyId != null) {
+          await UserCompany.findOrCreate({
+            where: { user_id: createdAdmin.id, company_id: legacyCompanyId },
+          });
+        }
         console.log("Usuário admin criado:", adminEmail);
       } else {
         // Garantir que admin existente tenha status ACTIVE
@@ -139,6 +159,15 @@ async function start() {
           existing.status = 'ACTIVE';
           existing.activated_at = existing.activated_at || new Date();
           await existing.save();
+        }
+        if (legacyCompanyId != null) {
+          await UserCompany.findOrCreate({
+            where: { user_id: existing.id, company_id: legacyCompanyId },
+          });
+          if (!existing.default_company_id) {
+            existing.default_company_id = legacyCompanyId;
+            await existing.save();
+          }
         }
         console.log("Usuário admin já existe");
       }

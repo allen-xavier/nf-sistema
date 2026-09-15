@@ -1,6 +1,6 @@
 const express = require("express");
 const { Customer, SystemUser } = require("../models");
-const { authMiddleware } = require("../middleware/auth");
+const { authMiddleware, companyContext } = require("../middleware/auth");
 const { audit } = require("../middleware/audit");
 
 const router = express.Router();
@@ -9,6 +9,7 @@ const MIN_FEE_PERCENT = 2;
 
 // Apenas autenticação (não precisa ser admin)
 router.use(authMiddleware);
+router.use(companyContext);
 
 /**
  * GET /api/customers
@@ -16,7 +17,12 @@ router.use(authMiddleware);
  */
 router.get("/", async (req, res) => {
   try {
+    const where = { company_id: req.companyId };
+    if (req.query.whatsapp_number) {
+      where.whatsapp_number = String(req.query.whatsapp_number).trim();
+    }
     const customers = await Customer.findAll({
+      where,
       include: [{ model: SystemUser, as: "CreatedBy", attributes: ["id", "name"] }],
       order: [["name", "ASC"]],
     });
@@ -28,12 +34,33 @@ router.get("/", async (req, res) => {
 });
 
 /**
+ * GET /api/customers/by-whatsapp/:number?company_id=12
+ * Busca exata usada pelos fluxos do WhatsApp/n8n.
+ */
+router.get("/by-whatsapp/:number", async (req, res) => {
+  try {
+    const customer = await Customer.findOne({
+      where: {
+        company_id: req.companyId,
+        whatsapp_number: String(req.params.number || "").trim(),
+      },
+    });
+    if (!customer) return res.status(404).json({ error: "Cliente não encontrado." });
+    res.json(customer);
+  } catch (err) {
+    console.error("Erro ao buscar cliente por WhatsApp:", err);
+    res.status(500).json({ error: "Erro ao buscar cliente." });
+  }
+});
+
+/**
  * GET /api/customers/:id
  */
 router.get("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const customer = await Customer.findByPk(id, {
+    const customer = await Customer.findOne({
+      where: { id, company_id: req.companyId },
       include: [{ model: SystemUser, as: "CreatedBy", attributes: ["id", "name"] }],
     });
 
@@ -77,6 +104,7 @@ router.post("/", async (req, res) => {
     if (is_active == null) is_active = true;
 
     const customer = await Customer.create({
+      company_id: req.companyId,
       name,
       whatsapp_number,
       fee_percent,
@@ -113,7 +141,7 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const customer = await Customer.findByPk(id);
+    const customer = await Customer.findOne({ where: { id, company_id: req.companyId } });
 
     if (!customer) {
       return res.status(404).json({ error: "Cliente não encontrado." });
@@ -184,7 +212,7 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const customer = await Customer.findByPk(id);
+    const customer = await Customer.findOne({ where: { id, company_id: req.companyId } });
 
     if (!customer) {
       return res.status(404).json({ error: "Cliente não encontrado." });

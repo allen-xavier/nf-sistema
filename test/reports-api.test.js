@@ -12,6 +12,7 @@ const reportsRouter = require("../src/routes/reports");
 
 test("resumo aplica o período informado a todas as consultas", async () => {
   const originalUserLookup = models.SystemUser.findByPk;
+  const originalMembershipList = models.UserCompany.findAll;
   const originalInvoiceFindOne = models.Invoice.findOne;
   const originalInvoiceFindAll = models.Invoice.findAll;
   const capturedWhere = [];
@@ -21,7 +22,11 @@ test("resumo aplica o período informado a todas as consultas", async () => {
     email: "operador@exemplo.com",
     is_admin: false,
     status: "ACTIVE",
+    default_company_id: 20,
   });
+  models.UserCompany.findAll = async () => [
+    { Company: { id: 20, name: "Empresa teste", cnpj: "", is_active: true } },
+  ];
   models.Invoice.findOne = async (options) => {
     capturedWhere.push(options.where);
     return { total_notas: "0", soma_valor_total: null, soma_taxas: null };
@@ -49,6 +54,7 @@ test("resumo aplica o período informado a todas as consultas", async () => {
 
     for (const where of capturedWhere) {
       assert.ok(where.issued_at);
+      assert.equal(where.company_id, 20);
       assert.equal(
         where.issued_at[Op.gte].toISOString(),
         "2026-09-14T03:00:00.000Z"
@@ -61,6 +67,7 @@ test("resumo aplica o período informado a todas as consultas", async () => {
   } finally {
     await new Promise((resolve) => server.close(resolve));
     models.SystemUser.findByPk = originalUserLookup;
+    models.UserCompany.findAll = originalMembershipList;
     models.Invoice.findOne = originalInvoiceFindOne;
     models.Invoice.findAll = originalInvoiceFindAll;
     await models.sequelize.close();

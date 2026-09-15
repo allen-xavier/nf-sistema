@@ -28,6 +28,7 @@ async function withServer(run) {
 
 test("listagem de notas aplica busca, período e paginação sem alterar o contrato", async () => {
   const originalUserLookup = models.SystemUser.findByPk;
+  const originalMembershipList = models.UserCompany.findAll;
   const originalInvoiceList = models.Invoice.findAndCountAll;
   let capturedOptions;
 
@@ -36,7 +37,11 @@ test("listagem de notas aplica busca, período e paginação sem alterar o contr
     email: "operador@exemplo.com",
     is_admin: false,
     status: "ACTIVE",
+    default_company_id: 20,
   });
+  models.UserCompany.findAll = async () => [
+    { Company: { id: 20, name: "Empresa teste", cnpj: "", is_active: true } },
+  ];
   models.Invoice.findAndCountAll = async (options) => {
     capturedOptions = options;
     return { count: 0, rows: [] };
@@ -64,15 +69,20 @@ test("listagem de notas aplica busca, período e paginação sem alterar o contr
     assert.ok(capturedOptions.where.issued_at[Op.gte] instanceof Date);
     assert.ok(capturedOptions.where.issued_at[Op.lte] instanceof Date);
     assert.equal(capturedOptions.where[Op.or].length, 4);
+    assert.equal(capturedOptions.where.company_id, 20);
   } finally {
     models.SystemUser.findByPk = originalUserLookup;
+    models.UserCompany.findAll = originalMembershipList;
     models.Invoice.findAndCountAll = originalInvoiceList;
   }
 });
 
 test("criação preserva taxa recebida e calcula somente quando ela não é enviada", async () => {
   const originalUserLookup = models.SystemUser.findByPk;
+  const originalMembershipList = models.UserCompany.findAll;
   const originalInvoiceCreate = models.Invoice.create;
+  const originalCustomerFind = models.Customer.findOne;
+  const originalCompanyFind = models.Company.findOne;
   const originalAuditCreate = models.AuditLog.create;
   const createdPayloads = [];
 
@@ -81,7 +91,13 @@ test("criação preserva taxa recebida e calcula somente quando ela não é envi
     email: "integracao@exemplo.com",
     is_admin: false,
     status: "ACTIVE",
+    default_company_id: 20,
   });
+  models.UserCompany.findAll = async () => [
+    { Company: { id: 20, name: "Empresa teste", cnpj: "", is_active: true } },
+  ];
+  models.Customer.findOne = async () => ({ id: 10, company_id: 20 });
+  models.Company.findOne = async () => ({ id: 20, is_active: true });
   models.Invoice.create = async (payload) => {
     createdPayloads.push(payload);
     return { id: createdPayloads.length, ...payload };
@@ -123,7 +139,10 @@ test("criação preserva taxa recebida e calcula somente quando ela não é envi
     assert.equal(createdPayloads[1].fee_value, 37.5);
   } finally {
     models.SystemUser.findByPk = originalUserLookup;
+    models.UserCompany.findAll = originalMembershipList;
     models.Invoice.create = originalInvoiceCreate;
+    models.Customer.findOne = originalCustomerFind;
+    models.Company.findOne = originalCompanyFind;
     models.AuditLog.create = originalAuditCreate;
     await models.sequelize.close();
   }

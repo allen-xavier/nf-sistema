@@ -9,6 +9,10 @@ const PosCompany = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    company_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     name: {
       type: DataTypes.STRING(150),
       allowNull: false,
@@ -16,7 +20,6 @@ const PosCompany = sequelize.define(
     cnpj: {
       type: DataTypes.STRING(20),
       allowNull: false,
-      unique: true,
     },
     is_active: {
       type: DataTypes.BOOLEAN,
@@ -38,6 +41,14 @@ const PosCompany = sequelize.define(
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
+    indexes: [
+      {
+        name: "pos_companies_company_cnpj_unique",
+        unique: true,
+        fields: ["company_id", "cnpj"],
+      },
+      { name: "pos_companies_company_id_idx", fields: ["company_id"] },
+    ],
   }
 );
 

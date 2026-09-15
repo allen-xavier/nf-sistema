@@ -267,6 +267,45 @@ textarea {
   gap: 12px;
 }
 
+.company-switcher {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: 8px;
+}
+
+.company-switcher label {
+  grid-column: 1;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.company-switcher select {
+  grid-column: 1;
+  min-width: 210px;
+  max-width: 300px;
+  padding: 5px 28px 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-input);
+  color: var(--text);
+  font-size: 12px;
+}
+
+.company-switcher span {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  padding: 4px 7px;
+  border-radius: 6px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .content {
   padding: 16px 18px 24px;
   max-width: 1200px;
@@ -306,5 +345,15 @@ textarea {
 
   .mobile-menu-btn {
     display: inline-flex;
+  }
+
+  .company-switcher select {
+    min-width: 130px;
+    max-width: 180px;
+  }
+
+  .company-switcher label,
+  .topbar-right > .badge {
+    display: none;
   }
 }

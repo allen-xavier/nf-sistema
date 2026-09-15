@@ -6,6 +6,7 @@ const { audit } = require("../middleware/audit");
 const { authMiddleware } = require("../middleware/auth");
 const { hashToken } = require("../utils/tokens");
 const { getJwtSecret, getJwtExpiresIn } = require("../config/security");
+const { getAccessibleCompanies, publicUser } = require("../utils/companyAccess");
 
 const router = express.Router();
 
@@ -105,15 +106,11 @@ router.post("/login", async (req, res) => {
 
     await audit(user.id, 'LOGIN', 'SystemUser', user.id, {}, req);
 
+    const companies = await getAccessibleCompanies(user.id);
+
     res.json({
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        is_admin: user.is_admin,
-        status: user.status,
-      },
+      user: publicUser(user, companies),
     });
   } catch (err) {
     console.error("Erro no login:", err);
@@ -127,12 +124,12 @@ router.post("/login", async (req, res) => {
 router.get("/me", authMiddleware, async (req, res) => {
   try {
     const user = await SystemUser.findByPk(req.user.id, {
-      attributes: ["id", "name", "email", "is_admin", "status"],
+      attributes: ["id", "name", "email", "is_admin", "status", "default_company_id"],
     });
 
     if (!user) return res.status(404).json({ error: "Usuário não encontrado." });
 
-    res.json(user);
+    res.json(publicUser(user, req.user.companies || []));
   } catch (err) {
     console.error("Erro ao consultar usuário autenticado:", err);
     res.status(500).json({ error: "Erro ao consultar usuário." });
@@ -263,15 +260,11 @@ router.post("/activate", async (req, res) => {
       { expiresIn: getJwtExpiresIn() }
     );
 
+    const companies = await getAccessibleCompanies(user.id);
+
     res.json({
       token: jwtToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        is_admin: user.is_admin,
-        status: 'ACTIVE',
-      },
+      user: publicUser(user, companies),
     });
   } catch (err) {
     console.error("Erro na ativação:", err);

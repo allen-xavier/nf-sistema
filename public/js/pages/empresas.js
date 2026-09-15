@@ -2,7 +2,7 @@
 
 import { companies } from '../api.js';
 import { formatDate, showNotification, showConfirmDialog, formatCNPJ, debounce, escapeHtml } from '../ui.js';
-import { setData, getData, getState } from '../state.js';
+import { setData, getData, getState, getActiveCompanyId } from '../state.js';
 
 let currentEditId = null;
 
@@ -30,8 +30,8 @@ function renderEmpresas(pageEl, empresasList) {
     <div class="card">
       <div class="card-header">
         <div>
-          <div class="card-title">Empresas Emissoras</div>
-          <div class="card-subtitle">Cadastro das empresas autorizadas a emitir notas fiscais</div>
+          <div class="card-title">Empresas</div>
+          <div class="card-subtitle">Cada empresa mantém seus próprios clientes, notas e integrações</div>
         </div>
         ${isAdmin ? '<button class="btn btn-primary" id="btnAddEmpresa">+ Adicionar empresa</button>' : ''}
       </div>
@@ -86,6 +86,7 @@ function renderEmpresas(pageEl, empresasList) {
         <table>
           <thead>
             <tr>
+              <th>ID</th>
               <th>Nome</th>
               <th>CNPJ</th>
               <th>Chave de Acesso</th>
@@ -108,6 +109,7 @@ function renderEmpresas(pageEl, empresasList) {
     const tr = document.createElement('tr');
     tr.dataset.companyId = String(empresa.id);
     tr.innerHTML = `
+      <td><button class="btn btn-ghost" data-action="copy-id" data-id="${empresa.id}" title="Copiar ID">#${empresa.id}</button></td>
       <td><strong>${escapeHtml(empresa.name)}</strong></td>
       <td>${escapeHtml(formatCNPJ(empresa.cnpj))}</td>
       <td><code style="font-size: 11px; background: var(--bg-input); padding: 2px 6px; border-radius: 4px;">${isAdmin && empresa.access_key ? escapeHtml(empresa.access_key.substring(0, 16)) + '...' : 'Restrita'}</code></td>
@@ -124,7 +126,7 @@ function renderEmpresas(pageEl, empresasList) {
   });
 
   if (!empresasList.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:32px">Nenhuma empresa cadastrada</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px">Nenhuma empresa cadastrada</td></tr>`;
   }
 
   // Action delegation
@@ -133,6 +135,7 @@ function renderEmpresas(pageEl, empresasList) {
     if (!btn) return;
     const action = btn.dataset.action;
     const id = parseInt(btn.dataset.id);
+    if (action === 'copy-id') copyCompanyId(id);
     if (action === 'edit') editEmpresa(id);
     if (action === 'delete') deleteEmpresa(id);
   });
@@ -215,9 +218,11 @@ async function saveEmpresa() {
   try {
     if (currentEditId) {
       await companies.update(currentEditId, payload);
+      await window.app.refreshCompanyContext(getActiveCompanyId());
       showNotification('Empresa atualizada com sucesso', 'success');
     } else {
-      await companies.create(payload);
+      const created = await companies.create(payload);
+      await window.app.refreshCompanyContext(created.id);
       showNotification('Empresa criada com sucesso', 'success');
     }
 
@@ -232,6 +237,15 @@ async function saveEmpresa() {
   }
 }
 
+async function copyCompanyId(id) {
+  try {
+    await navigator.clipboard.writeText(String(id));
+    showNotification(`ID ${id} copiado`, 'success', 1800);
+  } catch (_error) {
+    showNotification(`ID da empresa: ${id}`, 'info');
+  }
+}
+
 function deleteEmpresa(id) {
   const allEmpresas = getData('companies');
   const empresa = allEmpresas.find((e) => e.id === id);
@@ -242,6 +256,7 @@ function deleteEmpresa(id) {
     async () => {
       try {
         await companies.delete(id);
+        await window.app.refreshCompanyContext();
         showNotification('Empresa deletada', 'success');
         const pageEl = document.getElementById('page-empresas');
         await loadEmpresas(pageEl);

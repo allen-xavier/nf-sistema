@@ -2,6 +2,7 @@
 
 let state = {
   currentUser: null,
+  activeCompanyId: Number(localStorage.getItem('nf_company_id')) || null,
   currentPage: 'dashboard',
   theme: localStorage.getItem('nf_theme') || 'light',
   data: {
@@ -58,6 +59,17 @@ export function getUser() {
 
 export function setUser(user) {
   state.currentUser = user;
+}
+
+export function getActiveCompanyId() {
+  return state.activeCompanyId;
+}
+
+export function setActiveCompanyId(companyId) {
+  const normalized = Number(companyId) || null;
+  state.activeCompanyId = normalized;
+  if (normalized) localStorage.setItem('nf_company_id', String(normalized));
+  else localStorage.removeItem('nf_company_id');
 }
 
 export function getCurrentPage() {

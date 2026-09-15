@@ -1,16 +1,18 @@
 const express = require("express");
 const { PosTerminal, PosCompany, Customer } = require("../../models");
-const { authMiddleware, adminOnly } = require("../../middleware/auth");
+const { authMiddleware, adminOnly, companyContext } = require("../../middleware/auth");
 
 const router = express.Router();
 
 router.use(authMiddleware);
 router.use(adminOnly);
+router.use(companyContext);
 
 // LISTAR
-router.get("/", async (_req, res) => {
+router.get("/", async (req, res) => {
   try {
     const list = await PosTerminal.findAll({
+      where: { company_id: req.companyId },
       include: [
         { model: PosCompany, as: "PosCompany" },
         { model: Customer, as: "Customer" },
@@ -33,17 +35,18 @@ router.post("/", async (req, res) => {
         .status(400)
         .json({ error: "pos_company_id, customer_id e terminal_code são obrigatórios" });
     }
-    const comp = await PosCompany.findByPk(pos_company_id);
+    const comp = await PosCompany.findOne({ where: { id: pos_company_id, company_id: req.companyId } });
     if (!comp) return res.status(404).json({ error: "Empresa da maquininha não encontrada" });
-    const cust = await Customer.findByPk(customer_id);
+    const cust = await Customer.findOne({ where: { id: customer_id, company_id: req.companyId } });
     if (!cust) return res.status(404).json({ error: "Cliente não encontrado" });
 
     const exists = await PosTerminal.findOne({
-      where: { pos_company_id, terminal_code },
+      where: { company_id: req.companyId, pos_company_id, terminal_code },
     });
     if (exists) return res.status(400).json({ error: "Terminal já cadastrado para esta empresa" });
 
     const created = await PosTerminal.create({
+      company_id: req.companyId,
       pos_company_id,
       customer_id,
       terminal_code,
@@ -60,18 +63,18 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const term = await PosTerminal.findByPk(id);
+    const term = await PosTerminal.findOne({ where: { id, company_id: req.companyId } });
     if (!term) return res.status(404).json({ error: "Terminal não encontrado" });
 
     const { pos_company_id, customer_id, terminal_code, is_active } = req.body;
 
     if (pos_company_id) {
-      const comp = await PosCompany.findByPk(pos_company_id);
+      const comp = await PosCompany.findOne({ where: { id: pos_company_id, company_id: req.companyId } });
       if (!comp) return res.status(404).json({ error: "Empresa da maquininha não encontrada" });
       term.pos_company_id = pos_company_id;
     }
     if (customer_id) {
-      const cust = await Customer.findByPk(customer_id);
+      const cust = await Customer.findOne({ where: { id: customer_id, company_id: req.companyId } });
       if (!cust) return res.status(404).json({ error: "Cliente não encontrado" });
       term.customer_id = customer_id;
     }
@@ -80,6 +83,7 @@ router.put("/:id", async (req, res) => {
         where: {
           pos_company_id: term.pos_company_id,
           terminal_code,
+          company_id: req.companyId,
         },
       });
       if (exists && exists.id !== term.id) {
@@ -101,7 +105,7 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const term = await PosTerminal.findByPk(id);
+    const term = await PosTerminal.findOne({ where: { id, company_id: req.companyId } });
     if (!term) return res.status(404).json({ error: "Terminal não encontrado" });
     await term.destroy();
     res.json({ success: true });

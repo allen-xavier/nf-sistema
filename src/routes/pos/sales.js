@@ -7,12 +7,13 @@ const {
   PosCustomerRate,
   Customer,
 } = require("../../models");
-const { authMiddleware, adminOnly } = require("../../middleware/auth");
+const { authMiddleware, adminOnly, companyContext } = require("../../middleware/auth");
 
 const router = express.Router();
 
 router.use(authMiddleware);
 router.use(adminOnly);
+router.use(companyContext);
 
 function getFeePercent(rate, payment_type) {
   if (!rate) return 0;
@@ -32,7 +33,7 @@ router.get("/", async (req, res) => {
     limit = Number(limit) || 50;
     const offset = (page - 1) * limit;
 
-    const where = {};
+    const where = { company_id: req.companyId };
     if (customer_id) where.customer_id = customer_id;
     if (pos_company_id) where.pos_company_id = pos_company_id;
     if (pos_terminal_id) where.pos_terminal_id = pos_terminal_id;
@@ -87,7 +88,8 @@ router.post("/", async (req, res) => {
         .json({ error: "pos_terminal_id, nsu, sale_datetime, amount, payment_type são obrigatórios" });
     }
 
-    const term = await PosTerminal.findByPk(pos_terminal_id, {
+    const term = await PosTerminal.findOne({
+      where: { id: pos_terminal_id, company_id: req.companyId },
       include: [
         { model: PosCompany, as: "PosCompany" },
         { model: Customer, as: "Customer" },
@@ -97,7 +99,7 @@ router.post("/", async (req, res) => {
     if (!term.is_active) return res.status(400).json({ error: "Terminal inativo" });
 
     const rate = await PosCustomerRate.findOne({
-      where: { customer_id: term.customer_id },
+      where: { customer_id: term.customer_id, company_id: req.companyId },
     });
 
     const feePercent = getFeePercent(rate, payment_type);
@@ -105,6 +107,7 @@ router.post("/", async (req, res) => {
     const net = Number(Number(amount || 0) - Number(feeValue)).toFixed(2);
 
     const sale = await PosSale.create({
+      company_id: req.companyId,
       customer_id: term.customer_id,
       pos_company_id: term.pos_company_id,
       pos_terminal_id,
@@ -136,13 +139,14 @@ router.put("/:id", async (req, res) => {
       payment_type,
     } = req.body;
 
-    const sale = await PosSale.findByPk(id);
+    const sale = await PosSale.findOne({ where: { id, company_id: req.companyId } });
     if (!sale) return res.status(404).json({ error: "Venda n\u01d8o encontrada" });
     if (!pos_terminal_id || !nsu || !sale_datetime || !amount || !payment_type) {
       return res.status(400).json({ error: "pos_terminal_id, nsu, sale_datetime, amount, payment_type s\u01d8o obrigat\u0161rios" });
     }
 
-    const term = await PosTerminal.findByPk(pos_terminal_id, {
+    const term = await PosTerminal.findOne({
+      where: { id: pos_terminal_id, company_id: req.companyId },
       include: [
         { model: PosCompany, as: "PosCompany" },
         { model: Customer, as: "Customer" },
@@ -152,7 +156,7 @@ router.put("/:id", async (req, res) => {
     if (!term.is_active) return res.status(400).json({ error: "Terminal inativo" });
 
     const rate = await PosCustomerRate.findOne({
-      where: { customer_id: term.customer_id },
+      where: { customer_id: term.customer_id, company_id: req.companyId },
     });
 
     const feePercent = getFeePercent(rate, payment_type);
@@ -181,7 +185,9 @@ router.put("/:id", async (req, res) => {
 // DELETE venda
 router.delete("/:id", async (req, res) => {
   try {
-    const sale = await PosSale.findByPk(req.params.id);
+    const sale = await PosSale.findOne({
+      where: { id: req.params.id, company_id: req.companyId },
+    });
     if (!sale) return res.status(404).json({ error: "Venda não encontrada" });
     await sale.destroy();
     res.json({ success: true });

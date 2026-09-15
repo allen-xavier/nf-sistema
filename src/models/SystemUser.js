@@ -32,6 +32,11 @@ const SystemUser = sequelize.define(
       defaultValue: false,
     },
 
+    default_company_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+
     status: {
       type: DataTypes.STRING(20),
       allowNull: false,

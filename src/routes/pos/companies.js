@@ -1,16 +1,18 @@
 const express = require("express");
 const { PosCompany } = require("../../models");
-const { authMiddleware, adminOnly } = require("../../middleware/auth");
+const { authMiddleware, adminOnly, companyContext } = require("../../middleware/auth");
 
 const router = express.Router();
 
 router.use(authMiddleware);
 router.use(adminOnly);
+router.use(companyContext);
 
 // LISTAR
-router.get("/", async (_req, res) => {
+router.get("/", async (req, res) => {
   try {
     const list = await PosCompany.findAll({
+      where: { company_id: req.companyId },
       order: [["id", "ASC"]],
     });
     res.json(list);
@@ -27,11 +29,11 @@ router.post("/", async (req, res) => {
     if (!name || !cnpj) {
       return res.status(400).json({ error: "Nome e CNPJ são obrigatórios" });
     }
-    const existing = await PosCompany.findOne({ where: { cnpj } });
+    const existing = await PosCompany.findOne({ where: { company_id: req.companyId, cnpj } });
     if (existing) {
       return res.status(400).json({ error: "Já existe empresa com esse CNPJ" });
     }
-    const created = await PosCompany.create({ name, cnpj, is_active });
+    const created = await PosCompany.create({ company_id: req.companyId, name, cnpj, is_active });
     res.status(201).json(created);
   } catch (err) {
     console.error("Erro ao criar pos_company:", err);
@@ -43,12 +45,12 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const company = await PosCompany.findByPk(id);
+    const company = await PosCompany.findOne({ where: { id, company_id: req.companyId } });
     if (!company) return res.status(404).json({ error: "Empresa não encontrada" });
 
     const { name, cnpj, is_active } = req.body;
     if (cnpj && cnpj !== company.cnpj) {
-      const exists = await PosCompany.findOne({ where: { cnpj } });
+      const exists = await PosCompany.findOne({ where: { company_id: req.companyId, cnpj } });
       if (exists) return res.status(400).json({ error: "CNPJ já utilizado" });
     }
 
@@ -67,7 +69,7 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const company = await PosCompany.findByPk(id);
+    const company = await PosCompany.findOne({ where: { id, company_id: req.companyId } });
     if (!company) return res.status(404).json({ error: "Empresa não encontrada" });
     await company.destroy();
     res.json({ success: true });

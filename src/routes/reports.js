@@ -1,11 +1,12 @@
 ﻿const express = require("express");
 const { Op, fn, col, literal } = require("sequelize");
 const { Invoice, Customer, Company } = require("../models");
-const { authMiddleware } = require("../middleware/auth");
+const { authMiddleware, companyContext } = require("../middleware/auth");
 
 const router = express.Router();
 
 router.use(authMiddleware);
+router.use(companyContext);
 
 function buildDateWhere(base = {}, start, end) {
   const where = { ...base };
@@ -60,7 +61,7 @@ router.get("/summary", async (req, res) => {
   try {
     const { start, end, group_by = "day" } = req.query;
 
-    const where = buildDateWhere({}, start, end);
+    const where = buildDateWhere({ company_id: req.companyId }, start, end);
 
     // 1️⃣ Totais gerais
     const totals = await Invoice.findOne({
@@ -193,12 +194,16 @@ router.get("/cliente/:id", async (req, res) => {
     const { id } = req.params;
     const { start, end, group_by = "day" } = req.query;
 
-    const cliente = await Customer.findByPk(id);
+    const cliente = await Customer.findOne({ where: { id, company_id: req.companyId } });
     if (!cliente) {
       return res.status(404).json({ error: "Cliente não encontrado" });
     }
 
-    const where = buildDateWhere({ customer_id: id }, start, end);
+    const where = buildDateWhere(
+      { customer_id: id, company_id: req.companyId },
+      start,
+      end
+    );
 
     // Notas do cliente (com empresa junto)
     const notas = await Invoice.findAll({
@@ -287,7 +292,9 @@ router.get("/empresa/:id", async (req, res) => {
     const { id } = req.params;
     const { start, end, group_by = "day" } = req.query;
 
-    const empresa = await Company.findByPk(id);
+    const empresa = Number(id) === req.companyId
+      ? await Company.findByPk(id)
+      : null;
     if (!empresa) {
       return res.status(404).json({ error: "Empresa não encontrada" });
     }

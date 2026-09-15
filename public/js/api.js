@@ -2,6 +2,7 @@
 
 const API_URL = '/api';
 let authToken = localStorage.getItem('nf_token');
+let activeCompanyId = Number(localStorage.getItem('nf_company_id')) || null;
 
 class APIError extends Error {
   constructor(message, status, data) {
@@ -20,6 +21,9 @@ export async function apiFetch(endpoint, options = {}) {
 
   if (authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
+  }
+  if (activeCompanyId) {
+    headers['X-Company-Id'] = String(activeCompanyId);
   }
 
   try {
@@ -55,6 +59,12 @@ export function setAuthToken(token) {
 export function clearAuthToken() {
   authToken = null;
   localStorage.removeItem('nf_token');
+}
+
+export function setApiCompanyId(companyId) {
+  activeCompanyId = Number(companyId) || null;
+  if (activeCompanyId) localStorage.setItem('nf_company_id', String(activeCompanyId));
+  else localStorage.removeItem('nf_company_id');
 }
 
 // Auth endpoints

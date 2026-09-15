@@ -7,6 +7,7 @@ async function audit(userId, action, resourceType, resourceId, details, req) {
   try {
     await AuditLog.create({
       user_id: userId || null,
+      company_id: req?.companyId || null,
       action,
       resource_type: resourceType || null,
       resource_id: resourceId || null,

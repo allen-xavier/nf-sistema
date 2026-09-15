@@ -14,7 +14,7 @@ const pages = {
 const pageSubtitles = {
   dashboard: 'Visão geral das notas fiscais, clientes e empresas',
   clientes: 'Gerencie seus clientes e taxas',
-  empresas: 'Cadastro das empresas autorizadas a emitir notas fiscais',
+  empresas: 'Cadastre empresas e consulte o ID usado nas integrações',
   notas: 'Listagem de todas as notas fiscais emitidas',
   relatorios: 'Relatórios e análises de desempenho',
   usuarios: 'Gerencie os operadores do sistema',

@@ -10,6 +10,7 @@ const PosCompany = require("./PosCompany");
 const PosTerminal = require("./PosTerminal");
 const PosCustomerRate = require("./PosCustomerRate");
 const PosSale = require("./PosSale");
+const UserCompany = require("./UserCompany");
 
 // =============================
 // RELACIONAMENTOS
@@ -23,6 +24,30 @@ Invoice.belongsTo(Customer, { foreignKey: "customer_id", as: "Customer" });
 Company.hasMany(Invoice, { foreignKey: "company_id", as: "Invoices" });
 Invoice.belongsTo(Company, { foreignKey: "company_id", as: "Company" });
 
+// --- EMPRESA -> CLIENTES
+Company.hasMany(Customer, { foreignKey: "company_id", as: "Customers" });
+Customer.belongsTo(Company, { foreignKey: "company_id", as: "Company" });
+
+// --- USUÁRIOS <-> EMPRESAS
+SystemUser.belongsToMany(Company, {
+  through: UserCompany,
+  foreignKey: "user_id",
+  otherKey: "company_id",
+  as: "Companies",
+});
+Company.belongsToMany(SystemUser, {
+  through: UserCompany,
+  foreignKey: "company_id",
+  otherKey: "user_id",
+  as: "Users",
+});
+UserCompany.belongsTo(SystemUser, { foreignKey: "user_id", as: "User" });
+UserCompany.belongsTo(Company, { foreignKey: "company_id", as: "Company" });
+SystemUser.belongsTo(Company, {
+  foreignKey: "default_company_id",
+  as: "DefaultCompany",
+});
+
 // --- CLIENTE -> CRIADO POR USUARIO
 Customer.belongsTo(SystemUser, { foreignKey: "created_by_user_id", as: "CreatedBy" });
 SystemUser.hasMany(Customer, { foreignKey: "created_by_user_id", as: "Customers" });
@@ -33,6 +58,7 @@ UserInvitation.belongsTo(SystemUser, { foreignKey: "created_by_user_id", as: "In
 
 // --- AUDITORIA -> USUARIO
 AuditLog.belongsTo(SystemUser, { foreignKey: "user_id", as: "User" });
+AuditLog.belongsTo(Company, { foreignKey: "company_id", as: "Company" });
 
 // --- RECUPERAÇÃO DE SENHA -> USUÁRIO
 PasswordResetToken.belongsTo(SystemUser, { foreignKey: "user_id", as: "User" });
@@ -41,6 +67,15 @@ SystemUser.hasMany(PasswordResetToken, { foreignKey: "user_id", as: "PasswordRes
 // --- POS COMPANY -> POS TERMINAL
 PosCompany.hasMany(PosTerminal, { foreignKey: "pos_company_id", as: "Terminals" });
 PosTerminal.belongsTo(PosCompany, { foreignKey: "pos_company_id", as: "PosCompany" });
+
+Company.hasMany(PosCompany, { foreignKey: "company_id", as: "PosCompanies" });
+PosCompany.belongsTo(Company, { foreignKey: "company_id", as: "Company" });
+Company.hasMany(PosTerminal, { foreignKey: "company_id", as: "PosTerminals" });
+PosTerminal.belongsTo(Company, { foreignKey: "company_id", as: "OwnerCompany" });
+Company.hasMany(PosCustomerRate, { foreignKey: "company_id", as: "PosCustomerRates" });
+PosCustomerRate.belongsTo(Company, { foreignKey: "company_id", as: "Company" });
+Company.hasMany(PosSale, { foreignKey: "company_id", as: "PosSales" });
+PosSale.belongsTo(Company, { foreignKey: "company_id", as: "OwnerCompany" });
 
 // --- CUSTOMER -> POS TERMINAL
 Customer.hasMany(PosTerminal, { foreignKey: "customer_id", as: "PosTerminals" });
@@ -75,4 +110,5 @@ module.exports = {
   PosTerminal,
   PosCustomerRate,
   PosSale,
+  UserCompany,
 };

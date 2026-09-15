@@ -1,7 +1,7 @@
 /* NF Sistema - Main Application */
 
-import { apiFetch, setAuthToken, clearAuthToken, auth, customers, companies, invoices, reports } from './api.js';
-import { getState, setUser, setCurrentPage, setTheme, getTheme, setState, setData, setLoading } from './state.js';
+import { apiFetch, setAuthToken, clearAuthToken, setApiCompanyId, auth, customers, companies, invoices, reports } from './api.js';
+import { getState, setUser, setActiveCompanyId, setCurrentPage, setTheme, getTheme, setState, setData, setLoading } from './state.js';
 import { setupNavigation, selectPage, registerPageLoader } from './router.js';
 import { showNotification, showConfirmDialog, showModal, formatCurrency, formatDate, createEmptyState, escapeHtml } from './ui.js';
 
@@ -70,9 +70,10 @@ async function checkAuth() {
   try {
     const user = await auth.getCurrentUser();
     setUser(user);
+    setupCompanySelector(user);
     document.getElementById('currentUserEmail').textContent = user.email;
     applyPermissions(user);
-    await selectPage('dashboard');
+    await selectPage(user.companies?.length ? 'dashboard' : 'empresas');
   } catch (error) {
     console.error('Token inválido ou expirado:', error);
     clearAuthToken();
@@ -85,6 +86,65 @@ function applyPermissions(user) {
   document.querySelectorAll('[data-admin-only]').forEach((el) => {
     el.style.display = user.is_admin ? '' : 'none';
   });
+}
+
+function setupCompanySelector(user, preferredCompanyId = null) {
+  const companiesList = Array.isArray(user?.companies) ? user.companies : [];
+  const savedId = Number(preferredCompanyId || localStorage.getItem('nf_company_id'));
+  const defaultId = Number(user?.default_company_id);
+  const selected =
+    companiesList.find((company) => Number(company.id) === savedId) ||
+    companiesList.find((company) => Number(company.id) === defaultId) ||
+    companiesList[0] ||
+    null;
+
+  setActiveCompanyId(selected?.id || null);
+  setApiCompanyId(selected?.id || null);
+
+  const select = document.getElementById('activeCompanySelect');
+  const idLabel = document.getElementById('activeCompanyId');
+  if (!select || !idLabel) return;
+
+  select.innerHTML = '';
+  if (!companiesList.length) {
+    const option = document.createElement('option');
+    option.textContent = 'Nenhuma empresa';
+    option.value = '';
+    select.appendChild(option);
+    select.disabled = true;
+    idLabel.textContent = 'ID: —';
+    return;
+  }
+
+  companiesList.forEach((company) => {
+    const option = document.createElement('option');
+    option.value = String(company.id);
+    option.textContent = `${company.name}${company.is_active ? '' : ' (inativa)'}`;
+    select.appendChild(option);
+  });
+  select.value = String(selected.id);
+  select.disabled = companiesList.length === 1;
+  idLabel.textContent = `ID: ${selected.id}`;
+
+  select.onchange = async () => {
+    const nextId = Number(select.value);
+    const nextCompany = companiesList.find((company) => Number(company.id) === nextId);
+    if (!nextCompany) return;
+    setActiveCompanyId(nextId);
+    setApiCompanyId(nextId);
+    idLabel.textContent = `ID: ${nextId}`;
+    setState('data', { customers: [], companies: [], invoices: [], reports: null });
+    showNotification(`Empresa ativa: ${nextCompany.name} (ID ${nextId})`, 'success');
+    await selectPage(getState().currentPage || 'dashboard');
+  };
+}
+
+async function refreshCompanyContext(preferredCompanyId = null) {
+  const user = await auth.getCurrentUser();
+  setUser(user);
+  setupCompanySelector(user, preferredCompanyId);
+  applyPermissions(user);
+  return user;
 }
 
 function showLoginForm() {
@@ -127,6 +187,7 @@ async function handleLogin() {
 
     setAuthToken(response.token);
     setUser(response.user);
+    setupCompanySelector(response.user);
     document.getElementById('currentUserEmail').textContent = response.user.email;
 
     document.getElementById('loginEmail').value = '';
@@ -134,7 +195,7 @@ async function handleLogin() {
 
     showMainApp();
     applyPermissions(response.user);
-    await selectPage('dashboard');
+    await selectPage(response.user.companies?.length ? 'dashboard' : 'empresas');
   } catch (error) {
     errorEl.textContent = error.message || 'Erro ao fazer login';
     errorEl.style.display = 'block';
@@ -319,6 +380,7 @@ async function submitActivation(token) {
     // Login automático
     setAuthToken(response.token);
     setUser(response.user);
+    setupCompanySelector(response.user);
 
     // Limpar URL
     window.history.replaceState({}, '', '/');
@@ -343,7 +405,7 @@ async function submitActivation(token) {
 
     showMainApp();
     applyPermissions(response.user);
-    await selectPage('dashboard');
+    await selectPage(response.user.companies?.length ? 'dashboard' : 'empresas');
   } catch (error) {
     errorEl.textContent = error.message || 'Erro ao ativar conta';
     errorEl.style.display = 'block';
@@ -364,6 +426,8 @@ function setupLogout() {
   const btn = document.getElementById('btnLogout');
   if (btn) btn.onclick = () => {
     clearAuthToken();
+    setActiveCompanyId(null);
+    setApiCompanyId(null);
     setUser(null);
     showLoginForm();
     showNotification('Desconectado com sucesso', 'info', 2000);
@@ -379,6 +443,7 @@ window.app = {
   formatCurrency,
   formatDate,
   createEmptyState,
+  refreshCompanyContext,
 };
 
 // ============ START ============

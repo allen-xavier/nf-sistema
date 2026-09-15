@@ -120,6 +120,10 @@ const Invoice = sequelize.define(
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
+    indexes: [
+      { name: "invoices_company_id_idx", fields: ["company_id"] },
+      { name: "invoices_company_issued_at_idx", fields: ["company_id", "issued_at"] },
+    ],
   }
 );
 

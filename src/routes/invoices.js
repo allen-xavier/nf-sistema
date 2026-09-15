@@ -1,7 +1,7 @@
 const express = require("express");
 const { Op } = require("sequelize");
 const { Invoice, Customer, Company } = require("../models");
-const { authMiddleware, adminOnly } = require("../middleware/auth");
+const { authMiddleware, adminOnly, companyContext } = require("../middleware/auth");
 const { audit } = require("../middleware/audit");
 const { calculateInvoiceFee } = require("../utils/fees");
 
@@ -28,6 +28,7 @@ function isValidNumber(value, { positive = false } = {}) {
 
 // Todas as rotas abaixo exigem autenticação (qualquer usuário logado)
 router.use(authMiddleware);
+router.use(companyContext);
 
 /**
  * GET /api/invoices?page=1&limit=50&terminal_sale=true|false
@@ -41,7 +42,7 @@ router.get("/", async (req, res) => {
     limit = Math.max(1, Number(limit) || 50);
 
     const offset = (page - 1) * limit;
-    const where = {};
+    const where = { company_id: req.companyId };
 
     const terminalFilter = terminal_sale ?? is_terminal_sale;
     if (terminalFilter !== undefined) {
@@ -114,7 +115,8 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const invoice = await Invoice.findByPk(id, {
+    const invoice = await Invoice.findOne({
+      where: { id, company_id: req.companyId },
       include: [
         { model: Customer, as: "Customer" },
         { model: Company, as: "Company" },
@@ -200,9 +202,20 @@ router.post("/", async (req, res) => {
       ? 0
       : (fee_value ?? calculateInvoiceFee(total_amount, fee_percent));
 
+    const [customer, company] = await Promise.all([
+      Customer.findOne({ where: { id: Number(customer_id), company_id: req.companyId } }),
+      Company.findOne({ where: { id: req.companyId, is_active: true } }),
+    ]);
+    if (!customer) {
+      return res.status(400).json({ error: "Cliente não pertence à empresa informada." });
+    }
+    if (!company) {
+      return res.status(400).json({ error: "Empresa inexistente ou inativa." });
+    }
+
     const invoice = await Invoice.create({
       customer_id,
-      company_id,
+      company_id: req.companyId,
       issued_at: issued_at || new Date(),
       total_amount,
       paid_amount,
@@ -244,7 +257,7 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const invoice = await Invoice.findByPk(id);
+    const invoice = await Invoice.findOne({ where: { id, company_id: req.companyId } });
 
     if (!invoice) {
       return res
@@ -291,10 +304,16 @@ router.put("/:id", async (req, res) => {
       return res.status(400).json({ error: "fee_value deve ser um valor válido." });
     }
 
-    invoice.customer_id =
-      customer_id ?? invoice.customer_id;
-    invoice.company_id =
-      company_id ?? invoice.company_id;
+    const nextCustomerId = customer_id ?? invoice.customer_id;
+    const customer = await Customer.findOne({
+      where: { id: Number(nextCustomerId), company_id: req.companyId },
+    });
+    if (!customer) {
+      return res.status(400).json({ error: "Cliente não pertence à empresa informada." });
+    }
+
+    invoice.customer_id = nextCustomerId;
+    invoice.company_id = req.companyId;
     invoice.issued_at = issued_at ?? invoice.issued_at;
     invoice.total_amount =
       total_amount ?? invoice.total_amount;
@@ -341,7 +360,7 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", adminOnly, async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const invoice = await Invoice.findByPk(id);
+    const invoice = await Invoice.findOne({ where: { id, company_id: req.companyId } });
 
     if (!invoice) {
       return res

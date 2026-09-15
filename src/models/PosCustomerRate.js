@@ -9,6 +9,10 @@ const PosCustomerRate = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    company_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     customer_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -53,6 +57,7 @@ const PosCustomerRate = sequelize.define(
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
+    indexes: [{ name: "pos_customer_rates_company_id_idx", fields: ["company_id"] }],
   }
 );
 

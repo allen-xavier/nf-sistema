@@ -10,6 +10,11 @@ const Customer = sequelize.define(
       autoIncrement: true,
     },
 
+    company_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+
     name: {
       type: DataTypes.STRING(150),
       allowNull: false,
@@ -18,7 +23,6 @@ const Customer = sequelize.define(
     whatsapp_number: {
       type: DataTypes.STRING(20),
       allowNull: false,
-      unique: true,
     },
 
     uses_nf: {
@@ -65,6 +69,14 @@ const Customer = sequelize.define(
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
+    indexes: [
+      {
+        name: "customers_company_whatsapp_unique",
+        unique: true,
+        fields: ["company_id", "whatsapp_number"],
+      },
+      { name: "customers_company_id_idx", fields: ["company_id"] },
+    ],
   }
 );
 

@@ -13,6 +13,10 @@ const AuditLog = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    company_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     action: {
       type: DataTypes.STRING(50),
       allowNull: false,

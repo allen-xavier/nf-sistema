@@ -25,21 +25,18 @@ async function runSeed() {
   }
 
   const customersIds = customers.map((c) => c.id);
-  const companiesIds = companies.map((c) => c.id);
 
   const invoicesToCreate = [];
 
   for (let i = 0; i < qtd; i++) {
     const custId =
       customersIds[Math.floor(Math.random() * customersIds.length)];
-    const compId =
-      companiesIds[Math.floor(Math.random() * companiesIds.length)];
-
     const valor = Number(
       (Math.random() * 6950 + 50).toFixed(2)
     );
 
     const cliente = customers.find((c) => c.id === custId);
+    const compId = cliente.company_id;
     const taxa = Number(cliente.fee_percent || 0);
     const feeValue = Number(
       (valor * taxa / 100).toFixed(2)

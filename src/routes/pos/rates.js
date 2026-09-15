@@ -1,17 +1,20 @@
 const express = require("express");
 const { PosCustomerRate, Customer } = require("../../models");
-const { authMiddleware, adminOnly } = require("../../middleware/auth");
+const { authMiddleware, adminOnly, companyContext } = require("../../middleware/auth");
 
 const router = express.Router();
 
 router.use(authMiddleware);
 router.use(adminOnly);
+router.use(companyContext);
 
 // OBTÉM taxa do cliente
 router.get("/:customer_id", async (req, res) => {
   try {
     const { customer_id } = req.params;
-    const rate = await PosCustomerRate.findOne({ where: { customer_id } });
+    const rate = await PosCustomerRate.findOne({
+      where: { customer_id, company_id: req.companyId },
+    });
     res.json(rate || null);
   } catch (err) {
     console.error("Erro ao buscar taxa:", err);
@@ -23,7 +26,7 @@ router.get("/:customer_id", async (req, res) => {
 router.post("/:customer_id", async (req, res) => {
   try {
     const { customer_id } = req.params;
-    const cust = await Customer.findByPk(customer_id);
+    const cust = await Customer.findOne({ where: { id: customer_id, company_id: req.companyId } });
     if (!cust) return res.status(404).json({ error: "Cliente não encontrado" });
 
     const payload = {
@@ -33,9 +36,12 @@ router.post("/:customer_id", async (req, res) => {
       credit_7a12_percent: req.body.credit_7a12_percent ?? 0,
       pix_key: req.body.pix_key ?? null,
       customer_id,
+      company_id: req.companyId,
     };
 
-    const existing = await PosCustomerRate.findOne({ where: { customer_id } });
+    const existing = await PosCustomerRate.findOne({
+      where: { customer_id, company_id: req.companyId },
+    });
     if (existing) {
       await existing.update(payload);
       return res.json(existing);

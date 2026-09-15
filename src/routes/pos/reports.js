@@ -1,12 +1,13 @@
 const express = require("express");
 const { Op, fn, col, literal } = require("sequelize");
 const { PosSale, Customer, PosCompany, PosTerminal } = require("../../models");
-const { authMiddleware, adminOnly } = require("../../middleware/auth");
+const { authMiddleware, adminOnly, companyContext } = require("../../middleware/auth");
 
 const router = express.Router();
 
 router.use(authMiddleware);
 router.use(adminOnly);
+router.use(companyContext);
 
 // Garante colunas de pagamento em bases antigas uma única vez por processo.
 let paidColumnsEnsured = false;
@@ -37,7 +38,7 @@ router.use(ensurePaidColumns);
 router.get("/summary", async (req, res) => {
   try {
     const { start, end } = req.query;
-    const where = {};
+    const where = { company_id: req.companyId };
     if (start || end) {
       where.sale_datetime = {};
       if (start) where.sale_datetime[Op.gte] = new Date(start);
@@ -85,6 +86,7 @@ router.get("/summary", async (req, res) => {
     const endDay = new Date(hoje.toISOString().slice(0, 10) + "T23:59:59");
     const topDia = await PosSale.findOne({
       where: {
+        company_id: req.companyId,
         sale_datetime: { [Op.between]: [startDay, endDay] },
       },
       attributes: [
@@ -113,7 +115,7 @@ router.get("/summary", async (req, res) => {
 router.get("/payouts", async (req, res) => {
   try {
     let { start, end, pos_terminal_id, only_unpaid } = req.query;
-    const where = {};
+    const where = { company_id: req.companyId };
     if (start || end) {
       where.sale_datetime = {};
       if (start) where.sale_datetime[Op.gte] = new Date(start);
@@ -204,7 +206,7 @@ router.get("/payouts", async (req, res) => {
 router.post("/payouts/mark-paid", async (req, res) => {
   try {
     let { sale_ids, start, end, pos_terminal_id } = req.body;
-    const where = {};
+    const where = { company_id: req.companyId };
 
     if (Array.isArray(sale_ids) && sale_ids.length) {
       where.id = sale_ids;
@@ -232,14 +234,14 @@ router.post("/payouts/mark-paid", async (req, res) => {
 });
 
 // Clientes inativos há > 30 dias
-router.get("/inactive", async (_req, res) => {
+router.get("/inactive", async (req, res) => {
   try {
     const limite = new Date();
     limite.setDate(limite.getDate() - 30);
 
     const ativosRows = await PosSale.findAll({
       attributes: ["customer_id"],
-      where: { sale_datetime: { [Op.gte]: limite } },
+      where: { company_id: req.companyId, sale_datetime: { [Op.gte]: limite } },
       group: ["customer_id"],
       raw: true,
     });
@@ -247,6 +249,7 @@ router.get("/inactive", async (_req, res) => {
 
     const inativos = await Customer.findAll({
       where: {
+        company_id: req.companyId,
         id: { [Op.notIn]: ativosIds.length ? ativosIds : [0] },
       },
       attributes: ["id", "name"],
